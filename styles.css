@@ -1,0 +1,94 @@
+body {
+    height: 100%;
+}
+
+#jobs {
+    width:200px;
+    border-top: 1px solid #aaa;
+    border-right: 1px solid #aaa;
+}
+
+#jobs a {
+    border-bottom: 1px solid #aaa;
+}
+
+#btnNew {
+    height: 40px;
+}
+
+#detail {
+    margin-left: 200px;
+    /* min-height: 600px; */
+    border-top: 1px solid #aaa;
+}
+
+#detail header button {
+    border-bottom: 1px solid #009688;
+    border-right: 1px solid #aaa;
+    width: 135px;
+}
+
+#detail header button.selected {
+    background-color: white !important;
+    color: #009688 !important;
+    font-weight: bold !important;
+}
+
+.tab {
+    display: none;
+    padding: 16px;
+    /* background-color: fuchsia; */
+}
+
+.tab .w3-bar button {
+    margin-top: 15px;
+    width: 150px;
+}
+
+/* #tabSummary label {
+    margin-top: 8px;
+} */
+
+#tabLogs textarea {
+    height: 500px;
+}
+
+.tab a {
+    color: blue;
+}
+
+#treeview {
+    border: 1px solid #aaa;
+    background-color: white;
+    padding: 5px;
+    overflow: auto;
+    height: 500px;
+}
+#treeview > div { line-height: 1.5em; }
+#treeview i, #treeview input, #treeview label {
+    cursor: pointer;
+}
+#treeview i {
+    font-size: large;
+    font-style: normal;
+    font-weight: bold;
+    color: #aaa;
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    width: 15px;
+    text-align: center;
+}
+#treeview input {
+    margin: 0 3px;
+    height: 15px;
+    width: 15px;
+    position: relative;
+    top: 1px;
+}
+#treeview span {
+    font-style: italic;
+    color: #aaa;
+    padding-left: 5px;
+}
+

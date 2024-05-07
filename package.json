@@ -1,0 +1,16 @@
+{
+  "name": "forgetful-kitten-wind-6om0i",
+  "productName": "forgetful-kitten-wind-6om0i",
+  "description": "My Electron application description",
+  "keywords": [],
+  "main": "./main.js",
+  "version": "1.0.0",
+  "author": "Alexandre BUREL",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "25.3.2"
+  }
+}
