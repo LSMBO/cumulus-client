@@ -1,0 +1,49 @@
+:root {
+    --primary-color: #FFFFFF;
+    --primary-color-light: #F1F1F1;
+    --primary-color-dark: #AAAAAA;
+    --primary-color-text: #000000;
+    --secondary-color: #333333;
+    --secondary-color-light: #555555;
+    --secondary-color-dark: #000000;
+    --secondary-color-text: #FFFFFF;
+    --accent-color: #E91E63;
+    --accent-color-light: #EC618F;
+    --accent-color-dark: #C5104C;
+    --accent-color-text: #FFFFFF;
+    --opposite-color: #009688;
+    --opposite-color-light: #16E19C;
+    --opposite-color-dark: #006259;
+    --opposite-color-text: #FFFFFF;
+
+    /* --status-grey: #C0C0C0;
+    --status-blue: #3B88C3;
+    --status-red: #F01E16;
+    --status-green: #77B255;
+    --status-orange: #ffab00; */
+}
+
+.color-primary { color: var(--primary-color-text) !important; background-color: var(--primary-color) !important; }
+.color-primary-hover:hover { color: var(--primary-color) !important; background-color: var(--primary-color-text) !important; }
+.color-primary-border { border-color: var(--primary-color-dark) !important; }
+.color-primary-light { color: var(--primary-color-text) !important; background-color: var(--primary-color-light) !important; }
+.color-primary-dark { color: var(--primary-color-text) !important; background-color: var(--primary-color-dark) !important; }
+
+.color-secondary { color: var(--secondary-color-text) !important; background-color: var(--secondary-color) !important; }
+.color-secondary-hover:hover { color: var(--secondary-color) !important; background-color: var(--secondary-color-text) !important; }
+.color-secondary-border { border-color: var(--secondary-color-dark) !important; }
+.color-secondary-light { color: var(--secondary-color-text) !important; background-color: var(--secondary-color-light) !important; }
+
+.color-accent { color: var(--accent-color-text) !important; background-color: var(--accent-color) !important; }
+.color-accent-hover:hover { color: var(--accent-color) !important; background-color: var(--accent-color-text) !important; }
+.color-accent-border { border-color: var(--accent-color-dark) !important; }
+
+.color-opposite { color: var(--opposite-color-text) !important; background-color: var(--opposite-color) !important; }
+.color-opposite-hover:hover { color: var(--opposite-color) !important; background-color: var(--opposite-color-text) !important; }
+.color-opposite-border { border-color: var(--opposite-color) !important; }
+
+.tab a { color: var(--accent-color-dark); }
+.tab a + label { color: var(--accent-color-dark); }
+#treeview i, #treeview span, #tabStorage td .rsync { color: var(--primary-color-dark); }
+#txtSearch { color: var(--secondary-color); }
+

@@ -1,0 +1,258 @@
+body {
+    height: 100%;
+}
+
+#jobs {
+    width:250px;
+    border-width: 0 1px 0 0;
+    border-style: solid;
+    
+    height: 100%;
+    position: fixed !important;
+    z-index: 1;
+    overflow: auto;
+}
+
+#jobs a {
+    border-width: 0 0 1px 0;
+    border-style: solid;
+    border-color: inherit;
+    
+    display: flex;
+    text-align: left;
+    padding: 0;
+}
+
+#jobs span {
+    display: inline-flex;
+    line-height: 100%;
+    padding: 0 5px;
+    position: relative;
+    width: 25px;
+    border-right: 1px solid var(--primary-color-dark);
+}
+
+#jobs span img {
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#jobs label {
+    display: inline-flex;
+    vertical-align: middle;
+    font-size: small;
+    padding-left: 5px;
+    cursor: pointer;
+}
+#jobs label.archived {
+    color: var(--primary-color-dark);
+}
+
+#new_job {
+    line-height: 45px;
+    position: sticky;
+    top: 0;
+}
+
+#txtSearch {
+    position: sticky;
+    bottom: 0;
+}
+
+#detail {
+    margin-left: 250px;
+    border-width: 0px 0 0 0;
+    border-style: solid;
+}
+
+#detail header {
+    border-width: 0 0 0px 0;
+    border-style: solid;
+}
+
+#detail header button {
+    border-width: 0 1px 0 0;
+    border-style: solid;
+    border-color: inherit;
+    width: 135px;
+    line-height: 2em;
+}
+
+#btnStorage, #btnSettings {
+    border-right-width: 0 !important;
+    width: 60px !important;
+}
+
+#btnStorage img, #btnSettings img {
+    width: 25px;
+}
+
+#splash {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+#splash img {
+    margin: 100px 250px;
+}
+
+.tab, #tabSettings, #tabStorage {
+    display: none;
+    padding: 16px;
+}
+
+.tab .w3-bar button {
+    margin-top: 15px;
+    width: 150px;
+}
+
+#btnSettingsLicense {
+    border-width: 1px;
+    border-style: solid;
+}
+
+#copyStdout + label, #copyStderr + label {
+    margin-left: 5px;
+    display: none;
+}
+#copyStdout.copied + label, #copyStderr.copied + label {
+    display: inline;
+}
+
+#tabLogs textarea {
+    height: 500px;
+    text-wrap: nowrap;
+}
+
+#treeview {
+    border-width: 1px;
+    border-style: solid;
+    padding: 5px;
+    overflow: auto;
+    height: 500px;
+}
+#treeview > div { line-height: 1.5em; }
+#treeview i, #treeview input, #treeview label {
+    cursor: pointer;
+}
+#treeview i {
+    font-size: large;
+    font-style: normal;
+    font-weight: bold;
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    width: 15px;
+    text-align: center;
+}
+#treeview input {
+    margin: 0 3px;
+    height: 15px;
+    width: 15px;
+    position: relative;
+    top: 1px;
+}
+#treeview span {
+    font-style: italic;
+    padding-left: 5px;
+}
+
+/* APPS */
+#diann181_main .w3-dropdown-content, #diann182b27_main .w3-dropdown-content {
+    float: right !important;
+    right: 8px;
+}
+
+#diann181_main .w3-dropdown-content div, #diann182b27_main .w3-dropdown-content div {
+    padding: 10px 15px;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: inherit;
+    width: 260px;
+}
+
+#diann181_main .w3-dropdown-content div:last-of-type, #diann182b27_main .w3-dropdown-content div:last-of-type {
+    border-bottom-width: 0;
+}
+
+#diann181_main .w3-dropdown-content label, #diann182b27_main .w3-dropdown-content label {
+    display: inline-block;
+    width: 200px;
+}
+
+#diann181_main td.w3-half:last-of-type tr td:last-of-type, #diann182b27_main td.w3-half:last-of-type tr td:last-of-type {
+    width: 195px;
+}
+
+#tooltiptext {
+    display: none;
+    position: absolute;
+    background-color: var(--secondary-color);
+    color: var(--secondary-color-text);
+    padding: 5px 10px;
+    border-radius: 5px;
+    min-width: 150px;
+}
+
+#tabStorage h3 {
+    display: inline;
+}
+
+#tabStorage #btnStorageRefresh {
+    float: right;
+    width: 175px;
+}
+
+#tabStorage #txtStorageSearch {
+    margin: 10px 0;
+}
+
+#tabStorage tr td:first-of-type {
+    width: calc(100% - 175px);
+}
+
+#tabStorage tr td:last-of-type {
+    width: 175px;
+}
+
+#tabStorage tr td:first-of-type label {
+    overflow-wrap: anywhere;
+}
+
+#tabStorage tr td:last-of-type label {
+    display: none;
+}
+
+#tabStorage .rsync {
+    font-style: italic;
+}
+
+#tabStorage th {
+    cursor: pointer;
+}
+
+#tabStorage th i {
+    float: right;
+}
+
+#downloadProgress {
+    height: 2em;
+}
+
+#downloadProgressBar {
+    padding: 0;
+    animation: mist 90s infinite linear;
+	background: url("../img/progress.png") top left;
+	background-repeat: repeat;
+	height: 100%;
+	background-size: contain;
+}
+
+@keyframes mist {
+    0% { background-position: 0 0; }
+    100% { background-position: 100vw 0; }
+}

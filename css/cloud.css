@@ -1,0 +1,55 @@
+.cloud {
+    position: absolute;
+    display: none;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+.cloud span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    opacity: 0.5;
+    z-index: 11;
+}
+
+.cloud img {
+    width: 600px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 12;
+}
+
+.cloud label {
+    background-color: transparent;
+    color: black;
+    display: block;
+    width: 425px;
+    height: 125px;
+    position: absolute;
+    top: calc(50% + 60px);
+    left: calc(50% - 20px);
+    transform: translate(-50%, -50%);
+    z-index: 13;
+    font-size: x-large;
+    text-align: left;
+}
+
+.cloud div {
+    position: absolute;
+    top: calc(50% + 140px);
+    transform: translate(-50%, -50%);
+    z-index: 14;
+}
+
+.cloud button {
+    width: 125px !important;
+}

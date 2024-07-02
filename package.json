@@ -1,16 +1,27 @@
 {
-  "name": "forgetful-kitten-wind-6om0i",
-  "productName": "forgetful-kitten-wind-6om0i",
+  "name": "cumulus-client",
+  "productName": "cumulus-client",
   "description": "My Electron application description",
   "keywords": [],
-  "main": "./main.js",
-  "version": "1.0.0",
+  "main": "server/main.js",
+  "version": "0.1.0",
   "author": "Alexandre BUREL",
   "scripts": {
     "start": "electron ."
   },
-  "dependencies": {},
   "devDependencies": {
-    "electron": "25.3.2"
+    "electron": "^25.3.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LSMBO/cumulus-client.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LSMBO/cumulus-client/issues"
+  },
+  "homepage": "https://github.com/LSMBO/cumulus-client#readme",
+  "dependencies": {
+    "form-data": "^4.0.0"
   }
 }
