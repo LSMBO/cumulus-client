@@ -166,12 +166,22 @@ async function initialize() {
     // load the list of available apps
     loadAppList();
     // add the tooltip texts
+    utils.tooltip(document.getElementById("txtJobOwner").previousElementSibling, "This field cannot be modified, it helps with tracking the jobs.");
+    utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, RUNNING, DONE or FAILED or CANCELED. It will also be archived later."); // PENDING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
+    utils.tooltip(document.getElementById("cmbAppName").previousElementSibling, "Select the software to run, with its corresponding version.");
+    utils.tooltip(document.getElementById("cmbStrategy").previousElementSibling, "The software will run on a virtual machine (VM) in the Cloud, the strategy allows you to influence which VM will be selected.");
+    utils.tooltip(document.getElementById("txtSelectedHost").previousElementSibling, "The host is the virtual machine (VM) where the job has been sent. Each VM has its own resources.");
+    utils.tooltip(document.getElementById("txtJobDescription").previousElementSibling, "Add a description to your job, it can help you or others to distinguish a job without reviewing the set of parameters.");
+
     utils.tooltip(document.getElementById("txtSettingsServerAddress").previousElementSibling, "Warning: do not change this value unless you are certain!");
     utils.tooltip(document.getElementById("txtSettingsNbJobs").previousElementSibling, "By default Cumulus will only display the 100 last jobs; use -1 to show all the jobs");
     utils.tooltip(document.getElementById("txtSettingsRefreshRate").previousElementSibling, "Number of seconds between each refresh of the job list and job status; minimal value is 5 seconds");
     utils.tooltip(document.getElementById("cmbSettingsDefaultStrategy").previousElementSibling, "The strategy will automatically be selected when you create a new job, you can always change it then");
     utils.tooltip(document.getElementById("txtSettingsDefaultRawFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
     utils.tooltip(document.getElementById("txtSettingsDefaultFastaFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
+    utils.tooltip(document.getElementById("txtSettingsServerPort").previousElementSibling, "Warning: do not change it unless you are certain!");
+    utils.tooltip(document.getElementById("txtSettingsRsyncAddress").previousElementSibling, "Warning: do not change it unless you are certain!");
+    utils.tooltip(document.getElementById("txtSettingsRsyncPort").previousElementSibling, "Warning: do not change it unless you are certain!");
     // load the list of jobs, and reload it every 5 seconds
     await jobs.loadJobList();
     // reload the jobs every n seconds

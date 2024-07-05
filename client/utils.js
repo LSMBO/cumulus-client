@@ -65,10 +65,10 @@ function addZero(d) {
 function formatDate(timestamp) {
     // return the following format: YYYY/mm/dd hh:mm:ss (tz)
     const date = new Date(timestamp * 1000);
-    if(date.getTime() > 0)
-        return `${date.getFullYear()}/${addZero(date.getMonth() + 1)}/${addZero(date.getDate())} ${addZero(date.getHours())}:${addZero(date.getMinutes())}:${addZero(date.getSeconds())}`;
-    else
-        return "";
+    var formattedDate = "";
+    if(date.getTime() > 0) formattedDate = `${date.getFullYear()}/${addZero(date.getMonth() + 1)}/${addZero(date.getDate())} ${addZero(date.getHours())}:${addZero(date.getMinutes())}:${addZero(date.getSeconds())}`;
+    // console.log(`Timestamp '${timestamp}' => '${formattedDate}'`);
+    return formattedDate;
 }
 
 async function convertToUncPath(file) {

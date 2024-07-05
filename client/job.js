@@ -157,7 +157,7 @@ async function loadJob(job_id) {
         document.getElementById("txtSelectedHost").value = job.get("host");
         document.getElementById("txtJobDescription").value = job.get("description");
         document.getElementById("divDates").style.display = "block";
-        document.getElementById("divDates").innerHTML = `<div class="w3-third"><label>Creation date: ${utils.formatDate(job.creation_date)}</label></div><div class="w3-third"><label>Started date: ${utils.formatDate(job.start_date)}</label></div><div class="w3-third"><label>Ended date: ${utils.formatDate(job.end_date)}</label></div>`;
+        document.getElementById("divDates").innerHTML = `<div class="w3-third"><label>Creation date: ${utils.formatDate(job.get("creation_date"))}</label></div><div class="w3-third"><label>Started date: ${utils.formatDate(job.get("start_date"))}</label></div><div class="w3-third"><label>Ended date: ${utils.formatDate(job.get("end_date"))}</label></div>`;
         document.getElementById("divButtonsNext").style.display = "none";
         document.getElementById("divButtonsSummary").style.display = "block";
         document.getElementById("btnStart").parentNode.style.display = "none";
