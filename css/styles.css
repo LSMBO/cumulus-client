@@ -81,12 +81,12 @@ body {
     line-height: 2em;
 }
 
-#btnStorage, #btnSettings {
+#btnStorage, #btnSettings, #btnSearch {
     border-right-width: 0 !important;
     width: 60px !important;
 }
 
-#btnStorage img, #btnSettings img {
+#btnStorage img, #btnSettings img, #btnSearch img {
     width: 25px;
 }
 
@@ -100,7 +100,7 @@ body {
     margin: 100px 250px;
 }
 
-.tab, #tabSettings, #tabStorage {
+.tab, #tabSettings, #tabStorage, #tabSearch {
     display: none;
     padding: 16px;
 }

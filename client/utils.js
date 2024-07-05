@@ -91,8 +91,13 @@ function tooltip(element, text) {
         const rect = element.getBoundingClientRect();
         TOOLTIPTEXT.style.top = `${rect.top + window.scrollY + element.offsetHeight + 10}px`;
         TOOLTIPTEXT.style.left = `${rect.left + window.scrollX}px`;
-        TOOLTIPTEXT.style.maxWidth = element.clientWidth + "px";
-    });
+        TOOLTIPTEXT.style.maxWidth = element.clientWidth > 100 ? element.clientWidth + "px" : "";
+        if(rect.left + window.scrollX + TOOLTIPTEXT.clientWidth >= window.outerWidth - 20) {
+            // the tooltip will reach the right border, make it stick to the right border
+            TOOLTIPTEXT.style.left = `${window.outerWidth - TOOLTIPTEXT.clientWidth - 35}px`;
+            TOOLTIPTEXT.style.maxWidth = "";
+        }
+        });
     element.addEventListener("mouseout", () => {
         TOOLTIPTEXT.textContent = ""
         TOOLTIPTEXT.style.display = "none";

@@ -32,62 +32,55 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-import * as dialog from "./dialog.js";
-import * as job from "./job.js";
-import * as output from "./output.js";
 import * as utils from "./utils.js";
-import * as apps from "./apps/applist.js";
 
-const TAB_LIST = document.getElementsByClassName("tab");
 const TAB_NAMES = ["tabSummary", "tabParameters", "tabLogs", "tabOutput"];
 const TAB_BUTTONS = ["btnSummary", "btnParameters", "btnLogs", "btnOutput"];
+const EXTRA_TAB_NAMES = ["tabSettings", "tabStorage", "tabSearch"];
+const EXTRA_BUTTONS = ["btnSettings", "btnStorage", "btnSearch"];
 
-async function openTab(tabName) {
-    // console.log(tabName);
-    var index = -1;
-    document.getElementById("btnSettings").classList.replace("color-accent", "color-secondary");
-    document.getElementById("tabSettings").style.display = "none";
-    document.getElementById("btnStorage").classList.replace("color-accent", "color-secondary");
-    document.getElementById("tabStorage").style.display = "none";
-    for(let i = 0; i < TAB_LIST.length; i++) {
-      if(TAB_LIST[i].id == tabName) index = i;
-      TAB_LIST[i].style.display = "none";
-      document.getElementById(TAB_BUTTONS[i]).classList.replace("color-accent", "color-secondary");
+function hideAllTabs() {
+  for(let i = 0; i < TAB_NAMES.length; i++) {
+    document.getElementById(TAB_NAMES[i]).style.display = "none";
+    document.getElementById(TAB_BUTTONS[i]).classList.replace("color-accent", "color-secondary");
+  }
+  for(let i = 0; i < EXTRA_BUTTONS.length; i++) {
+    document.getElementById(EXTRA_TAB_NAMES[i]).style.display = "none";
+    document.getElementById(EXTRA_BUTTONS[i]).classList.replace("color-accent", "color-secondary");
+  }
+}
+
+function getCurrentTabName() {
+  for(let tab of TAB_NAMES) {
+    if(document.getElementById(tab).style.display == "block") {
+      return tab;
     }
-    TAB_LIST[index].style.display = "block";
-    document.getElementById(TAB_BUTTONS[index]).classList.replace("color-secondary", "color-accent");
-  
-    if(tabName == "tabParameters") {
-      // get the appropriate form
-      const app = document.getElementById("cmbAppName").value;
-      if(app != "") {
-        document.getElementById("formParameters").innerHTML = apps.get(app).html;
-        apps.get(app).eventsFunction();
-      }
-      // fill the form eventually
-      if(utils.getCurrentJobId() != 0) {
-        utils.toggleLoadingScreen();
-        const [job, error] = await window.electronAPI.getJobDetails(utils.getCurrentJobId() > 0 ? utils.getCurrentJobId() : utils.getCurrentJobId() * -1); // job id can be negative if we are cloning a job
-        if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
-        // console.log(job);
-        for(let [key, value] of Object.entries(job.get("settings"))) {
-          const node = document.getElementsByName(key)[0];
-          if(node !== undefined) {
-            if(node.tagName == "INPUT" && node.type == "checkbox") node.checked = value == "on";
-            else node.value = value;
-          }
-        }
-        utils.toggleLoadingScreen();
-      }
-    } else if(tabName == "tabOutput") {
-      utils.toggleLoadingScreen();
-      const [files, error] = utils.getCurrentJobId() != 0 ? await window.electronAPI.getFileList(utils.getUserName(), utils.getCurrentJobId()) : new Array();
-      if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
-      output.insertOutputFiles(files);
-      utils.toggleLoadingScreen();
-    } else if(tabName == "tabLogs") {
-      job.refreshJob();
+  }
+  for(let tab of EXTRA_TAB_NAMES) {
+    if(document.getElementById(tab).style.display == "block") {
+      return tab;
     }
+  }
+  return "";
+}
+
+function openTab(tabName) {
+  hideAllTabs();
+  if(TAB_NAMES.includes(tabName)) {
+    for(let i = 0; i < TAB_NAMES.length; i++) {
+      if(TAB_NAMES[i] == tabName) {
+        document.getElementById(TAB_NAMES[i]).style.display = "block";
+        document.getElementById(TAB_BUTTONS[i]).classList.replace("color-secondary", "color-accent");
+      }
+    }
+  } else {
+    for(let i = 0; i < EXTRA_TAB_NAMES.length; i++) {
+      if(EXTRA_TAB_NAMES[i] == tabName) {
+        document.getElementById(EXTRA_TAB_NAMES[i]).style.display = "block";
+        document.getElementById(EXTRA_BUTTONS[i]).classList.replace("color-secondary", "color-accent");
+      }
+    }
+  }
 }
 
 function goToNextTab() {
@@ -147,4 +140,4 @@ async function copyToClipboard(sourceName, target) {
     source.classList.remove("copied");
 }
 
-export { copyToClipboard, goToNextTab, goToPreviousTab, openTab, resizeLogAreas, TAB_BUTTONS, TAB_LIST };
+export { copyToClipboard, goToNextTab, goToPreviousTab, openTab, resizeLogAreas };

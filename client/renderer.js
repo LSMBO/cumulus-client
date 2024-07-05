@@ -38,6 +38,7 @@ import * as job from "./job.js";
 import * as jobs from "./joblist.js";
 import * as output from "./output.js";
 import * as dialog from "./dialog.js";
+import * as search from "./search.js";
 import * as settings from "./settings.js";
 import * as storage from "./storage.js";
 import * as utils from "./utils.js";
@@ -56,9 +57,9 @@ function loadAppList() {
 }
 
 document.getElementById("btnSummary").addEventListener("click", () => tabs.openTab("tabSummary"));
-document.getElementById("btnParameters").addEventListener("click", () => tabs.openTab("tabParameters"));
-document.getElementById("btnLogs").addEventListener("click", () => tabs.openTab("tabLogs"));
-document.getElementById("btnOutput").addEventListener("click", () => tabs.openTab("tabOutput"));
+document.getElementById("btnParameters").addEventListener("click", () => job.openJobParameters());
+document.getElementById("btnLogs").addEventListener("click", () => job.refreshJob());
+document.getElementById("btnOutput").addEventListener("click", () => job.openJobOutput());
 document.getElementById("cmbAppName").addEventListener("change", () => {
   document.getElementById("btnParameters").disabled = false;
   document.getElementById("btnNext").disabled = false;
@@ -68,7 +69,7 @@ document.getElementById("aUnselect").addEventListener("click", () => output.unse
 document.getElementById("aExpand").addEventListener("click", () => output.expandAllFolders());
 document.getElementById("aCollapse").addEventListener("click", () => output.collapseAllFolders());
 document.getElementById("btnClone").addEventListener("click", async () => await job.cloneJob());
-document.getElementById("btnNext").addEventListener("click", () => tabs.openTab("tabParameters"));
+document.getElementById("btnNext").addEventListener("click", () => job.openJobParameters());
 document.getElementById("btnStart").addEventListener("click", () => job.startJob());
 document.getElementById("btnCancel").addEventListener("click", () => dialog.openDialogQuestion("Are you sure you want to cancel this job?", job.cancelJob));
 document.getElementById("btnDelete").addEventListener("click", () => dialog.openDialogQuestion("Are you sure you want to delete this job?", job.deleteJob));
@@ -76,6 +77,7 @@ document.getElementById("copyStdout").addEventListener("click", async () => awai
 document.getElementById("copyStderr").addEventListener("click", async () => await tabs.copyToClipboard("copyStderr", document.getElementById("stderr")));
 document.getElementById("btnOutputDownload").addEventListener("click", async() => await output.downloadOutput());
 document.getElementById("txtStorageSearch").addEventListener("keyup", storage.searchStorage);
+// settings tab
 const btnSettings = document.getElementById("btnSettings");
 btnSettings.addEventListener("click", async () => await settings.openSettings());
 btnSettings.addEventListener("mouseover", () => {
@@ -91,6 +93,7 @@ btnSettings.addEventListener("mouseout", () => {
 document.getElementById("btnSettingsLicense").addEventListener("click", () => settings.toggleLicense());
 document.getElementById("btnSettingsOk").addEventListener("click", () => dialog.openDialogQuestion("Are you sure that the new settings are valid?", settings.saveSettings));
 document.getElementById("btnSettingsReset").addEventListener("click", () => dialog.openDialogQuestion("This will restore the default settings, are you sure about that?", settings.resetSettings));
+// storage tab
 const btnStorage = document.getElementById("btnStorage");
 btnStorage.addEventListener("click", async () => storage.openStorage());
 btnStorage.addEventListener("mouseover", () => {
@@ -104,6 +107,19 @@ btnStorage.addEventListener("mouseout", () => {
   images[1].classList.add("w3-hide");
 });
 document.getElementById("btnStorageRefresh").addEventListener("click", async () => await storage.refreshStorage());
+// search tab
+const btnSearch = document.getElementById("btnSearch");
+btnSearch.addEventListener("click", async () => await search.openSearch());
+btnSearch.addEventListener("mouseover", () => {
+  const images = btnSearch.getElementsByTagName("img");
+  images[0].classList.add("w3-hide");
+  images[1].classList.remove("w3-hide");
+});
+btnSearch.addEventListener("mouseout", () => {
+  const images = btnSearch.getElementsByTagName("img");
+  images[0].classList.remove("w3-hide");
+  images[1].classList.add("w3-hide");
+});
 
 function keydownEvent(event) {
     if (event.key === 'Control' || event.key === 'Shift') return; // do nothing
@@ -149,6 +165,38 @@ async function loadRemoteHosts() {
   document.getElementById("cmbStrategy").innerHTML = content;
 }
 
+function addTooltips() {
+  // Note: the tooltips for the job parameters must be added directly in the apps/*.js files
+  // menu buttons
+  utils.tooltip(document.getElementById("btnSearch"), "Advanced job search");
+  utils.tooltip(document.getElementById("btnStorage"), "Remote storage viewer");
+  utils.tooltip(document.getElementById("btnSettings"), "Cumulus configuration");
+  // job summary
+  utils.tooltip(document.getElementById("txtJobOwner").previousElementSibling, "This field cannot be modified, it helps with tracking the jobs.");
+  utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, RUNNING, DONE or FAILED or CANCELED. It will also be archived later."); // PENDING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
+  utils.tooltip(document.getElementById("cmbAppName").previousElementSibling, "Select the software to run, with its corresponding version.");
+  utils.tooltip(document.getElementById("cmbStrategy").previousElementSibling, "The software will run on a virtual machine (VM) in the Cloud, the strategy allows you to influence which VM will be selected.");
+  utils.tooltip(document.getElementById("txtSelectedHost").previousElementSibling, "The host is the virtual machine (VM) where the job has been sent. Each VM has its own resources.");
+  utils.tooltip(document.getElementById("txtJobDescription").previousElementSibling, "Add a description to your job, it can help you or others to distinguish a job without reviewing the set of parameters.");
+  // settings tab
+  utils.tooltip(document.getElementById("txtSettingsServerAddress").previousElementSibling, "Warning: do not change this value unless you are certain!");
+  utils.tooltip(document.getElementById("txtSettingsNbJobs").previousElementSibling, "By default Cumulus will only display the 100 last jobs; use -1 to show all the jobs");
+  utils.tooltip(document.getElementById("txtSettingsRefreshRate").previousElementSibling, "Number of seconds between each refresh of the job list and job status; minimal value is 5 seconds");
+  utils.tooltip(document.getElementById("cmbSettingsDefaultStrategy").previousElementSibling, "The strategy will automatically be selected when you create a new job, you can always change it then");
+  utils.tooltip(document.getElementById("txtSettingsDefaultRawFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
+  utils.tooltip(document.getElementById("txtSettingsDefaultFastaFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
+  utils.tooltip(document.getElementById("txtSettingsServerPort").previousElementSibling, "Warning: do not change it unless you are certain!");
+  utils.tooltip(document.getElementById("txtSettingsRsyncAddress").previousElementSibling, "Warning: do not change it unless you are certain!");
+  utils.tooltip(document.getElementById("txtSettingsRsyncPort").previousElementSibling, "Warning: do not change it unless you are certain!");
+  // search tab
+  utils.tooltip(document.getElementById("txtSearchOwner").previousElementSibling, "Search jobs per user name; this will return all the jobs whose owner contain the given tag (case insensitive).");
+  utils.tooltip(document.getElementById("txtSearchStatus").previousElementSibling, "Restrict the search to specific statuses; if no status is selected then the filter will be disabled.");
+  utils.tooltip(document.getElementById("txtSearchAppName").previousElementSibling, "Restrict the search to specific software.");
+  utils.tooltip(document.getElementById("txtSearchFile").previousElementSibling, "Search the jobs that are processing a certain file; this will search for files containing the given tag (case insensitive).");
+  utils.tooltip(document.getElementById("txtSearchTag").previousElementSibling, "Search a tag in the description of a job; this tag will also be searched within the set of parameters but they may not be encoded as you think.");
+  utils.tooltip(document.getElementById("cmbSearchDate").previousElementSibling, "Restrict the search per date; if you only set the first date, you will get all the jobs from this date; if you only set the last date, you will get all the jobs before this date; use the same date twice to search for a specific date; leave blank to disregard this filter.");
+}
+
 async function initialize() {
   // check that the client have the same version number as the server
   const [version, error] = await window.electronAPI.checkVersion();
@@ -166,22 +214,25 @@ async function initialize() {
     // load the list of available apps
     loadAppList();
     // add the tooltip texts
-    utils.tooltip(document.getElementById("txtJobOwner").previousElementSibling, "This field cannot be modified, it helps with tracking the jobs.");
-    utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, RUNNING, DONE or FAILED or CANCELED. It will also be archived later."); // PENDING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
-    utils.tooltip(document.getElementById("cmbAppName").previousElementSibling, "Select the software to run, with its corresponding version.");
-    utils.tooltip(document.getElementById("cmbStrategy").previousElementSibling, "The software will run on a virtual machine (VM) in the Cloud, the strategy allows you to influence which VM will be selected.");
-    utils.tooltip(document.getElementById("txtSelectedHost").previousElementSibling, "The host is the virtual machine (VM) where the job has been sent. Each VM has its own resources.");
-    utils.tooltip(document.getElementById("txtJobDescription").previousElementSibling, "Add a description to your job, it can help you or others to distinguish a job without reviewing the set of parameters.");
-
-    utils.tooltip(document.getElementById("txtSettingsServerAddress").previousElementSibling, "Warning: do not change this value unless you are certain!");
-    utils.tooltip(document.getElementById("txtSettingsNbJobs").previousElementSibling, "By default Cumulus will only display the 100 last jobs; use -1 to show all the jobs");
-    utils.tooltip(document.getElementById("txtSettingsRefreshRate").previousElementSibling, "Number of seconds between each refresh of the job list and job status; minimal value is 5 seconds");
-    utils.tooltip(document.getElementById("cmbSettingsDefaultStrategy").previousElementSibling, "The strategy will automatically be selected when you create a new job, you can always change it then");
-    utils.tooltip(document.getElementById("txtSettingsDefaultRawFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
-    utils.tooltip(document.getElementById("txtSettingsDefaultFastaFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
-    utils.tooltip(document.getElementById("txtSettingsServerPort").previousElementSibling, "Warning: do not change it unless you are certain!");
-    utils.tooltip(document.getElementById("txtSettingsRsyncAddress").previousElementSibling, "Warning: do not change it unless you are certain!");
-    utils.tooltip(document.getElementById("txtSettingsRsyncPort").previousElementSibling, "Warning: do not change it unless you are certain!");
+    addTooltips();
+    // utils.tooltip(document.getElementById("btnSearch"), "Advanced job search");
+    // utils.tooltip(document.getElementById("btnStorage"), "Remote storage viewer");
+    // utils.tooltip(document.getElementById("btnSettings"), "Cumulus configuration");
+    // utils.tooltip(document.getElementById("txtJobOwner").previousElementSibling, "This field cannot be modified, it helps with tracking the jobs.");
+    // utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, RUNNING, DONE or FAILED or CANCELED. It will also be archived later."); // PENDING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
+    // utils.tooltip(document.getElementById("cmbAppName").previousElementSibling, "Select the software to run, with its corresponding version.");
+    // utils.tooltip(document.getElementById("cmbStrategy").previousElementSibling, "The software will run on a virtual machine (VM) in the Cloud, the strategy allows you to influence which VM will be selected.");
+    // utils.tooltip(document.getElementById("txtSelectedHost").previousElementSibling, "The host is the virtual machine (VM) where the job has been sent. Each VM has its own resources.");
+    // utils.tooltip(document.getElementById("txtJobDescription").previousElementSibling, "Add a description to your job, it can help you or others to distinguish a job without reviewing the set of parameters.");
+    // utils.tooltip(document.getElementById("txtSettingsServerAddress").previousElementSibling, "Warning: do not change this value unless you are certain!");
+    // utils.tooltip(document.getElementById("txtSettingsNbJobs").previousElementSibling, "By default Cumulus will only display the 100 last jobs; use -1 to show all the jobs");
+    // utils.tooltip(document.getElementById("txtSettingsRefreshRate").previousElementSibling, "Number of seconds between each refresh of the job list and job status; minimal value is 5 seconds");
+    // utils.tooltip(document.getElementById("cmbSettingsDefaultStrategy").previousElementSibling, "The strategy will automatically be selected when you create a new job, you can always change it then");
+    // utils.tooltip(document.getElementById("txtSettingsDefaultRawFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
+    // utils.tooltip(document.getElementById("txtSettingsDefaultFastaFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
+    // utils.tooltip(document.getElementById("txtSettingsServerPort").previousElementSibling, "Warning: do not change it unless you are certain!");
+    // utils.tooltip(document.getElementById("txtSettingsRsyncAddress").previousElementSibling, "Warning: do not change it unless you are certain!");
+    // utils.tooltip(document.getElementById("txtSettingsRsyncPort").previousElementSibling, "Warning: do not change it unless you are certain!");
     // load the list of jobs, and reload it every 5 seconds
     await jobs.loadJobList();
     // reload the jobs every n seconds

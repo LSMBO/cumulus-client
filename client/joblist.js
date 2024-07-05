@@ -121,9 +121,11 @@ async function autoRefresh() {
     // do not refresh if the job is DONE or FAILED
     const status = document.getElementById("txtJobStatus").value;
     if(status != "DONE" && status != "FAILED") {
-      const tab = Array.from(tabs.TAB_LIST).filter(t => t.style.display == "block")[0].id;
-      if(tab == "tabSummary") job.loadJob(utils.getCurrentJobId());
-      else tabs.openTab(Array.from(tabs.TAB_LIST).filter(t => t.style.display == "block")[0].id);
+      // const tab = Array.from(tabs.TAB_LIST).filter(t => t.style.display == "block")[0].id;
+      // if(tab == "tabSummary") job.loadJob(utils.getCurrentJobId());
+      // // TODO how to reload properly the tabs if each tab has a different caller? 
+      // // TODO Maybe load all tabs at once? Then always call loadJob and just reopen current tab
+      // else tabs.openTab(Array.from(tabs.TAB_LIST).filter(t => t.style.display == "block")[0].id);
     }
   }
 }

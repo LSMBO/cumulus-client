@@ -26,8 +26,9 @@
         <button id="btnParameters" class="w3-bar-item w3-button color-secondary color-primary-border">Parameters</button>
         <button id="btnLogs" class="w3-bar-item w3-button color-secondary color-primary-border">Log files</button>
         <button id="btnOutput" class="w3-bar-item w3-button color-secondary color-primary-border">Output files</button>
-        <button id="btnSettings" class="w3-bar-item w3-right w3-button color-secondary color-primary-border"><img src="img/settings.svg" /><img class="w3-hide" src="img/settings-alt.svg" /></button>
+        <button id="btnSettings" class="w3-bar-item w3-right w3-button color-secondary color-primary-border"><img src="img/settings.png" /><img class="w3-hide" src="img/settings-alt.png" /></button>
         <button id="btnStorage" class="w3-bar-item w3-right w3-button color-secondary color-primary-border"><img src="img/storage.png" /><img class="w3-hide" src="img/storage-alt.png" /></button>
+        <button id="btnSearch" class="w3-bar-item w3-right w3-button color-secondary color-primary-border"><img src="img/search.png" /><img class="w3-hide" src="img/search-alt.png" /></button>
       </header>
       <div id="splash" class="color-primary"><img src="img/cumulus.png" /></div>
       <div id="tabs" class="w3-row">
@@ -157,6 +158,44 @@
           <button id="btnStorageRefresh" class="w3-button color-opposite">Refresh</button>
           <input type="text" id="txtStorageSearch" class="w3-input w3-border" placeholder="Search for a file" />
           <table class="w3-table-all"></table>
+        </div>
+        <div id="tabSearch">
+          <h3>Advanced job search</h3>
+          <!-- Search by date (min/max), by status, by tag on the description (and/or on the settings)  -->
+          <div class="w3-row w3-section">
+            <label for="txtSearchOwner" class="w3-col">Job owner</label>
+            <input id="txtSearchOwner" type="text" class="w3-input w3-border w3-rest" value="" placeholder="" />
+          </div>
+          <div class="w3-row w3-section">
+            <label for="txtSearchStatus" class="w3-col">Status</label>
+            <!-- TODO add checkboxes for each status -->
+            <input id="txtSearchStatus" type="text" disabled class="w3-input w3-border w3-rest" />
+          </div>
+          <div class="w3-row w3-section">
+            <label for="txtSearchAppName" class="w3-col">Software</label>
+            <select id="txtSearchAppName" class="w3-select w3-border w3-rest"></select>
+          </div>
+          <div class="w3-row w3-section">
+            <label for="txtSearchFile" class="w3-col">Input file</label>
+            <input id="txtSearchFile" type="text" class="w3-input w3-border w3-rest" value="" placeholder="" />
+          </div>
+          <div class="w3-row w3-section">
+            <label for="txtSearchTag" class="w3-col">Description or settings</label>
+            <input id="txtSearchTag" type="text" class="w3-input w3-border w3-rest" value="" placeholder="Search for a given tag in the description or in the settings" />
+          </div>
+          <div class="w3-row w3-section">
+            <label for="txtSearchDate1" class="w3-col">Creation date</label>
+            <!-- TODO add a combo to select creation, start or end date -->
+             <select id="cmbSearchDate">
+              <option>Creation date</option>
+              <option>Start date</option>
+              <option>End date</option>
+             </select>
+            <span>between</span>
+            <input id="txtSearchDate1" type="date" class="w3-input w3-border w3-rest" value="" />
+            <span>and</span>
+            <input id="txtSearchDate2" type="date" class="w3-input w3-border w3-rest" value="" />
+          </div>
         </div>
       </div>
     </div>

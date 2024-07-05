@@ -32,10 +32,11 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
+import * as utils from "./utils.js";
 import * as dialog from "./dialog.js";
 import * as tabs from "./tabs.js";
 import * as jobs from "./joblist.js";
-import * as utils from "./utils.js";
+import * as output from "./output.js";
 import * as apps from "./apps/applist.js";
 
 const FORM = document.getElementById("formParameters");
@@ -61,6 +62,7 @@ async function refreshJob() {
       utils.toggleLoadingScreen();
     }
     jobs.refreshStatus();
+    tabs.openTab("tabLogs");
 }
 
 // async function createJob() {
@@ -201,4 +203,38 @@ async function deleteJob() {
     utils.toggleLoadingScreen();
 }
 
-export { cancelJob, cloneJob, deleteJob, loadJob, refreshJob, startJob };
+async function openJobParameters() {
+    // get the appropriate form
+    const app = document.getElementById("cmbAppName").value;
+    if(app != "") {
+      document.getElementById("formParameters").innerHTML = apps.get(app).html;
+      apps.get(app).eventsFunction();
+    }
+    // fill the form eventually
+    if(utils.getCurrentJobId() != 0) {
+      utils.toggleLoadingScreen();
+      const [job, error] = await window.electronAPI.getJobDetails(utils.getCurrentJobId() > 0 ? utils.getCurrentJobId() : utils.getCurrentJobId() * -1); // job id can be negative if we are cloning a job
+      if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+      // console.log(job);
+      for(let [key, value] of Object.entries(job.get("settings"))) {
+        const node = document.getElementsByName(key)[0];
+        if(node !== undefined) {
+          if(node.tagName == "INPUT" && node.type == "checkbox") node.checked = value == "on";
+          else node.value = value;
+        }
+      }
+      utils.toggleLoadingScreen();
+    }
+    tabs.openTab("tabParameters");
+}
+
+async function openJobOutput() {
+    utils.toggleLoadingScreen();
+    const [files, error] = utils.getCurrentJobId() != 0 ? await window.electronAPI.getFileList(utils.getUserName(), utils.getCurrentJobId()) : new Array();
+    if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+    output.insertOutputFiles(files);
+    utils.toggleLoadingScreen();
+    tabs.openTab("tabOutput");
+}
+
+export { cancelJob, cloneJob, deleteJob, loadJob, openJobOutput, openJobParameters, refreshJob, startJob };

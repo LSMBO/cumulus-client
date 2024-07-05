@@ -58,14 +58,16 @@ function openSettings() {
     if(CONFIG.has("fasta.path")) document.getElementById("txtSettingsDefaultFastaFilesPath").value = CONFIG.get("fasta.path");
     if(CONFIG.has("license")) document.getElementById("txtSettingsLicense").value = CONFIG.get("license");
     // display the tab and hide the others
-    for(let i = 0; i < tabs.TAB_LIST.length; i++) {
-        tabs.TAB_LIST[i].style.display = "none";
-        document.getElementById(tabs.TAB_BUTTONS[i]).classList.replace("color-accent", "color-secondary");
-    }
-    document.getElementById("btnStorage").classList.replace("color-accent", "color-secondary");
-    document.getElementById("tabStorage").style.display = "none";
-    document.getElementById("btnSettings").classList.replace("color-secondary", "color-accent");
-    document.getElementById("tabSettings").style.display = "block";
+    // for(let i = 0; i < tabs.TAB_LIST.length; i++) {
+    //     tabs.TAB_LIST[i].style.display = "none";
+    //     document.getElementById(tabs.TAB_BUTTONS[i]).classList.replace("color-accent", "color-secondary");
+    // }
+    // document.getElementById("btnStorage").classList.replace("color-accent", "color-secondary");
+    // document.getElementById("tabStorage").style.display = "none";
+    // document.getElementById("btnSettings").classList.replace("color-secondary", "color-accent");
+    // document.getElementById("tabSettings").style.display = "block";
+    // tabs.showExtraTab("btnSettings", "tabSettings");
+    tabs.openTab("tabSettings");
 }
 
 async function saveSettings() {
