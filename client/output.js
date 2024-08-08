@@ -66,19 +66,65 @@ function collapseAllFolders() {
     }
 }
 
+function getParentCheckbox(node) {
+  const level = node.className.replace("lvl", "");
+  if(level > 0) {
+    var prev = node.previousSibling;
+    // loop backward until we get to a node with a lesser level
+    while(prev != null && prev.className.replace("lvl", "") >= level) {
+      prev = prev.previousSibling;
+    }
+    return prev;
+  } else return null;
+}
+
+function areAllChildrenUnchecked(node) {
+  const level = node.className.replace("lvl", "");
+  var next = node.nextSibling;
+  while(next != null && next.className.replace("lvl", "") > level) {
+    if(next.getElementsByTagName("input")[0].checked) return false;
+    next = next.nextSibling;
+  }
+  return true;
+}
+
+function checkParents(node) {
+  var parent = getParentCheckbox(node);
+  while(parent != null) {
+    parent.getElementsByTagName("input")[0].checked = true;
+    parent = getParentCheckbox(parent);
+  }
+}
+
+function uncheckParents(node) {
+  var parent = getParentCheckbox(node);
+  while(parent != null) {
+    // uncheck the parent if all its children are unchecked
+    if(areAllChildrenUnchecked(parent)) parent.getElementsByTagName("input")[0].checked = false;
+    // do the same with the parent, until the parent is null
+    parent = getParentCheckbox(parent);
+  }
+}
+
 function toggleCheckbox(node, forceCheck = false, forceUncheck = false) {
-    // check/uncheck all the boxes below (until the level is lower or equal)
-    // TODO if checking a box, also check it's parent
+    // get the state of the checkbox
     var setChecked = node.getElementsByTagName("input")[0].checked;
     if(forceCheck) setChecked = true;
     else if(forceUncheck) setChecked = false;
+    // get the level of the checkbox
     const level = node.className.replace("lvl", "");
+    // set the same check to every following nodes that have a lower lever (children of the selected node)
     var next = node.nextSibling;
     while(next != null && next.className.replace("lvl", "") > level) {
       next.getElementsByTagName("input")[0].checked = setChecked;
       next = next.nextSibling;
     }
     node.getElementsByTagName("input")[0].checked = setChecked;
+
+    // on checking, always check all the parents
+    if(setChecked) checkParents(node);
+    // on unchecking, if all children are uncheck, uncheck the parent (for each parent)
+    else uncheckParents(node);
 }
 
 function selectAllCheckboxes() {
@@ -208,7 +254,7 @@ async function downloadOutput() {
         const path = await window.electronAPI.browseServer("OUT", "Select where the files will be downloaded", [{ name: 'All files', extensions: ['*'] }], ['openDirectory']);
         if(path != "") {
             if(await window.electronAPI.countExistingFiles(path[0], files) > 0)
-            dialog.openDialogQuestion("Some files will be overwritten, do you want to continue?", async () => downloadFiles(path[0], files));
+            dialog.openDialogQuestion("Warning", "Some files will be overwritten, do you want to continue?", async () => downloadFiles(path[0], files));
             else await downloadFiles(path[0], files);
         }
     }

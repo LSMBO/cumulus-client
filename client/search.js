@@ -33,18 +33,84 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 import * as tabs from "./tabs.js";
+import * as jobs from "./joblist.js";
+import * as settings from "./settings.js";
+import * as utils from "./utils.js";
+import * as apps from "./apps/applist.js";
 
-function setDefaultValues() {
-    // owner: utils.getUserName()
-    // status: check all
-    // app: nothing
-    // file: nothing
-    // tag: nothing
-    // date: nothing
-}
+const divSearchStatus = document.getElementById("divSearchStatus");
+const txtSearchStatus = document.getElementById("txtSearchStatus");
+const txtSearchAppName = document.getElementById("txtSearchAppName");
 
 function openSearch() {
     tabs.openTab("tabSearch");
 }
 
-export { openSearch };
+function updateStatusList() {
+    txtSearchStatus.innerHTML = "";
+    for(let label of divSearchStatus.getElementsByTagName("label")) {
+        if(label.children[0].checked) txtSearchStatus.innerHTML += `<label>${label.textContent}</label>`;
+    }
+}
+
+function setDefaultValues() {
+    // owner: utils.getUserName()
+    document.getElementById("txtSearchOwner").value = "";
+    // status: check all
+    for(let input of divSearchStatus.getElementsByTagName("input")) {
+        input.checked = true;
+    }
+    updateStatusList();
+    txtSearchAppName.selectedIndex = 0;
+    document.getElementById("txtSearchFile").value = "";
+    document.getElementById("txtSearchTag").value = "";
+    document.getElementById("cmbSearchDate").selectedIndex = 0;
+    document.getElementById("txtSearchDate1").value = "";
+    document.getElementById("txtSearchDate2").value = "";
+    document.getElementById("txtSearchNbJobs").value = settings.CONFIG.get("max.nb.jobs");
+}
+
+document.addEventListener("click", (event) => {
+    if(event.target.id == "txtSearchStatus" || (event.target.parentElement != null && event.target.parentElement.id == "txtSearchStatus")) {
+        // toggle the list of statuses when clicking on the main div
+        if(divSearchStatus.classList.contains("w3-hide")) {
+            divSearchStatus.classList.remove("w3-hide");
+        } else {
+            divSearchStatus.classList.add("w3-hide");
+        }
+    } else if(!divSearchStatus.contains(event.target)) {
+        // hide the list of statuses when clicking anywhere else, except if it's on the list itself
+        divSearchStatus.classList.add("w3-hide");
+    }
+});
+
+divSearchStatus.addEventListener("click", (_) => updateStatusList());
+document.getElementById("btnSearchMe").addEventListener("click", (e) => { e.preventDefault(); document.getElementById("txtSearchOwner").value = utils.getUserName(); });
+document.getElementById("btnSearchOk").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const owner = document.getElementById("txtSearchOwner").value;
+    const app = document.getElementById("txtSearchAppName").value;
+    const file = document.getElementById("txtSearchFile").value;
+    const desc = document.getElementById("txtSearchTag").value;
+    const statuses = [];
+    for(let lbl of txtSearchStatus.getElementsByTagName("label")) {
+        statuses.push(lbl.textContent);
+    }
+    const date = document.getElementById("cmbSearchDate").value;
+    const from = document.getElementById("txtSearchDate1").value;
+    const to = document.getElementById("txtSearchDate2").value;
+    const number = document.getElementById("txtSearchNbJobs").value
+    await jobs.searchJobs(owner, app, file, desc, statuses, date, from, to, number);
+});
+document.getElementById("btnSearchReset").addEventListener("click", (e) => {
+    e.preventDefault();
+    setDefaultValues();
+});
+
+// initialize on first opening
+txtSearchAppName.innerHTML = "<option value='all' selected></option>";
+for(let [id, _] of apps.list()) {
+    txtSearchAppName.innerHTML += `<option value="${id}">${apps.getFullName(id)}</option>`;
+}
+
+export { openSearch, setDefaultValues };

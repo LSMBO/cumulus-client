@@ -34,7 +34,7 @@ knowledge of the CeCILL license and that you accept its terms.
 
 var CURRENT_JOB_ID = 0;
 var USERNAME = "";
-var IS_FOCUS = false;
+var IS_FOCUS = true;
 const TOOLTIPTEXT = document.getElementById("tooltiptext");
 const UNC_PATHS = new Map();
 const LOADER = document.getElementById("loading");

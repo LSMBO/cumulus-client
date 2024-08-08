@@ -23,24 +23,29 @@
     --status-orange: #ffab00; */
 }
 
-.color-primary { color: var(--primary-color-text) !important; background-color: var(--primary-color) !important; }
+.color-primary { color: var(--primary-color-text) !important; background-color: var(--primary-color) !important; border-color: var(--primary-color) !important; }
 .color-primary-hover:hover { color: var(--primary-color) !important; background-color: var(--primary-color-text) !important; }
 .color-primary-border { border-color: var(--primary-color-dark) !important; }
-.color-primary-light { color: var(--primary-color-text) !important; background-color: var(--primary-color-light) !important; }
-.color-primary-dark { color: var(--primary-color-text) !important; background-color: var(--primary-color-dark) !important; }
+.color-primary-light { color: var(--primary-color-text) !important; background-color: var(--primary-color-light) !important; border-color: var(--primary-color-light) !important; }
+.color-primary-dark { color: var(--primary-color-text) !important; background-color: var(--primary-color-dark) !important; border-color: var(--primary-color-dark) !important; }
 
-.color-secondary { color: var(--secondary-color-text) !important; background-color: var(--secondary-color) !important; }
+.color-secondary { color: var(--secondary-color-text) !important; background-color: var(--secondary-color) !important; border-color: var(--secondary-color) !important; }
 .color-secondary-hover:hover { color: var(--secondary-color) !important; background-color: var(--secondary-color-text) !important; }
 .color-secondary-border { border-color: var(--secondary-color-dark) !important; }
-.color-secondary-light { color: var(--secondary-color-text) !important; background-color: var(--secondary-color-light) !important; }
+.color-secondary-light { color: var(--secondary-color-text) !important; background-color: var(--secondary-color-light) !important; border-color: var(--secondary-color-light) !important; }
 
-.color-accent { color: var(--accent-color-text) !important; background-color: var(--accent-color) !important; }
+.color-accent { color: var(--accent-color-text) !important; background-color: var(--accent-color) !important; border-color: var(--accent-color) !important; }
 .color-accent-hover:hover { color: var(--accent-color) !important; background-color: var(--accent-color-text) !important; }
 .color-accent-border { border-color: var(--accent-color-dark) !important; }
 
-.color-opposite { color: var(--opposite-color-text) !important; background-color: var(--opposite-color) !important; }
+.color-opposite { color: var(--opposite-color-text) !important; background-color: var(--opposite-color) !important; border-color: var(--opposite-color) !important; }
 .color-opposite-hover:hover { color: var(--opposite-color) !important; background-color: var(--opposite-color-text) !important; }
 .color-opposite-border { border-color: var(--opposite-color) !important; }
+
+button.color-primary, button.color-primary-border, button.color-primary-light, button.color-primary-dark, button.color-secondary, button.color-secondary-light, button.color-accent, button.color-opposite {
+    border-width: 1px !important;
+    border-style: solid !important;
+}
 
 .tab a { color: var(--accent-color-dark); }
 .tab a + label { color: var(--accent-color-dark); }

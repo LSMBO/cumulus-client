@@ -71,8 +71,8 @@ document.getElementById("aCollapse").addEventListener("click", () => output.coll
 document.getElementById("btnClone").addEventListener("click", async () => await job.cloneJob());
 document.getElementById("btnNext").addEventListener("click", () => job.openJobParameters());
 document.getElementById("btnStart").addEventListener("click", () => job.startJob());
-document.getElementById("btnCancel").addEventListener("click", () => dialog.openDialogQuestion("Are you sure you want to cancel this job?", job.cancelJob));
-document.getElementById("btnDelete").addEventListener("click", () => dialog.openDialogQuestion("Are you sure you want to delete this job?", job.deleteJob));
+document.getElementById("btnCancel").addEventListener("click", () => dialog.openDialogQuestion("Warning", "Are you sure you want to cancel this job?", job.cancelJob));
+document.getElementById("btnDelete").addEventListener("click", () => dialog.openDialogQuestion("Warning", "Are you sure you want to delete this job?", job.deleteJob));
 document.getElementById("copyStdout").addEventListener("click", async () => await tabs.copyToClipboard("copyStdout", document.getElementById("stdout")));
 document.getElementById("copyStderr").addEventListener("click", async () => await tabs.copyToClipboard("copyStderr", document.getElementById("stderr")));
 document.getElementById("btnOutputDownload").addEventListener("click", async() => await output.downloadOutput());
@@ -91,8 +91,8 @@ btnSettings.addEventListener("mouseout", () => {
   images[1].classList.add("w3-hide");
 });
 document.getElementById("btnSettingsLicense").addEventListener("click", () => settings.toggleLicense());
-document.getElementById("btnSettingsOk").addEventListener("click", () => dialog.openDialogQuestion("Are you sure that the new settings are valid?", settings.saveSettings));
-document.getElementById("btnSettingsReset").addEventListener("click", () => dialog.openDialogQuestion("This will restore the default settings, are you sure about that?", settings.resetSettings));
+document.getElementById("btnSettingsOk").addEventListener("click", () => dialog.openDialogQuestion("Save settings", "Are you sure that the new settings are valid?", settings.saveSettings));
+document.getElementById("btnSettingsReset").addEventListener("click", () => dialog.openDialogQuestion("Reset settings", "This will restore the default settings, are you sure about that?", settings.resetSettings));
 // storage tab
 const btnStorage = document.getElementById("btnStorage");
 btnStorage.addEventListener("click", async () => storage.openStorage());
@@ -127,24 +127,22 @@ function keydownEvent(event) {
     else if(event.ctrlKey && (event.shiftKey && event.code === 'Tab' || event.code === 'PageUp')) tabs.goToPreviousTab();
     // when Ctrl + N, open tab-settings
     // else if(event.ctrlKey && event.key === 'n') btnNew.click();
-    else if(event.ctrlKey && event.key === 'n') document.getElementById("new_job").click();
+    // else if(event.ctrlKey && event.key === 'n') document.getElementById("new_job").click();
 }
 async function keyupEvent(event) {
   // console.log(event);
-  // TODO make it ctrl+T to avoid problems when typing
-    if(DEBUG_MODE && event.key === 't') {
-        // loadTestSettings();
-        utils.toggleLoadingScreen();
-        // if(document.getElementById("cloud_warning").style.display == "none")
-        //   document.getElementById("cloud_warning").style.display = "block";
-        // else
-        //   document.getElementById("cloud_warning").style.display = "none";
-        // openDialogInfo("Sleeping mode, don't worry your jobs are still running");
-        // openDialogQuestion("Sleeping mode, don't worry jobs are still running", saveSettings);
-        // openDialogWarning("Sleeping mode, don't worry jobs are still running");
-    // } else if(event.key === 'Enter' && CURRENT_TAB == "div-settings") {
-    //     search();
-    }
+  if(DEBUG_MODE && event.ctrlKey && event.key === 't') {
+    utils.toggleLoadingScreen();
+  } else if(DEBUG_MODE && event.ctrlKey && event.key === 'K') {
+    if(dialog.isDialogInfoOpen()) dialog.closeDialogInfo();
+    else dialog.openDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
+  } else if(DEBUG_MODE && event.ctrlKey && event.key === 'L') {
+    if(dialog.isDialogQuestionOpen()) dialog.closeDialogQuestion();
+    else dialog.openDialogQuestion("Title", "This will restore the default settings, are you sure about that?", dialog.closeDialogQuestion);
+  } else if(DEBUG_MODE && event.ctrlKey && event.key === 'M') {
+    if(dialog.isDialogWarningOpen()) dialog.closeDialogWarning();
+    else dialog.openDialogWarning("Lorem Ipsum", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", dialog.closeDialogWarning);
+  }
 }
 window.addEventListener('keydown', keydownEvent, true);
 window.addEventListener('keyup', keyupEvent, true);
@@ -189,17 +187,18 @@ function addTooltips() {
   utils.tooltip(document.getElementById("txtSettingsRsyncAddress").previousElementSibling, "Warning: do not change it unless you are certain!");
   utils.tooltip(document.getElementById("txtSettingsRsyncPort").previousElementSibling, "Warning: do not change it unless you are certain!");
   // search tab
-  utils.tooltip(document.getElementById("txtSearchOwner").previousElementSibling, "Search jobs per user name; this will return all the jobs whose owner contain the given tag (case insensitive).");
-  utils.tooltip(document.getElementById("txtSearchStatus").previousElementSibling, "Restrict the search to specific statuses; if no status is selected then the filter will be disabled.");
-  utils.tooltip(document.getElementById("txtSearchAppName").previousElementSibling, "Restrict the search to specific software.");
-  utils.tooltip(document.getElementById("txtSearchFile").previousElementSibling, "Search the jobs that are processing a certain file; this will search for files containing the given tag (case insensitive).");
-  utils.tooltip(document.getElementById("txtSearchTag").previousElementSibling, "Search a tag in the description of a job; this tag will also be searched within the set of parameters but they may not be encoded as you think.");
-  utils.tooltip(document.getElementById("cmbSearchDate").previousElementSibling, "Restrict the search per date; if you only set the first date, you will get all the jobs from this date; if you only set the last date, you will get all the jobs before this date; use the same date twice to search for a specific date; leave blank to disregard this filter.");
+  utils.tooltip(document.getElementById("txtSearchOwner").previousElementSibling, "Display the jobs for which the owner contains the given tag (case insensitive).");
+  utils.tooltip(document.getElementById("txtSearchStatus").previousElementSibling, "Restrict the search to specific statuses (if no status is selected then the filter will be disabled).");
+  utils.tooltip(document.getElementById("txtSearchAppName").previousElementSibling, "Restrict the search to a specific software.");
+  utils.tooltip(document.getElementById("txtSearchFile").previousElementSibling, "Display the jobs for which at least one input file contains the given tag (case insensitive).");
+  utils.tooltip(document.getElementById("txtSearchTag").previousElementSibling, "Search a tag in the description of a job (case insensitive).");
+  // utils.tooltip(document.getElementById("cmbSearchDate").previousElementSibling, "Restrict the search per date or slot.");
 }
 
 async function initialize() {
   // check that the client have the same version number as the server
-  const [version, error] = await window.electronAPI.checkVersion();
+  // const [version, error] = await window.electronAPI.checkVersion();
+  const error = await window.electronAPI.checkVersion();
   if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
   // else if(version != "") displayErrorMessage(version, true);
   else {
@@ -213,43 +212,21 @@ async function initialize() {
     loadRemoteHosts();
     // load the list of available apps
     loadAppList();
+    // set default settings to the search tab
+    search.setDefaultValues();
     // add the tooltip texts
     addTooltips();
-    // utils.tooltip(document.getElementById("btnSearch"), "Advanced job search");
-    // utils.tooltip(document.getElementById("btnStorage"), "Remote storage viewer");
-    // utils.tooltip(document.getElementById("btnSettings"), "Cumulus configuration");
-    // utils.tooltip(document.getElementById("txtJobOwner").previousElementSibling, "This field cannot be modified, it helps with tracking the jobs.");
-    // utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, RUNNING, DONE or FAILED or CANCELED. It will also be archived later."); // PENDING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
-    // utils.tooltip(document.getElementById("cmbAppName").previousElementSibling, "Select the software to run, with its corresponding version.");
-    // utils.tooltip(document.getElementById("cmbStrategy").previousElementSibling, "The software will run on a virtual machine (VM) in the Cloud, the strategy allows you to influence which VM will be selected.");
-    // utils.tooltip(document.getElementById("txtSelectedHost").previousElementSibling, "The host is the virtual machine (VM) where the job has been sent. Each VM has its own resources.");
-    // utils.tooltip(document.getElementById("txtJobDescription").previousElementSibling, "Add a description to your job, it can help you or others to distinguish a job without reviewing the set of parameters.");
-    // utils.tooltip(document.getElementById("txtSettingsServerAddress").previousElementSibling, "Warning: do not change this value unless you are certain!");
-    // utils.tooltip(document.getElementById("txtSettingsNbJobs").previousElementSibling, "By default Cumulus will only display the 100 last jobs; use -1 to show all the jobs");
-    // utils.tooltip(document.getElementById("txtSettingsRefreshRate").previousElementSibling, "Number of seconds between each refresh of the job list and job status; minimal value is 5 seconds");
-    // utils.tooltip(document.getElementById("cmbSettingsDefaultStrategy").previousElementSibling, "The strategy will automatically be selected when you create a new job, you can always change it then");
-    // utils.tooltip(document.getElementById("txtSettingsDefaultRawFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
-    // utils.tooltip(document.getElementById("txtSettingsDefaultFastaFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
-    // utils.tooltip(document.getElementById("txtSettingsServerPort").previousElementSibling, "Warning: do not change it unless you are certain!");
-    // utils.tooltip(document.getElementById("txtSettingsRsyncAddress").previousElementSibling, "Warning: do not change it unless you are certain!");
-    // utils.tooltip(document.getElementById("txtSettingsRsyncPort").previousElementSibling, "Warning: do not change it unless you are certain!");
-    // load the list of jobs, and reload it every 5 seconds
-    await jobs.loadJobList();
-    // reload the jobs every n seconds
-    // if(!DEBUG_MODE) window.setInterval(autoRefresh, settings.CONFIG.get("refresh.rate") * 1000);
-    if(!DEBUG_MODE) jobs.resetInterval();
-    // reset the original interval time when the app is on focus
     window.addEventListener("focus", (_) => {
       if(!DEBUG_MODE) document.getElementById("cloud_info").style.display = "none";
       utils.setFocus(true);
-      jobs.resetInterval();
     });
     // when the app is not in focus, set the interval to 5 minutes
     window.addEventListener("blur", (_) => {
-      if(!DEBUG_MODE) dialog.openDialogInfo("Sleeping mode, don't worry your jobs are still running");
+      if(!DEBUG_MODE) dialog.openDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
       utils.setFocus(false);
-      jobs.resetInterval();
     });
+    await jobs.reloadJobList();
+    jobs.resetInterval();
     // window does not have focus at startup when devtools are open
     // load the first job on the list
     document.getElementById("new_job").click();

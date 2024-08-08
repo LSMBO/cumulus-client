@@ -40,8 +40,12 @@ async function checkVersion() {
     const localVersion = config.get("cumulus.version");
     const url = rest.getUrl("version");
     const [remoteVersion, error] = await rest.sendGetRequest(url);
-    if(localVersion != remoteVersion) return ["", error];
-    else return [`Local version '${localVersion}' does not match with server version '${remoteVersion}', please update.`, error];
+    console.log(`Client version: '${localVersion}'; Server version: '${remoteVersion}'; error message: '${error}'`);
+    // if(localVersion == remoteVersion) return ["", error];
+    // else return [`Local version '${localVersion}' does not match with server version '${remoteVersion}', please update.`, error];
+    if(error != "") return error;
+    else if(localVersion != remoteVersion) return `Local version '${localVersion}' does not match with server version '${remoteVersion}', please update.`;
+    else return "";
 }
 
 async function listStorage() {
@@ -53,12 +57,14 @@ async function listStorage() {
         // also request the rsync agent to get a list of file names
         const rsync_url = rest.getUrl("list-rsync", [], true);
         // console.log(rsync_url);
-        const [files, _] = await rest.sendGetRequest(rsync_url);
+        const [files, error2] = await rest.sendGetRequest(rsync_url);
         // console.log("transfer: "+files);
-        for(let file of JSON.parse(files)) {
-            // do not add the files already on the server
-            // new files have a size of -1
-            if(!output.has(file)) output.set(file, -1);
+        if(!error2) {
+            for(let file of JSON.parse(files)) {
+                // do not add the files already on the server
+                // new files have a size of -1
+                if(!output.has(file)) output.set(file, -1);
+            }
         }
     }
     return [output, error];
@@ -109,17 +115,29 @@ async function jobDetails(_, job_id) {
     return [map, error];
 }
 
-async function listJobs(_, host, owner, app, tag, number) {
-    // TODO test if filters work or not
-    if(host == "") host ="*";
-    if(owner == "") owner ="*";
-    if(app == "") app ="*";
-    if(tag == "") tag ="*";
-    // if(number == "") number = 100;
-    const url = rest.getUrl("jobs", [host, owner, app, tag, number]);
+async function getLastJobs(_, number) {
+    const url = rest.getUrl("joblist", [number]);
     const [data, error] = await rest.sendGetRequest(url);
-    // console.log("jobs: "+JSON.parse(data));
     return [JSON.parse(data), error];
+}
+
+async function searchJobs(_, owner, app, file, desc, statuses, date, from, to, number) {
+    const form = new FormData({ maxDataSize: 20971520 });
+    form.append("owner", owner);
+    form.append("app", app);
+    form.append("file", file);
+    form.append("description", desc);
+    form.append("date", date);
+    form.append("from", from);
+    form.append("to", to);
+    for(let status of statuses) {
+        form.append(status.toLowerCase(), 1);
+    }
+    form.append("number", number);
+    // send the request
+    const data = await rest.sendPostRequest(rest.getUrl("search"), form);
+    // console.log(data);
+    return [JSON.parse(data), ""];
 }
 
 async function jobStatus(_, job_id) {
@@ -160,4 +178,4 @@ async function downloadFile(_, owner, job_id, file_name, target) {
     await rest.download(url, target);
 }
 
-module.exports = { checkVersion, deleteJob, downloadFile, listStorage, listHosts, createJob, jobDetails, listJobs, jobStatus, cancelJob, listJobFiles }
+module.exports = { cancelJob, checkVersion, createJob, deleteJob, downloadFile, getLastJobs, jobDetails, jobStatus, listHosts, listJobFiles, listStorage, searchJobs }

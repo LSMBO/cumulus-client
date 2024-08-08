@@ -116,15 +116,6 @@ async function refreshStorage() {
 function openStorage() {
     // ask the server for the list of files
     refreshStorage();
-    // display the tab and hide the others
-    // for(let i = 0; i < tabs.TAB_LIST.length; i++) {
-    //     tabs.TAB_LIST[i].style.display = "none";
-    //     document.getElementById(tabs.TAB_BUTTONS[i]).classList.replace("color-accent", "color-secondary");
-    // }
-    // document.getElementById("btnSettings").classList.replace("color-accent", "color-secondary");
-    // document.getElementById("tabSettings").style.display = "none";
-    // document.getElementById("btnStorage").classList.replace("color-secondary", "color-accent");
-    // document.getElementById("tabStorage").style.display = "block";
     tabs.openTab("tabStorage");
   
 }

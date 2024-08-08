@@ -117,7 +117,8 @@ app.whenReady().then(() => {
   ipcMain.handle('set-config', config.saveConfig);
   ipcMain.handle('reset-config', config.resetConfig);
   ipcMain.handle('get-user-name', getUserName);
-  ipcMain.handle('get-job-list', srv.listJobs);
+  ipcMain.handle('get-last-jobs', srv.getLastJobs);
+  ipcMain.handle('search-jobs', srv.searchJobs);
   ipcMain.handle('get-job-details', srv.jobDetails);
   ipcMain.handle('get-job-status', srv.jobStatus);
   ipcMain.handle('get-file-list', srv.listJobFiles);

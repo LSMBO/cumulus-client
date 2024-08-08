@@ -32,52 +32,60 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-function openDialogInfo(message) {
-    const cloud = document.getElementById("cloud_info");
-    cloud.getElementsByTagName("label")[0].textContent = message;
-    cloud.style.display = "block";
+function openDialog(dialog_id, title = "Title", message = "") {
+    document.getElementById(dialog_id).getElementsByTagName("header")[0].textContent = title;
+    document.getElementById(dialog_id).getElementsByTagName("label")[0].textContent = message;
+    document.getElementById("dialogs").style.display = "block";
+    document.getElementById(dialog_id).style.display = "block";
 }
 
-function openDialogQuestion(message, onYes, onYesLabel = "Yes", onYesArgs = undefined, onNo = undefined, onNoLabel = "No", onNoArgs = undefined) {
-    const cloud = document.getElementById("cloud_question");
-    cloud.getElementsByTagName("label")[0].textContent = message;
+function isDialogOpen(dialog_id) {
+    return document.getElementById(dialog_id).style.display == "block";
+}
+
+function closeDialog(dialog_id) {
+    document.getElementById(dialog_id).getElementsByTagName("header")[0].textContent = "";
+    document.getElementById(dialog_id).getElementsByTagName("label")[0].textContent = "";
+    document.getElementById("dialogs").style.display = "none";
+    document.getElementById(dialog_id).style.display = "none";
+}
+
+function openDialogInfo(title, message) { openDialog("dialog_info", title, message); }
+function isDialogInfoOpen() { return isDialogOpen("dialog_info"); }
+function closeDialogInfo() { closeDialog("dialog_info"); }
+
+function openDialogQuestion(title, message, onYes, onYesLabel = "Yes", onYesArgs = undefined, onNo = undefined, onNoLabel = "No", onNoArgs = undefined) {
     // apply the Yes button
-    document.getElementById("btn_cloudq_1").textContent = onYesLabel;
-    document.getElementById("btn_cloudq_1").addEventListener("click", () => onYesArgs !== undefined ? onYes(onYesArgs) : onYes(), { once: true });
+    document.getElementById("btn_dialq_1").textContent = onYesLabel;
+    document.getElementById("btn_dialq_1").addEventListener("click", () => onYesArgs !== undefined ? onYes(onYesArgs) : onYes(), { once: true });
     // apply the No button
-    document.getElementById("btn_cloudq_2").textContent = onNoLabel;
+    document.getElementById("btn_dialq_2").textContent = onNoLabel;
     if(onNo !== undefined) {
-        document.getElementById("btn_cloudq_2").addEventListener("click", () => onNoArgs !== undefined ? onNo(onNoArgs) : onNo(), { once: true });
+        document.getElementById("btn_dialq_2").addEventListener("click", () => onNoArgs !== undefined ? onNo(onNoArgs) : onNo(), { once: true });
     } else {
-        document.getElementById("btn_cloudq_2").addEventListener("click", () => closeDialogQuestion());
+        document.getElementById("btn_dialq_2").addEventListener("click", () => closeDialogQuestion());
     }
-    cloud.style.display = "block";
+    openDialog("dialog_question", title, message);
 }
+function isDialogQuestionOpen() { return isDialogOpen("dialog_question"); }
+function closeDialogQuestion() { closeDialog("dialog_question"); }
 
-function closeDialogQuestion() {
-    document.getElementById("cloud_question").style.display = "none";
-}
-
-function openDialogWarning(message, action = undefined, label = "Close", args = undefined) {
-    const cloud = document.getElementById("cloud_warning");
-    cloud.getElementsByTagName("label")[0].textContent = message;
+function openDialogWarning(title, message, action = undefined, label = "Close", args = undefined) {
     // apply the Close button
-    document.getElementById("btn_cloudw").textContent = label;
+    document.getElementById("btn_dialw").textContent = label;
     if(action !== undefined) {
-        document.getElementById("btn_cloudw").addEventListener("click", () => args !== undefined ? action(args) : action(), { once: true });
+        document.getElementById("btn_dialw").addEventListener("click", () => args !== undefined ? action(args) : action(), { once: true });
     } else {
-        document.getElementById("btn_cloudw").addEventListener("click", () => closeDialogWarning());
+        document.getElementById("btn_dialw").addEventListener("click", () => closeDialogWarning());
     }
-    cloud.style.display = "block";
+    openDialog("dialog_warning", title, message);
 }
-
-function closeDialogWarning() {
-    document.getElementById("cloud_warning").style.display = "none";
-}
+function isDialogWarningOpen() { return isDialogOpen("dialog_warning"); }
+function closeDialogWarning() { closeDialog("dialog_warning"); }
 
 function displayErrorMessage(message, exitInsteadOfClose = false) {
     if(exitInsteadOfClose == false) openDialogWarning(message);
     else openDialogWarning(message, async () => await window.electronAPI.exitApp());
 }
 
-export { closeDialogQuestion, closeDialogWarning, displayErrorMessage, openDialogInfo, openDialogQuestion, openDialogWarning };
+export { closeDialogInfo, closeDialogQuestion, closeDialogWarning, displayErrorMessage, isDialogInfoOpen, isDialogQuestionOpen, isDialogWarningOpen, openDialogInfo, openDialogQuestion, openDialogWarning };

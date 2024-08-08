@@ -50,25 +50,26 @@ function hideAllTabs() {
   }
 }
 
-function getCurrentTabName() {
-  for(let tab of TAB_NAMES) {
-    if(document.getElementById(tab).style.display == "block") {
-      return tab;
-    }
-  }
-  for(let tab of EXTRA_TAB_NAMES) {
-    if(document.getElementById(tab).style.display == "block") {
-      return tab;
-    }
-  }
-  return "";
-}
+// function getCurrentTabName() {
+//   for(let tab of TAB_NAMES) {
+//     if(document.getElementById(tab).style.display == "block") {
+//       return tab;
+//     }
+//   }
+//   for(let tab of EXTRA_TAB_NAMES) {
+//     if(document.getElementById(tab).style.display == "block") {
+//       return tab;
+//     }
+//   }
+//   return "";
+// }
 
 function openTab(tabName) {
   hideAllTabs();
   if(TAB_NAMES.includes(tabName)) {
     for(let i = 0; i < TAB_NAMES.length; i++) {
       if(TAB_NAMES[i] == tabName) {
+        console.log(tabName);
         document.getElementById(TAB_NAMES[i]).style.display = "block";
         document.getElementById(TAB_BUTTONS[i]).classList.replace("color-secondary", "color-accent");
       }
@@ -118,7 +119,6 @@ function goToPreviousTab() {
     var nextTabId = enabledTabs[enabledTabsButtons.length - 1];
     for(let i = 0; i < enabledTabsButtons.length; i++) {
       // get the button that is currently selected (it should always belong to that list)
-      // if(document.getElementById(enabledTabsButtons[i]).classList.contains("selected")) {
       if(document.getElementById(enabledTabsButtons[i]).classList.contains("color-accent")) {
         if(i != 0) nextTabId = enabledTabs[i - 1];
       }

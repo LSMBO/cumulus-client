@@ -51,10 +51,16 @@ body {
     color: var(--primary-color-dark);
 }
 
-#new_job {
+#new_job, #clear_search {
     line-height: 45px;
     position: sticky;
     top: 0;
+}
+
+#clear_search img {
+    width: 20px !important;
+    height: 20px !important;
+    left: 2px;
 }
 
 #txtSearch {
