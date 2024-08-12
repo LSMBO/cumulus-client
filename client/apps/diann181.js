@@ -52,7 +52,7 @@ export function getDiann181Html() {
                 <td class="w3-dropdown-hover color-primary">
                   <button class="w3-button w3-block color-opposite">Select modifications</button>
                   <div class="w3-dropdown-content w3-border color-primary-border">
-                    <div><label for="diann181_chkMetEx">N-term M excision</label><input id="diann181_chkModCarba" name="carba" type="checkbox" class="w3-check" checked=""></div>
+                    <div><label for="diann181_chkMetEx">N-term M excision</label><input id="diann181_chkMetEx" name="met-ex" type="checkbox" class="w3-check" checked=""></div>
                     <div><label for="diann181_chkModCarba">C carbamidomethylation</label><input id="diann181_chkModCarba" name="carba" type="checkbox" class="w3-check" checked=""></div>
                     <div><label for="diann181_chkModOx">Ox(M)</label><input id="diann181_chkModOx" name="ox-m" type="checkbox" class="w3-check"></div>
                     <div><label for="diann181_chkModAc">Ac(N-term)</label><input id="diann181_chkModAc" name="ac-nterm" type="checkbox" class="w3-check"></div>
@@ -212,7 +212,38 @@ export function getDiann181Events() {
 }
 
 function getSettings() {
-
+  const settings = new Map();
+  settings.set("fasta", document.getElementById("diann181_txtFasta").value);
+  settings.set("files", Array.from(document.getElementById("diann181_rawFiles").childNodes).map(li => li.textContent));
+  settings.set("protease", document.getElementById("diann181_cmbEnzyme").value);
+  settings.set("mc", document.getElementById("diann181_txtMc").value);
+  settings.set("var-mods", document.getElementById("diann181_txtVarMods").value);
+  if(document.getElementById("diann181_chkMetEx").checked) settings.set("met-excision", true);
+  if(document.getElementById("diann181_chkModCarba").checked) settings.set("carba", true);
+  if(document.getElementById("diann181_chkModOx").checked) settings.set("ox-m", true);
+  if(document.getElementById("diann181_chkModAc").checked) settings.set("ac-nterm", true);
+  if(document.getElementById("diann181_chkModPhospho").checked) settings.set("phospho", true);
+  if(document.getElementById("diann181_chkModKgg").checked) settings.set("k-gg", true);
+  settings.set("fdr", document.getElementById("diann181_txtFdr").value);
+  settings.set("ms1-acc", document.getElementById("diann181_txtMs1Acc").value);
+  settings.set("mass-acc", document.getElementById("diann181_txtMassAcc").value);
+  settings.set("window", document.getElementById("diann181_txtWindow").value);
+  settings.set("min-pep-length", document.getElementById("diann181_txtMinLen").value);
+  settings.set("max-pep-length", document.getElementById("diann181_txtMaxLen").value);
+  settings.set("min-pr-charge", document.getElementById("diann181_txtMinCharge").value);
+  settings.set("max-pr-charge", document.getElementById("diann181_txtMaxCharge").value);
+  settings.set("min-pr-mz", document.getElementById("diann181_txtPepMinMz").value);
+  settings.set("max-pr-mz", document.getElementById("diann181_txtPepMaxMz").value);
+  settings.set("min-fr-mz", document.getElementById("diann181_txtMinMz").value);
+  settings.set("max-fr-mz", document.getElementById("diann181_txtMaxMz").value);
+  settings.set("inference", document.getElementById("diann181_cmbInference").value);
+  settings.set("classifier", document.getElementById("diann181_cmbClassifier").value);
+  settings.set("quant", document.getElementById("diann181_cmbQuant").value);
+  settings.set("norm", document.getElementById("diann181_cmbNorm").value);
+  settings.set("speed", document.getElementById("diann181_cmbSpeed").value);
+  settings.set("verbose", document.getElementById("diann181_txtVerbose").value);
+  console.log(settings);
+  return settings;
 }
 
 function getSharedFiles() {

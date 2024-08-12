@@ -83,9 +83,13 @@ function openDialogWarning(title, message, action = undefined, label = "Close", 
 function isDialogWarningOpen() { return isDialogOpen("dialog_warning"); }
 function closeDialogWarning() { closeDialog("dialog_warning"); }
 
-function displayErrorMessage(message, exitInsteadOfClose = false) {
-    if(exitInsteadOfClose == false) openDialogWarning(message);
-    else openDialogWarning(message, async () => await window.electronAPI.exitApp());
+// function displayErrorMessage(message, exitInsteadOfClose = false) {
+//     if(exitInsteadOfClose == false) openDialogWarning("Error", message);
+//     else openDialogWarning("Error", message, async () => await window.electronAPI.exitApp());
+// }
+function displayErrorMessage(title = "Connection error", error = "") {
+    openDialogWarning(title, error, async () => await window.electronAPI.exitApp());
+    document.getElementById("dialog_warning").getElementsByTagName("label")[0].innerHTML += "<br /><br />Warn the admin and restart later.";
 }
 
 export { closeDialogInfo, closeDialogQuestion, closeDialogWarning, displayErrorMessage, isDialogInfoOpen, isDialogQuestionOpen, isDialogWarningOpen, openDialogInfo, openDialogQuestion, openDialogWarning };

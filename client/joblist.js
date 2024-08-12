@@ -122,7 +122,8 @@ async function reloadJobList() {
   if(utils.isFocus() && !IS_SEARCH) {
     console.log("reloadJobList()");
     const [jobs, error] = await window.electronAPI.getLastJobs(settings.CONFIG.get("max.nb.jobs"));
-    if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+    // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+    if(error != "") dialog.displayErrorMessage("Connection error", error);
     addJobsToJobList(jobs);
   }
 }
@@ -135,7 +136,8 @@ function resetInterval() {
 async function searchJobs(owner, app, file, desc, statuses, date, from, to, number) {
   console.log("searchJobs()");
   const [jobs, error] = await window.electronAPI.searchJobs(owner, app, file, desc, statuses, date, from, to, number);
-  if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  if(error != "") dialog.displayErrorMessage("Connection error", error);
   IS_SEARCH = true;
   addJobsToJobList(jobs);
 }

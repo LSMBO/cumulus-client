@@ -62,7 +62,6 @@ function openSettings() {
 
 async function saveSettings() {
     // TODO add some checks
-    // document.getElementById("cloud_question").style.display = "none";
     dialog.closeDialogQuestion();
     CONFIG.set("cumulus.controller", document.getElementById("txtSettingsServerAddress").value);
     CONFIG.set("cumulus.port", document.getElementById("txtSettingsServerPort").value);
@@ -78,7 +77,6 @@ async function saveSettings() {
 }
 
 async function resetSettings() {
-    // document.getElementById("cloud_question").style.display = "none";
     dialog.closeDialogQuestion();
     await window.electronAPI.resetConfig();
     await loadSettings();

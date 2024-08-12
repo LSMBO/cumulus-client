@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('electronAPI', {
+    checkServer: () => ipcRenderer.invoke('check-server'),
     getUncPaths: () => ipcRenderer.invoke('get-unc-paths'),
     getConfig: () => ipcRenderer.invoke('get-config'),
     setConfig: (map) => ipcRenderer.invoke('set-config', map),
@@ -13,7 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getFileList: (owner, id) => ipcRenderer.invoke('get-file-list', owner, id),
     listHosts: () => ipcRenderer.invoke('list-hosts'),
     listStorage: () => ipcRenderer.invoke('list-storage'),
-    checkVersion: () => ipcRenderer.invoke('check-version'),
+    // checkVersion: () => ipcRenderer.invoke('check-version'),
     browseServer: (type, title, filter, properties) => ipcRenderer.invoke('browse', type, title, filter, properties),
     countExistingFiles: (path, files) => ipcRenderer.invoke('count-existing-files', path, files),
     downloadFile: (owner, job_id, file_name, target) => ipcRenderer.invoke('download', owner, job_id, file_name, target),

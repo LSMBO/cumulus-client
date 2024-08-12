@@ -112,6 +112,7 @@ function exitApp() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  ipcMain.handle('check-server', srv.checkServer);
   ipcMain.handle('get-unc-paths', getUncPaths);
   ipcMain.handle('get-config', config.getConfig);
   ipcMain.handle('set-config', config.saveConfig);
@@ -122,7 +123,7 @@ app.whenReady().then(() => {
   ipcMain.handle('get-job-details', srv.jobDetails);
   ipcMain.handle('get-job-status', srv.jobStatus);
   ipcMain.handle('get-file-list', srv.listJobFiles);
-  ipcMain.handle('check-version', srv.checkVersion);
+  // ipcMain.handle('check-version', srv.checkVersion);
   ipcMain.handle('list-storage', srv.listStorage);
   ipcMain.handle('list-hosts', srv.listHosts);
   ipcMain.handle('browse', browse);

@@ -48,7 +48,8 @@ async function refreshJob() {
   if(utils.getCurrentJobId() > 0) {
     utils.toggleLoadingScreen();
     const [[status, stdout, stderr], error] = await window.electronAPI.getJobStatus(utils.getCurrentJobId());
-    if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+    // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+    if(error != "") dialog.displayErrorMessage("Connection error", error);
     // update status in the summary
     document.getElementById("txtJobStatus").value = status;
     // update the logs
@@ -104,7 +105,8 @@ async function cloneJob() {
   console.log("cloneJob()");
   utils.toggleLoadingScreen();
   const [job, error] = await window.electronAPI.getJobDetails(utils.getCurrentJobId());
-  if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  if(error != "") dialog.displayErrorMessage("Connection error", error);
   utils.setCurrentJobId(-1 * utils.getCurrentJobId()); // necessary for keeping the number of the job for the setting tab
   jobs.highlightJobButton();
   // clear the summary fields
@@ -145,7 +147,8 @@ async function loadJob(job_id) {
   utils.toggleLoadingScreen();
   utils.setCurrentJobId(job_id.replace("job_", ""));
   const [job, error] = await window.electronAPI.getJobDetails(utils.getCurrentJobId());
-  if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  if(error != "") dialog.displayErrorMessage("Connection error", error);
   // lock what needs to be locked
   for(let item of ["cmbAppName", "cmbStrategy", "txtSelectedHost", "txtJobDescription"]) { document.getElementById(item).disabled = true; }
   // fill the summary fields
@@ -188,7 +191,8 @@ async function cancelJob() {
   console.log("cancelJob()");
   utils.toggleLoadingScreen();
   const [response, error] = await window.electronAPI.cancelJob(utils.getUserName(), utils.getCurrentJobId());
-  if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  if(error != "") dialog.displayErrorMessage("Connection error", error);
   // console.log(response);
   await jobs.reloadJobList();
   utils.toggleLoadingScreen();
@@ -199,7 +203,8 @@ async function deleteJob() {
   // TODO warn the user that there is no way back
   utils.toggleLoadingScreen();
   const [response, error] = await window.electronAPI.deleteJob(utils.getUserName(), utils.getCurrentJobId());
-  if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  if(error != "") dialog.displayErrorMessage("Connection error", error);
   // console.log(response);
   await jobs.reloadJobList();
   utils.toggleLoadingScreen();
@@ -217,7 +222,8 @@ async function openJobParameters() {
   if(utils.getCurrentJobId() != 0) {
     utils.toggleLoadingScreen();
     const [job, error] = await window.electronAPI.getJobDetails(utils.getCurrentJobId() > 0 ? utils.getCurrentJobId() : utils.getCurrentJobId() * -1); // job id can be negative if we are cloning a job
-    if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+    // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+    if(error != "") dialog.displayErrorMessage("Connection error", error);
     // console.log(job);
     for(let [key, value] of Object.entries(job.get("settings"))) {
       const node = document.getElementsByName(key)[0];
@@ -235,7 +241,8 @@ async function openJobOutput() {
   console.log("openJobOutput()");
   utils.toggleLoadingScreen();
   const [files, error] = utils.getCurrentJobId() != 0 ? await window.electronAPI.getFileList(utils.getUserName(), utils.getCurrentJobId()) : new Array();
-  if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  if(error != "") dialog.displayErrorMessage("Connection error", error);
   output.insertOutputFiles(files);
   utils.toggleLoadingScreen();
   tabs.openTab("tabOutput");

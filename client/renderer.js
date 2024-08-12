@@ -197,10 +197,9 @@ function addTooltips() {
 
 async function initialize() {
   // check that the client have the same version number as the server
-  // const [version, error] = await window.electronAPI.checkVersion();
-  const error = await window.electronAPI.checkVersion();
-  if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
-  // else if(version != "") displayErrorMessage(version, true);
+  const error = await window.electronAPI.checkServer();
+  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  if(error != "") dialog.displayErrorMessage("Connection error", error);
   else {
     // get the username and the configuration
     utils.setUserName(await window.electronAPI.getUserName())
@@ -217,7 +216,7 @@ async function initialize() {
     // add the tooltip texts
     addTooltips();
     window.addEventListener("focus", (_) => {
-      if(!DEBUG_MODE) document.getElementById("cloud_info").style.display = "none";
+      if(!DEBUG_MODE) dialog.closeDialogInfo();
       utils.setFocus(true);
     });
     // when the app is not in focus, set the interval to 5 minutes
