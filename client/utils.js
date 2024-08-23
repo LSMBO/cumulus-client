@@ -34,14 +34,17 @@ knowledge of the CeCILL license and that you accept its terms.
 
 var CURRENT_JOB_ID = 0;
 var USERNAME = "";
+var IS_ACTIVE = true; // used for sleep mode, it can be inactive even if app has focus
 var IS_FOCUS = true;
+var LAST_ACTIVITY = new Date();
 const TOOLTIPTEXT = document.getElementById("tooltiptext");
 const UNC_PATHS = new Map();
 const LOADER = document.getElementById("loading");
 const UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
 
 class App {
-    constructor(id, name, version, html, eventsFunction, getSettings, getSharedFiles, getLocalFiles) {
+    // constructor(id, name, version, html, eventsFunction, getSettings, getSharedFiles, getLocalFiles) {
+    constructor(id, name, version, html, eventsFunction, getSharedFiles, getLocalFiles, checkSettings, setSettings) {
         this.id = id;
         this.name = name;
         this.version = version;
@@ -49,12 +52,23 @@ class App {
         // call this function after adding the html to an object to create the events listeners
         this.eventsFunction = eventsFunction;
         // // call this function to put the user's values in a map and return it for validation
-        this.getSettings = getSettings;
-        this.getSharedFiles = this.getSharedFiles;
-        this.getLocalFiles = this.getLocalFiles;
+        // this.getSettings = getSettings;
+        this.getSharedFiles = getSharedFiles;
+        this.getLocalFiles = getLocalFiles;
+        this.checkSettings = checkSettings;
+        this.setSettings = setSettings;
     }
     toString() {
         return `${this.name} ${this.version}`;
+    }
+}
+
+function toggleClass(element, className) {
+    // console.log(element);
+    if(element.classList.contains(className)) {
+        element.classList.remove(className);
+    } else {
+        element.classList.add(className);
     }
 }
 
@@ -104,12 +118,56 @@ function tooltip(element, text) {
     });
 }
 
+// function getPathAndFileName(fullPath) {
+//     const separator = fullPath.includes("/") ? "/" : "\\";
+//     const items = fullPath.split(separator);
+//     const name = items.pop();
+//     return [items.join("/"), name];
+// }
+
+function fixFilePath(file) {
+    // return JSON.stringify(file).replaceAll("\\\\", "/");
+    // use JSON.stringify to force the file path separator to be "\\"
+    // then replace the Windows separator with the standard separator "/"
+    const fixedPath = JSON.stringify(file).replaceAll("\\\\", "/");
+    // removes the quotes that were added by JSON.stringify
+    return fixedPath.substring(1, fixedPath.length - 1);
+}
+
+function addBrowsedFile(filePath) {
+    const items = filePath.split(filePath.includes("/") ? "/" : "\\");
+    const name = items.pop();
+    // return `<li><span class="color-primary-hover">&times;</span><label>${items.join("/")}/</label>${name}`;
+    // return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}`;
+    return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}<div style="width:0%"></div></li>`;
+}
+
+function addBrowsedFiles(target, files) {
+    target.classList.add("raw-file");
+    target.innerHTML += files.map(addBrowsedFile).join("");
+}
+
+function getBrowsedFiles(target) {
+    // this function should return what has been generated in the browse function
+    if(target.tagName == "INPUT" && target.type == "text") return [fixFilePath(target.value)];
+    else if(target.tagName == "TEXTAREA") return target.value.split("\n").map(fixFilePath);
+    else if(target.tagName == "UL") return Array.from(target.childNodes).map(li => fixFilePath(li.textContent.replace("×", "")));
+    else return [];
+}
+
 async function browse(type, title, filter, properties, targetName) {
-    const output = await window.electronAPI.browseServer(type, title, filter, properties);
+    // set default path to the current path, if any
+    const target = document.getElementById(targetName);
+    const currentFiles = getBrowsedFiles(target);
+    const defaultPath = currentFiles.length > 0 ? currentFiles[0] : "";
+    // browse the server
+    const output = await window.electronAPI.browseServer(type, title, defaultPath, filter, properties);
     if(output != "") {
-        const target = document.getElementById(targetName);
-        if(target.tagName == "TEXTAREA") target.textContent = output.join("\n");
-        else if(target.tagName == "UL") target.innerHTML = output.map(f => `<li class="w3-display-container">${f}<span class="w3-button w3-transparent w3-display-right">&times;</span></li>`).join("");
+        if(target.tagName == "INPUT" && target.type == "text") target.value = output[0];
+        else if(target.tagName == "TEXTAREA") target.textContent = output.join("\n");
+        else if(target.tagName == "UL") {
+            addBrowsedFiles(target, output);
+        }
         else target.value = output.join(", ");
     }
 }
@@ -147,8 +205,26 @@ function sleep(ms) {
     });
 }
 
+function setActive(value) {
+    IS_ACTIVE = value;
+    // store the time of the last time the app was set active
+    if(value) LAST_ACTIVITY = new Date();
+    // console.log(`Last activity was at: ${LAST_ACTIVITY}`);
+}
+
+function isActive() {
+    return IS_ACTIVE;
+}
+
+function getLastActivity() {
+    return LAST_ACTIVITY;
+}
+
 function setFocus(value) {
     IS_FOCUS = value;
+    // if the app gets focus, it's active again
+    // if the app looses focus, it's not active
+    setActive(IS_FOCUS);
 }
 
 function isFocus() {
@@ -174,4 +250,73 @@ function setCurrentJobId(id) {
     CURRENT_JOB_ID = id;
 }
 
-export { App, browse, convertToUncPath, formatDate, getCurrentJobId, getUserName, isFocus, listBrowsedFiles, setCurrentJobId, setFocus, setUserName, sleep, toHumanReadable, toggleLoadingScreen, tooltip };
+function updateCheckboxList(target) {
+    const text = target.getElementsByTagName("div")[0];
+    const div = target.getElementsByTagName("div")[1];
+    text.innerHTML = "";
+    for(let label of div.getElementsByTagName("label")) {
+        if(label.children[0].checked) text.innerHTML += `<label>${label.textContent}</label>`;
+    }
+}
+
+function setDefaultCheckboxList(target) {
+    for(let input of target.getElementsByTagName("div")[1].getElementsByTagName("input")) {
+        input.checked = true;
+    }
+    updateCheckboxList(target);
+}
+
+function selectCheckboxListItem(target, name, value) {
+    for(let label of target.getElementsByTagName("div")[1].getElementsByTagName("label")) {
+        if(label.children[0].name == name) label.children[0].checked = value;
+    }
+}
+
+function getCheckboxListSelection(target) {
+    // const items = [];
+    // for(let lbl of target.getElementsByTagName("div")[0].getElementsByTagName("label")) {
+    //     items.push(lbl.textContent);
+    // }
+    // return items;
+    const items = {};
+    for(let label of target.getElementsByTagName("div")[1].getElementsByTagName("label")) {
+        if(label.children[0].checked) items[label.children[0].name] = label.textContent;
+    }
+    return items;
+}
+
+function checkboxListEventListener(target) {
+    console.log(target);
+    if(target.classList.contains("w3-input") && target.parentElement != null && target.parentElement.classList.contains("selector")) {
+        // this is the txt with the results as labels in it
+        toggleClass(target.parentElement.getElementsByTagName("div")[1], "w3-hide");
+    } else if(target.tagName == "LABEL" && target.parentElement != null && target.parentElement.classList.contains("w3-input") && target.parentElement.parentElement != null && target.parentElement.parentElement.classList.contains("selector")) {
+        // this is one result in the txt
+        toggleClass(target.parentElement.parentElement.getElementsByTagName("div")[1], "w3-hide");
+    } {
+        // hide the list of results when clicking anywhere else, except if it's on the list itself
+        for(let div of document.getElementsByClassName("selector")) {
+            if(!div.contains(target)) {
+                div.getElementsByClassName("selector-items")[0].classList.add("w3-hide");
+            }
+        }
+    }
+}
+
+function addCheckboxList(parent, label, items, tooltiptext) {
+    parent.classList.add("w3-row", "w3-section", "selector");
+    var html = `<label for="txt_${parent.id}" class="w3-col">${label}</label>
+    <div id="txt_${parent.id}" class="w3-input w3-border w3-rest"></div>
+    <div id="div_${parent.id}" class="w3-hide selector-items">`
+    // items should be like this: {"key1": "value1", ..., "keyN": "valueN"}
+    for(let key in items) {
+        html += `<label><input type="checkbox" name="${key}" checked />${items[key]}</label>`;
+    }
+    html += "</div></div>";
+    parent.innerHTML = html;
+    // document.addEventListener("click", (event) => checkboxListEventListener(event.target));
+    parent.getElementsByTagName("div")[1].addEventListener("click", (_) => updateCheckboxList(parent));
+    tooltip(parent.getElementsByTagName("label")[0], tooltiptext);
+}
+
+export { addBrowsedFiles, addCheckboxList, App, browse, checkboxListEventListener, convertToUncPath, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setUserName, sleep, toHumanReadable, toggleLoadingScreen, tooltip, updateCheckboxList };

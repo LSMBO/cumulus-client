@@ -35,7 +35,7 @@
       </header>
       <div id="splash" class="color-primary"><img src="img/cumulus.png" /></div>
       <div id="tabs" class="w3-row">
-        <div id="tabSummary" class="tab w3-container">
+        <div id="tabSummary" class="tab">
           <div class="w3-row w3-section">
             <label for="txtJobOwner" class="w3-col">Owner</label>
             <input id="txtJobOwner" type="text" disabled class="w3-input w3-border w3-rest" />
@@ -109,6 +109,7 @@
           </div> 
         </div>
         <!-- Extra tab: the global settings -->
+        <!-- TODO check that all settings are actually used! -->
         <div id="tabSettings">
           <h3>Cumulus configuration</h3>
           <div class="w3-row w3-section">
@@ -119,6 +120,17 @@
             <label for="txtSettingsRefreshRate" class="w3-col">Refresh rate: Number of seconds between each refresh of the job list and job status (minimal value is 5 seconds)</label>
             <input id="txtSettingsRefreshRate" type="number" class="w3-input w3-border w3-rest" value="" min="5" step="1" placeholder="Number of seconds between each refresh of the job list and job status (minimal value is 5 seconds)" />
           </div>
+          <div id="divSettingsJobLabelElement"></div>
+          <!-- <div id="divSettingsJobLabelElement" class="w3-row w3-section selector">
+            <label for="txtSettingsJobLabel" class="w3-col">Job description</label>
+            <div id="txtSettingsJobLabel" class="w3-input w3-border w3-rest"></div>
+            <div id="divSettingsJobLabel" class="w3-hide selector-items">
+              <label><input type="checkbox" name="id" checked />Job ID</label>
+              <label><input type="checkbox" name="owner" checked />Job owner</label>
+              <label><input type="checkbox" name="app" checked />App name</label>
+              <label><input type="checkbox" name="start" checked />Start date</label>
+            </div>
+          </div> -->
           <div class="w3-row w3-section">
             <label for="cmbSettingsDefaultStrategy" class="w3-col">Default strategy</label>
             <select id="cmbSettingsDefaultStrategy" class="w3-select w3-border w3-rest"></select>
@@ -148,7 +160,8 @@
             <input id="txtSettingsRsyncPort" type="text" class="w3-input w3-border w3-rest" value="" placeholder="Port of the RSync agent, do not change this value unless you are certain!" />
           </div>
           <div class="w3-center">
-            <div id="divButtonsSummary" class="w3-bar">
+            <!-- <div id="divButtonsSummary" class="w3-bar"> -->
+            <div class="w3-bar"></div>
               <button id="btnSettingsOk" class="w3-button color-opposite">Save settings</button>
               <button id="btnSettingsReset" class="w3-button color-secondary">Reset settings</button>
               <button id="btnSettingsLicense" class="w3-button color-primary-border">Display the license</button>
@@ -171,10 +184,11 @@
               <input id="txtSearchOwner" name="owner" type="text" class="w3-input w3-border" />
               <button id="btnSearchMe" class="w3-button color-opposite">Just me</button>
             </div>
-            <div id="divSearchStatusElement" class="w3-row w3-section">
+            <div id="divSearchStatusElement"></div>
+            <!-- <div id="divSearchStatusElement" class="w3-row w3-section selector">
               <label for="txtSearchStatus" class="w3-col">Status</label>
               <div id="txtSearchStatus" class="w3-input w3-border w3-rest"></div>
-              <div id="divSearchStatus" class="w3-hide">
+              <div id="divSearchStatus" class="w3-hide selector-items">
                 <label><input type="checkbox" name="pending" checked />Pending</label>
                 <label><input type="checkbox" name="running" checked />Running</label>
                 <label><input type="checkbox" name="done" checked />Done</label>
@@ -182,7 +196,7 @@
                 <label><input type="checkbox" name="cancelled" checked />Cancelled</label>
                 <label><input type="checkbox" name="archived" checked />Archived</label>
               </div>
-            </div>
+            </div> -->
             <div class="w3-row w3-section">
               <label for="txtSearchAppName" class="w3-col">Software</label>
               <select id="txtSearchAppName" name="app" class="w3-select w3-border w3-rest"></select>

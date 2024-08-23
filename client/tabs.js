@@ -41,11 +41,12 @@ const EXTRA_BUTTONS = ["btnSettings", "btnStorage", "btnSearch"];
 
 function hideAllTabs() {
   for(let i = 0; i < TAB_NAMES.length; i++) {
-    document.getElementById(TAB_NAMES[i]).style.display = "none";
+    document.getElementById(TAB_NAMES[i]).classList.remove("visible");
+    document.getElementById(TAB_NAMES[i]).offsetHeight; // forces the reflow of the tab (which forces the animation to be triggered)
     document.getElementById(TAB_BUTTONS[i]).classList.replace("color-accent", "color-secondary");
   }
   for(let i = 0; i < EXTRA_BUTTONS.length; i++) {
-    document.getElementById(EXTRA_TAB_NAMES[i]).style.display = "none";
+    document.getElementById(EXTRA_TAB_NAMES[i]).classList.remove("visible");
     document.getElementById(EXTRA_BUTTONS[i]).classList.replace("color-accent", "color-secondary");
   }
 }
@@ -69,15 +70,17 @@ function openTab(tabName) {
   if(TAB_NAMES.includes(tabName)) {
     for(let i = 0; i < TAB_NAMES.length; i++) {
       if(TAB_NAMES[i] == tabName) {
-        console.log(tabName);
-        document.getElementById(TAB_NAMES[i]).style.display = "block";
+        // console.log(tabName);
+        // document.getElementById(TAB_NAMES[i]).style.display = "block";
+        document.getElementById(TAB_NAMES[i]).classList.add("visible");
         document.getElementById(TAB_BUTTONS[i]).classList.replace("color-secondary", "color-accent");
       }
     }
   } else {
     for(let i = 0; i < EXTRA_TAB_NAMES.length; i++) {
       if(EXTRA_TAB_NAMES[i] == tabName) {
-        document.getElementById(EXTRA_TAB_NAMES[i]).style.display = "block";
+        // document.getElementById(EXTRA_TAB_NAMES[i]).style.display = "block";
+        document.getElementById(EXTRA_TAB_NAMES[i]).classList.add("visible");
         document.getElementById(EXTRA_BUTTONS[i]).classList.replace("color-secondary", "color-accent");
       }
     }

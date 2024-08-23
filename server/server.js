@@ -108,14 +108,17 @@ async function createJob(_, owner, app, strategy, description, settings, rawfile
     form.append("strategy", strategy);
     form.append("description", description);
     // stringify the settings
-    const txt_settings = JSON.stringify(Object.fromEntries(settings));
-    form.append("settings", str = txt_settings);
+    // const txt_settings = JSON.stringify(Object.fromEntries(settings));
+    // form.append("settings", str = txt_settings);
+    form.append("settings", str = settings);
     // send the request
     const url = rest.getUrl("start");
     const data = await rest.sendPostRequest(url, form);
     // return id;
     // console.log("start: "+data);
     const [job_id, job_dir] = JSON.parse(data)
+    // console.log(data);
+    // console.log(`Job created with id ${job_id} and directory '${job_dir}'`);
     // call the rsync agent to transfer the files
     const form2 = new FormData({ maxDataSize: 20971520 });
     form2.append("job_id", job_id);
@@ -123,6 +126,8 @@ async function createJob(_, owner, app, strategy, description, settings, rawfile
     form2.append("owner", owner);
     form2.append("files", rawfiles);
     form2.append("local_files", fastafiles);
+    // form2.append("files", JSON.parse(rawfiles));
+    // form2.append("local_files", JSON.parse(fastafiles));
     await rest.sendPostRequest(rest.getUrl("send-rsync", [], true), form2);
     // return the job id
     return job_id;
@@ -138,14 +143,21 @@ async function jobDetails(_, job_id) {
     return [map, error];
 }
 
-async function getLastJobs(_, number) {
-    const url = rest.getUrl("joblist", [number]);
+// async function getLastJobs(_, number) {
+//     const url = rest.getUrl("joblist", [number]);
+//     const [data, error] = await rest.sendGetRequest(url);
+//     return [JSON.parse(data), error];
+// }
+async function getLastJobs(_, job_id, number) {
+    // console.log(`getLastJobs(_, ${job_id}, ${number})`);
+    const url = rest.getUrl("joblist", [job_id, number]);
     const [data, error] = await rest.sendGetRequest(url);
     return [JSON.parse(data), error];
 }
 
-async function searchJobs(_, owner, app, file, desc, statuses, date, from, to, number) {
+async function searchJobs(_, current_job_id, owner, app, file, desc, statuses, date, from, to, number) {
     const form = new FormData({ maxDataSize: 20971520 });
+    form.append("current_job_id", current_job_id);
     form.append("owner", owner);
     form.append("app", app);
     form.append("file", file);
@@ -170,15 +182,21 @@ async function jobStatus(_, job_id) {
     return [JSON.parse(data), error];
 }
 
+async function transferProgress(_, owner, job_id) {
+    const [data, error] = await rest.sendGetRequest(rest.getUrl("progress-rsync", [owner, job_id], true));
+    console.log(data);
+    return [JSON.parse(data), error];
+}
+
 async function cancelJob(_, owner, job_id) {
     // request the rsync agent to cancel the transfers corresponding to this job
     await rest.sendGetRequest(rest.getUrl("cancel-rsync", [owner, job_id], true));
     // console.log("transfer: "+files);
-    for(let file of JSON.parse(files)) {
-        // do not add the files already on the server
-        // new files have a size of -1
-        if(!output.has(file)) output.set(file, -1);
-    }
+    // for(let file of JSON.parse(files)) {
+    //     // do not add the files already on the server
+    //     // new files have a size of -1
+    //     if(!output.has(file)) output.set(file, -1);
+    // }
     const url = rest.getUrl("cancel", [owner, job_id]);
     const [data, error] = await rest.sendGetRequest(url);
     return [data, error];
@@ -201,4 +219,4 @@ async function downloadFile(_, owner, job_id, file_name, target) {
     await rest.download(url, target);
 }
 
-module.exports = { cancelJob, checkServer, createJob, deleteJob, downloadFile, getLastJobs, jobDetails, jobStatus, listHosts, listJobFiles, listStorage, searchJobs }
+module.exports = { cancelJob, checkServer, createJob, deleteJob, downloadFile, getLastJobs, jobDetails, jobStatus, listHosts, listJobFiles, listStorage, searchJobs, transferProgress }

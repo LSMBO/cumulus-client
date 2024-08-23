@@ -1,4 +1,4 @@
-import { App, browse, convertToUncPath, listBrowsedFiles, tooltip } from "../utils.js";
+import { App, browse, tooltip } from "../utils.js";
 
 function getTestHtml() { return `
 <h3>TESTABU parameters</h3>
@@ -78,6 +78,9 @@ function getLocalFiles() {
   return [getSettings().get("fasta")];
 }
 
+function setSpecificSettings(settings) {
+}
+
 export function get() {
-    return new App("test", "Test ABU (sleep)", "1.0", getTestHtml(), getTestEvents, getSettings, getSharedFiles, getLocalFiles);
+    return new App("test", "Test ABU (sleep)", "1.0", getTestHtml(), getTestEvents, getSettings, getSharedFiles, getLocalFiles, setSpecificSettings);
 }

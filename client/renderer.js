@@ -44,7 +44,7 @@ import * as storage from "./storage.js";
 import * as utils from "./utils.js";
 import * as apps from "./apps/applist.js";
 
-var DEBUG_MODE = true;
+var DEBUG_MODE = false;
 
 function loadAppList() {
   // list all the available apps and add them to the list
@@ -57,19 +57,25 @@ function loadAppList() {
 }
 
 document.getElementById("btnSummary").addEventListener("click", () => tabs.openTab("tabSummary"));
-document.getElementById("btnParameters").addEventListener("click", () => job.openJobParameters());
-document.getElementById("btnLogs").addEventListener("click", () => job.refreshJob());
-document.getElementById("btnOutput").addEventListener("click", () => job.openJobOutput());
+// document.getElementById("btnParameters").addEventListener("click", () => job.openJobParameters());
+document.getElementById("btnParameters").addEventListener("click", () => tabs.openTab("tabParameters"));
+// document.getElementById("btnLogs").addEventListener("click", () => job.refreshJob(true));
+document.getElementById("btnLogs").addEventListener("click", () => tabs.openTab("tabLogs"));
+// document.getElementById("btnOutput").addEventListener("click", () => job.openJobOutput());
+document.getElementById("btnOutput").addEventListener("click", () => tabs.openTab("tabOutput"));
 document.getElementById("cmbAppName").addEventListener("change", () => {
   document.getElementById("btnParameters").disabled = false;
   document.getElementById("btnNext").disabled = false;
+  job.setAppParameters();
 });
 document.getElementById("aSelect").addEventListener("click", () => output.selectAllCheckboxes());
 document.getElementById("aUnselect").addEventListener("click", () => output.unselectAllCheckboxes());
 document.getElementById("aExpand").addEventListener("click", () => output.expandAllFolders());
 document.getElementById("aCollapse").addEventListener("click", () => output.collapseAllFolders());
-document.getElementById("btnClone").addEventListener("click", async () => await job.cloneJob());
-document.getElementById("btnNext").addEventListener("click", () => job.openJobParameters());
+// document.getElementById("btnClone").addEventListener("click", async () => await job.cloneJob());
+document.getElementById("btnClone").addEventListener("click", () => job.cloneJob());
+// document.getElementById("btnNext").addEventListener("click", () => job.openJobParameters());
+document.getElementById("btnNext").addEventListener("click", () => tabs.openTab("tabParameters"));
 document.getElementById("btnStart").addEventListener("click", () => job.startJob());
 document.getElementById("btnCancel").addEventListener("click", () => dialog.openDialogQuestion("Warning", "Are you sure you want to cancel this job?", job.cancelJob));
 document.getElementById("btnDelete").addEventListener("click", () => dialog.openDialogQuestion("Warning", "Are you sure you want to delete this job?", job.deleteJob));
@@ -122,17 +128,22 @@ btnSearch.addEventListener("mouseout", () => {
 });
 
 function keydownEvent(event) {
-    if (event.key === 'Control' || event.key === 'Shift') return; // do nothing
-    if(event.ctrlKey && ((!event.shiftKey && event.code === 'Tab') || event.code === 'PageDown')) tabs.goToNextTab();
-    else if(event.ctrlKey && (event.shiftKey && event.code === 'Tab' || event.code === 'PageUp')) tabs.goToPreviousTab();
-    // when Ctrl + N, open tab-settings
-    // else if(event.ctrlKey && event.key === 'n') btnNew.click();
-    // else if(event.ctrlKey && event.key === 'n') document.getElementById("new_job").click();
+  utils.setActive(true);
+  if (event.key === 'Control' || event.key === 'Shift') return; // do nothing
+  if(event.ctrlKey && ((!event.shiftKey && event.code === 'Tab') || event.code === 'PageDown')) tabs.goToNextTab();
+  else if(event.ctrlKey && (event.shiftKey && event.code === 'Tab' || event.code === 'PageUp')) tabs.goToPreviousTab();
+  // when Ctrl + N, open tab-settings
+  // else if(event.ctrlKey && event.key === 'n') btnNew.click();
+  // else if(event.ctrlKey && event.key === 'n') document.getElementById("new_job").click();
 }
 async function keyupEvent(event) {
+  utils.setActive(true);
   // console.log(event);
   if(DEBUG_MODE && event.ctrlKey && event.key === 't') {
-    utils.toggleLoadingScreen();
+    // utils.toggleLoadingScreen();
+    // console.log(utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
+    // console.log(utils.fixFilePath(document.getElementById("diann191_txtFasta").value));
+    jobs.pauseRefresh();
   } else if(DEBUG_MODE && event.ctrlKey && event.key === 'K') {
     if(dialog.isDialogInfoOpen()) dialog.closeDialogInfo();
     else dialog.openDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
@@ -147,6 +158,11 @@ async function keyupEvent(event) {
 window.addEventListener('keydown', keydownEvent, true);
 window.addEventListener('keyup', keyupEvent, true);
 window.addEventListener("resize", tabs.resizeLogAreas);
+document.addEventListener("click", (event) => {
+  dialog.closeDialogInfo();
+  utils.setActive(true);
+  utils.checkboxListEventListener(event.target);
+});
 
 async function loadRemoteHosts() {
   // load the host list
@@ -188,7 +204,7 @@ function addTooltips() {
   utils.tooltip(document.getElementById("txtSettingsRsyncPort").previousElementSibling, "Warning: do not change it unless you are certain!");
   // search tab
   utils.tooltip(document.getElementById("txtSearchOwner").previousElementSibling, "Display the jobs for which the owner contains the given tag (case insensitive).");
-  utils.tooltip(document.getElementById("txtSearchStatus").previousElementSibling, "Restrict the search to specific statuses (if no status is selected then the filter will be disabled).");
+  // utils.tooltip(document.getElementById("txtSearchStatus").previousElementSibling, "Restrict the search to specific statuses (if no status is selected then the filter will be disabled).");
   utils.tooltip(document.getElementById("txtSearchAppName").previousElementSibling, "Restrict the search to a specific software.");
   utils.tooltip(document.getElementById("txtSearchFile").previousElementSibling, "Display the jobs for which at least one input file contains the given tag (case insensitive).");
   utils.tooltip(document.getElementById("txtSearchTag").previousElementSibling, "Search a tag in the description of a job (case insensitive).");
@@ -202,6 +218,7 @@ async function initialize() {
   if(error != "") dialog.displayErrorMessage("Connection error", error);
   else {
     // get the username and the configuration
+    DEBUG_MODE = await window.electronAPI.getDebugMode();
     utils.setUserName(await window.electronAPI.getUserName())
     await settings.loadSettings();
     document.getElementsByTagName("title")[0].textContent = `Cumulus [${settings.CONFIG.get("cumulus.version")}]`;
@@ -216,19 +233,21 @@ async function initialize() {
     // add the tooltip texts
     addTooltips();
     window.addEventListener("focus", (_) => {
-      if(!DEBUG_MODE) dialog.closeDialogInfo();
+      dialog.closeDialogInfo();
       utils.setFocus(true);
     });
     // when the app is not in focus, set the interval to 5 minutes
     window.addEventListener("blur", (_) => {
-      if(!DEBUG_MODE) dialog.openDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
+      // if(!DEBUG_MODE) dialog.openDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
       utils.setFocus(false);
     });
     await jobs.reloadJobList();
-    jobs.resetInterval();
     // window does not have focus at startup when devtools are open
     // load the first job on the list
-    document.getElementById("new_job").click();
+    // console.log(document);
+    // document.getElementById("new_job").click();
+    job.createJob();
+    jobs.resetInterval();
   }
 }
 

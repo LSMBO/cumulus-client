@@ -33,9 +33,7 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 import * as diann181 from "./diann181.js";
-// import * as diann182 from "./diann182b27.js"; // TODO remove this app
-import * as diann191 from "./diann191.js"; // TODO remove this app
-// TODO add a diann 1.9.1 file
+import * as diann191 from "./diann191.js";
 import * as test from "./test.js"; // TODO remove this app
 
 const APP_LIST = new Map();

@@ -35,8 +35,10 @@ knowledge of the CeCILL license and that you accept its terms.
 import * as tabs from "./tabs.js";
 import * as jobs from "./joblist.js";
 import * as dialog from "./dialog.js";
+import * as utils from "./utils.js";
 
 const CONFIG = new Map();
+const jobLabels = document.getElementById("divSettingsJobLabelElement");
 
 async function loadSettings() {
     CONFIG.clear();
@@ -57,6 +59,10 @@ function openSettings() {
     if(CONFIG.has("raw.file.path")) document.getElementById("txtSettingsDefaultRawFilesPath").value = CONFIG.get("raw.file.path");
     if(CONFIG.has("fasta.path")) document.getElementById("txtSettingsDefaultFastaFilesPath").value = CONFIG.get("fasta.path");
     if(CONFIG.has("license")) document.getElementById("txtSettingsLicense").value = CONFIG.get("license");
+    for(let option of ["display.job.id", "display.job.owner", "display.app.name", "display.job.start.date"]) {
+        utils.selectCheckboxListItem(jobLabels, option, CONFIG.has(option) ? CONFIG.get(option) : true);
+    }
+    utils.updateCheckboxList(jobLabels);
     tabs.openTab("tabSettings");
 }
 
@@ -72,6 +78,11 @@ async function saveSettings() {
     CONFIG.set("default.strategy", document.getElementById("cmbSettingsDefaultStrategy").value);
     CONFIG.set("raw.file.path", document.getElementById("txtSettingsDefaultRawFilesPath").value);
     CONFIG.set("fasta.path", document.getElementById("txtSettingsDefaultFastaFilesPath").value);
+    const selectedOptions = Object.entries(utils.getCheckboxListSelection(jobLabels)).map(kv => kv[0]);
+    for(let option of ["display.job.id", "display.job.owner", "display.app.name", "display.job.start.date"]) {
+        // TODO this does not seem to work!
+        CONFIG.set(option, selectedOptions.contains(option));
+    }
     await window.electronAPI.setConfig(CONFIG);
     jobs.resetInterval();
 }
@@ -94,5 +105,8 @@ function toggleLicense() {
         license.classList.add("w3-hide");
     }
 }
+
+utils.addCheckboxList(jobLabels, "Job descriptions", {"display.job.id": "Job ID", "display.job.owner": "Job owner", "display.app.name": "Software name", "display.job.start.date": "Start date"}, "Select the information that will be displayed in the job list.");
+utils.updateCheckboxList(jobLabels);
 
 export { CONFIG, loadSettings, openSettings, resetSettings, saveSettings, toggleLicense };

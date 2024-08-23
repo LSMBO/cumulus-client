@@ -1,4 +1,4 @@
-import { App, browse, tooltip } from "../utils.js";
+import { addBrowsedFiles, App, browse, getBrowsedFiles, tooltip } from "../utils.js";
 
 export function getDiann181Html() {
     return `<h3>Diann 1.8.1 parameters</h3>
@@ -12,7 +12,7 @@ export function getDiann181Html() {
               </div>
               <div class="w3-row w3-section">
                 <div class="w3-col w3-right w3-container" style="width:auto; padding: 0;margin-left: 5px;">
-                  <button id="diann181_btnBrowseRaw" class="w3-button color-opposite" style="width: 128px">Browse...</button>
+                  <button id="diann181_btnBrowseRaw" class="w3-button color-opposite" style="width: 123px">Browse...</button>
                   <button id="diann181_btnClearRaw" class="w3-button color-secondary" title="Remove all files">╳</button>
                 </div>
                 <div class="w3-rest w3-container" style="padding: 0;">
@@ -23,60 +23,79 @@ export function getDiann181Html() {
                 </div>
               </div>
               <div class="w3-row w3-section">
-                <ul id="diann181_rawFiles" class="w3-ul w3-border w3-hoverable" style="height: 331px; overflow: auto;"></ul>
+                <ul id="diann181_rawFiles" class="w3-ul w3-border w3-hoverable raw-file" style="height: 331px; overflow: auto;"></ul>
               </div>
             </div>
           </td><td class="w3-half">
             <table class="w3-table w3-bordered">
               <tr>
-                <td><label for="diann181_cmbEnzyme">Protease</label></td>
-                <td><select id="diann181_cmbEnzyme" name="protease" class="w3-select w3-border">
-                  <option value="K*,R*" selected="">Trypsin /P</option>
-                  <option value="K*,R*,!*P">Trypsin</option>
-                  <option value="K*">Lys-C</option>
-                  <option value="F*,Y*,W*,M*,L*,!*P">Chymotrypsin</option>
-                  <option value="*D">AspN</option>
-                  <option value="E*">GluC</option>
-                </select></td>
-              </tr>
-              <tr>
-                <td><label for="diann181_txtMc">Missed cleavages</label></td>
-                <td><input id="diann181_txtMc" name="mc" type="number" class="w3-input w3-border" value="1" min="0" max="5"></td>
-              </tr>
-              <tr>
-                <td><label for="diann181_txtVarMods">Maximum number of variable modifications</label></td>
-                <td><input id="diann181_txtVarMods" name="var-mods" type="number" class="w3-input w3-border" value="0" min="0" max="5"></td>
-              </tr>
-              <tr>
-                <td></td>
-                <td class="w3-dropdown-hover color-primary">
-                  <button class="w3-button w3-block color-opposite">Select modifications</button>
-                  <div class="w3-dropdown-content w3-border color-primary-border">
-                    <div><label for="diann181_chkMetEx">N-term M excision</label><input id="diann181_chkMetEx" name="met-ex" type="checkbox" class="w3-check" checked=""></div>
-                    <div><label for="diann181_chkModCarba">C carbamidomethylation</label><input id="diann181_chkModCarba" name="carba" type="checkbox" class="w3-check" checked=""></div>
-                    <div><label for="diann181_chkModOx">Ox(M)</label><input id="diann181_chkModOx" name="ox-m" type="checkbox" class="w3-check"></div>
-                    <div><label for="diann181_chkModAc">Ac(N-term)</label><input id="diann181_chkModAc" name="ac-nterm" type="checkbox" class="w3-check"></div>
-                    <div><label for="diann181_chkModPhospho">Phospho</label><input id="diann181_chkModPhospho" name="phospho" type="checkbox" class="w3-check"></div>
-                    <div><label for="diann181_chkModKgg">K-GG</label><input id="diann181_chkModKgg" name="k-gg" type="checkbox" class="w3-check"></div>
-                  </div>
+                <td>
+                    <label for="diann181_cmbEnzyme">Protease</label>
+                    <select id="diann181_cmbEnzyme" name="protease" class="w3-select w3-border">
+                        <option value="K*,R*" selected="">Trypsin /P</option>
+                        <option value="K*,R*,!*P">Trypsin</option>
+                        <option value="K*">Lys-C</option>
+                        <option value="F*,Y*,W*,M*,L*,!*P">Chymotrypsin</option>
+                        <option value="*D">AspN</option>
+                        <option value="E*">GluC</option>
+                    </select>
                 </td>
-              </tr>
-              <tr>
-                <td><label for="diann181_txtFdr">Precursor FDR (%)</label></td>
-                <td><input id="diann181_txtFdr" name="fdr" type="number" class="w3-input w3-border" value="1.0" min="0" max="100" step="0.1"></td>
-              </tr>
-              <tr>
-                <td><label for="diann181_txtMs1Acc">MS1 accuracy (ppm)</label></td>
-                <td><input id="diann181_txtMs1Acc" name="ms1-acc" type="number" class="w3-input w3-border" value="10.0" min="0" max="100.0" step="0.1"></td>
-              </tr>
-              <tr>
-                <td><label for="diann181_txtMassAcc">MS2 accuracy (ppm)</label></td>
-                <td><input id="diann181_txtMassAcc" name="mass-acc" type="number" class="w3-input w3-border" value="10.0" min="0" max="100.0" step="0.1"></td>
-              </tr>
-              <tr>
-                <td><label for="diann181_txtWindow">Scan window</label></td>
-                <td><input id="diann181_txtWindow" name="window" type="number" class="w3-input w3-border" value="10" min="0"></td>
-              </tr>
+                <td>
+                    <label for="diann181_txtMc">Missed cleavages</label>
+                    <input id="diann181_txtMc" name="mc" type="number" class="w3-input w3-border" value="1" min="0" max="5">
+                </td>
+            </tr>
+            <tr>
+                <td class="full-width-col" colspan="2">
+                    <label for="diann181_txtVarMods">Maximum number of variable modifications</label>
+                    <input id="diann181_txtVarMods" name="var-mods" type="number" class="w3-input w3-border" value="0" min="0" max="5">
+                </td>
+            </tr>
+            <tr>
+                <td class="full-width-col" colspan="2">
+                    <input id="diann181_chkMetEx" name="met-excision" type="checkbox" class="w3-check" checked="">
+                    <label for="diann181_chkMetEx">N-term excision (M)</label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input id="diann181_chkModCarba" name="carba" type="checkbox" class="w3-check" checked="">
+                    <label for="diann181_chkModCarba">Carbamidomethyl (C)</label>
+                </td>
+                <td>
+                    <input id="diann181_chkModOx" name="ox-m" type="checkbox" class="w3-check">
+                    <label for="diann181_chkModOx">Oxidation (M)</label>
+                </td>
+            </tr>
+                <td>
+                    <input id="diann181_chkModAc" name="ac-nterm" type="checkbox" class="w3-check">
+                    <label for="diann181_chkModAc">Acetylation (N-term)</label>
+                </td>
+                <td>
+                    <input id="diann181_chkModPhospho" name="phospho" type="checkbox" class="w3-check">
+                    <label for="diann181_chkModPhospho">Phosphorylation</label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="diann181_txtMs1Acc">MS1 accuracy (ppm)</label>
+                    <input id="diann181_txtMs1Acc" name="ms1-acc" type="number" class="w3-input w3-border" value="10.0" min="0" max="100.0" step="0.1">
+                </td>
+                <td>
+                    <label for="diann181_txtMassAcc">MS2 accuracy (ppm)</label>
+                    <input id="diann181_txtMassAcc" name="mass-acc" type="number" class="w3-input w3-border" value="10.0" min="0" max="100.0" step="0.1">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="diann181_txtWindow">Scan window</label>
+                    <input id="diann181_txtWindow" name="window" type="number" class="w3-input w3-border" value="10" min="0">
+                </td>
+                <td>
+                    <label for="diann181_txtFdr">Precursor FDR (%)</label>
+                    <input id="diann181_txtFdr" name="fdr" type="number" class="w3-input w3-border" value="1.0" min="0" max="100" step="0.1">
+                </td>
+            </tr>
             </table>
           </td></tr>
         </table>
@@ -192,13 +211,13 @@ export function getDiann181Events() {
     tooltip(document.getElementById("diann181_btnBrowseFasta").parentElement.nextElementSibling, "Select the FASTA file for the library-free approach");
     tooltip(document.getElementById("diann181_cmbRawType"), "Select the type of RAW data you want to load");
     tooltip(document.getElementById("diann181_btnClearRaw"), "Remove all files");
-    tooltip(document.getElementById("diann181_cmbEnzyme").parentElement.previousElementSibling, "Enzyme used for the digest");
-    tooltip(document.getElementById("diann181_txtMc").parentElement.previousElementSibling, "Maximum number of missed cleavages allowed");
-    tooltip(document.getElementById("diann181_txtVarMods").parentElement.previousElementSibling, "Warning: more than 3 variable modifications will significantly increase the search space, use with caution");
-    tooltip(document.getElementById("diann181_txtFdr").parentElement.previousElementSibling, "False discovery rate level at which the output files will be filtered");
-    tooltip(document.getElementById("diann181_txtMs1Acc").parentElement.previousElementSibling, "Leave at 0.0 for automatic inference");
-    tooltip(document.getElementById("diann181_txtMassAcc").parentElement.previousElementSibling, "Leave at 0.0 for automatic inference");
-    tooltip(document.getElementById("diann181_txtWindow").parentElement.previousElementSibling, "Radius (in scans) of the retention time window that is used to scan extracted chromatograms of precursor ions");
+    tooltip(document.getElementById("diann181_cmbEnzyme").previousElementSibling, "Enzyme used for the digest");
+    tooltip(document.getElementById("diann181_txtMc").previousElementSibling, "Maximum number of missed cleavages allowed");
+    tooltip(document.getElementById("diann181_txtVarMods").previousElementSibling, "Warning: more than 3 variable modifications will significantly increase the search space, use with caution");
+    tooltip(document.getElementById("diann181_txtFdr").previousElementSibling, "False discovery rate level at which the output files will be filtered");
+    tooltip(document.getElementById("diann181_txtMs1Acc").previousElementSibling, "Leave at 0.0 for automatic inference");
+    tooltip(document.getElementById("diann181_txtMassAcc").previousElementSibling, "Leave at 0.0 for automatic inference");
+    tooltip(document.getElementById("diann181_txtWindow").previousElementSibling, "Radius (in scans) of the retention time window that is used to scan extracted chromatograms of precursor ions");
     tooltip(document.getElementById("diann181_txtMinLen").parentElement.previousElementSibling, "The peptide length range has an impact on the size of the seach space");
     tooltip(document.getElementById("diann181_txtMinCharge").parentElement.previousElementSibling, "The precursor charge range has an impact on the size of the seach space");
     tooltip(document.getElementById("diann181_txtMinMz").parentElement.previousElementSibling, "The precursor m/z range has an impact on the size of the seach space");
@@ -211,51 +230,25 @@ export function getDiann181Events() {
     tooltip(document.getElementById("diann181_txtVerbose").parentElement.previousElementSibling, "Select the detail of the log output, values are between 0 to 5");
 }
 
-function getSettings() {
-  const settings = new Map();
-  settings.set("fasta", document.getElementById("diann181_txtFasta").value);
-  settings.set("files", Array.from(document.getElementById("diann181_rawFiles").childNodes).map(li => li.textContent));
-  settings.set("protease", document.getElementById("diann181_cmbEnzyme").value);
-  settings.set("mc", document.getElementById("diann181_txtMc").value);
-  settings.set("var-mods", document.getElementById("diann181_txtVarMods").value);
-  if(document.getElementById("diann181_chkMetEx").checked) settings.set("met-excision", true);
-  if(document.getElementById("diann181_chkModCarba").checked) settings.set("carba", true);
-  if(document.getElementById("diann181_chkModOx").checked) settings.set("ox-m", true);
-  if(document.getElementById("diann181_chkModAc").checked) settings.set("ac-nterm", true);
-  if(document.getElementById("diann181_chkModPhospho").checked) settings.set("phospho", true);
-  if(document.getElementById("diann181_chkModKgg").checked) settings.set("k-gg", true);
-  settings.set("fdr", document.getElementById("diann181_txtFdr").value);
-  settings.set("ms1-acc", document.getElementById("diann181_txtMs1Acc").value);
-  settings.set("mass-acc", document.getElementById("diann181_txtMassAcc").value);
-  settings.set("window", document.getElementById("diann181_txtWindow").value);
-  settings.set("min-pep-length", document.getElementById("diann181_txtMinLen").value);
-  settings.set("max-pep-length", document.getElementById("diann181_txtMaxLen").value);
-  settings.set("min-pr-charge", document.getElementById("diann181_txtMinCharge").value);
-  settings.set("max-pr-charge", document.getElementById("diann181_txtMaxCharge").value);
-  settings.set("min-pr-mz", document.getElementById("diann181_txtPepMinMz").value);
-  settings.set("max-pr-mz", document.getElementById("diann181_txtPepMaxMz").value);
-  settings.set("min-fr-mz", document.getElementById("diann181_txtMinMz").value);
-  settings.set("max-fr-mz", document.getElementById("diann181_txtMaxMz").value);
-  settings.set("inference", document.getElementById("diann181_cmbInference").value);
-  settings.set("classifier", document.getElementById("diann181_cmbClassifier").value);
-  settings.set("quant", document.getElementById("diann181_cmbQuant").value);
-  settings.set("norm", document.getElementById("diann181_cmbNorm").value);
-  settings.set("speed", document.getElementById("diann181_cmbSpeed").value);
-  settings.set("verbose", document.getElementById("diann181_txtVerbose").value);
-  console.log(settings);
-  return settings;
-}
-
 function getSharedFiles() {
   // return the list of raw files
-  return getSettings().get("files");
+  return getBrowsedFiles(document.getElementById("diann181_rawFiles"));
 }
 
 function getLocalFiles() {
   // return the list of fasta files
-  return [getSettings().get("fasta")];
+  return [utils.fixFilePath(document.getElementById("diann181_txtFasta").value)];
+}
+
+function checkSettings() {
+  document.getElementById("diann181_txtFasta").value = utils.fixFilePath(document.getElementById("diann181_txtFasta").value);
+  return [];
+}
+
+function setSpecificSettings(settings) {
+    addBrowsedFiles(document.getElementsByClassName("raw-file")[0], settings.get("files"));
 }
 
 export function get() {
-    return new App("diann_1.8.1", "Dia-NN", "1.8.1", getDiann181Html(), getDiann181Events, getSettings, getSharedFiles, getLocalFiles);
+  return new App("diann_1.8.1", "Dia-NN", "1.8.1", getDiann181Html(), getDiann181Events, getSharedFiles, getLocalFiles, checkSettings, setSpecificSettings);
 }

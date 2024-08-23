@@ -50,7 +50,10 @@ function closeDialog(dialog_id) {
     document.getElementById(dialog_id).style.display = "none";
 }
 
-function openDialogInfo(title, message) { openDialog("dialog_info", title, message); }
+function openDialogInfo(title, message) {
+    // document.getElementById("dialogs").addEventListener("click", closeDialogInfo());
+    openDialog("dialog_info", title, message);
+}
 function isDialogInfoOpen() { return isDialogOpen("dialog_info"); }
 function closeDialogInfo() { closeDialog("dialog_info"); }
 
@@ -65,6 +68,7 @@ function openDialogQuestion(title, message, onYes, onYesLabel = "Yes", onYesArgs
     } else {
         document.getElementById("btn_dialq_2").addEventListener("click", () => closeDialogQuestion());
     }
+    // document.getElementById("dialogs").removeEventListener("click");
     openDialog("dialog_question", title, message);
 }
 function isDialogQuestionOpen() { return isDialogOpen("dialog_question"); }
@@ -78,6 +82,7 @@ function openDialogWarning(title, message, action = undefined, label = "Close", 
     } else {
         document.getElementById("btn_dialw").addEventListener("click", () => closeDialogWarning());
     }
+    // document.getElementById("dialogs").removeEventListener("click");
     openDialog("dialog_warning", title, message);
 }
 function isDialogWarningOpen() { return isDialogOpen("dialog_warning"); }

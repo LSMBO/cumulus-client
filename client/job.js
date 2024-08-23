@@ -43,32 +43,61 @@ const FORM = document.getElementById("formParameters");
 const STD_OUT = document.getElementById("stdout");
 const STD_ERR = document.getElementById("stderr");
 
-async function refreshJob() {
-  console.log("refreshJob()");
-  if(utils.getCurrentJobId() > 0) {
-    utils.toggleLoadingScreen();
-    const [[status, stdout, stderr], error] = await window.electronAPI.getJobStatus(utils.getCurrentJobId());
-    // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
-    if(error != "") dialog.displayErrorMessage("Connection error", error);
-    // update status in the summary
-    document.getElementById("txtJobStatus").value = status;
-    // update the logs
-    STD_OUT.textContent = stdout;
-    STD_ERR.textContent = stderr;
-    STD_OUT.scrollTop = 0;
-    STD_ERR.scrollTop = 0;
-    if(status == "RUNNING") {
-      STD_OUT.scrollTop = STD_OUT.scrollHeight;
-      STD_ERR.scrollTop = STD_ERR.scrollHeight;
-    }
-    utils.toggleLoadingScreen();
+function setAppParameters(settings = null) {
+  const app = document.getElementById("cmbAppName").value;
+  if(app != "") {
+    document.getElementById("formParameters").innerHTML = apps.get(app).html;
+    apps.get(app).eventsFunction();
+    if(settings != null) apps.get(app).setSettings(settings);
+    // enable parameter tab
+    document.getElementById("btnParameters").disabled = false;
+  } else {
+    document.getElementById("formParameters").innerHTML = "";
+    // disable parameter tab
+    document.getElementById("btnParameters").disabled = true;
   }
-  jobs.refreshStatus();
-  tabs.openTab("tabLogs");
+}
+
+function refreshJob(job) {
+  // TODO what if job is null, or new job or search?
+  // summary
+  document.getElementById("txtJobOwner").value = job.owner;
+  document.getElementById("txtJobOwner").disabled = true;
+  document.getElementById("txtJobStatus").value = job.status;
+  document.getElementById("txtJobStatus").disabled = true;
+  document.getElementById("txtJobStatus").parentNode.style.display = "block";
+  document.getElementById("cmbAppName").value = job.app_name;
+  document.getElementById("cmbAppName").disabled = true;
+  document.getElementById("cmbStrategy").value = job.strategy;
+  document.getElementById("cmbStrategy").disabled = true;
+  document.getElementById("txtSelectedHost").value = job.host;
+  document.getElementById("txtSelectedHost").parentNode.style.display = "block";
+  document.getElementById("txtJobDescription").value = job.description;
+  document.getElementById("txtJobDescription").disabled = true;
+  document.getElementById("divDates").style.display = "block";
+  document.getElementById("divDates").innerHTML = `<div class="w3-third"><label>Creation date: ${utils.formatDate(job.creation_date)}</label></div><div class="w3-third"><label>Started date: ${utils.formatDate(job.start_date)}</label></div><div class="w3-third"><label>Ended date: ${utils.formatDate(job.end_date)}</label></div>`;
+  document.getElementById("divButtonsNext").style.display = "none";
+  document.getElementById("divButtonsSummary").style.display = "block";
+  document.getElementById("btnStart").parentNode.style.display = "none";
+  // settings
+  setSettings(new Map(Object.entries(job.settings)));
+  // logs
+  STD_OUT.textContent = job.stdout;
+  STD_ERR.textContent = job.stderr;
+  STD_OUT.scrollTop = job.status == "RUNNING" ? STD_OUT.scrollHeight : 0;
+  STD_ERR.scrollTop = job.status == "RUNNING" ? STD_ERR.scrollHeight : 0;
+  // output files
+  output.insertOutputFiles(job.files);
+  // enable or disable tabs depending on the status
+  document.getElementById("btnParameters").disabled = false;
+  document.getElementById("btnLogs").disabled = job.status == "PENDING";
+  document.getElementById("btnOutput").disabled = (job.status != "DONE" && job.status != "ARCHIVED_DONE");
+  // highlight the job in the list on the left
+  jobs.highlightJobButton();
 }
 
 function createJob() {
-  console.log("createJob()");
+  // console.log("createJob()");
   document.getElementById("detail").getElementsByTagName("header")[0].style.display = "block";
   document.getElementById("splash").style.display = "none";
   utils.setCurrentJobId(0);
@@ -96,102 +125,64 @@ function createJob() {
   // clear the output fields
   document.getElementById("outputSummary").textContent = "Nothing yet...";
   document.getElementById("treeview").innerHTML = "";
-  document.getElementById("tabOutput").getElementsByTagName("button")[0].disabled = true;
+  // disable the other tabs
+  document.getElementById("btnParameters").disabled = true;
+  document.getElementById("btnLogs").disabled = true;
+  document.getElementById("btnOutput").disabled = true;
   // open the first tab
   tabs.openTab("tabSummary");
 }
 
-async function cloneJob() {
-  console.log("cloneJob()");
-  utils.toggleLoadingScreen();
-  const [job, error] = await window.electronAPI.getJobDetails(utils.getCurrentJobId());
-  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
-  if(error != "") dialog.displayErrorMessage("Connection error", error);
-  utils.setCurrentJobId(-1 * utils.getCurrentJobId()); // necessary for keeping the number of the job for the setting tab
-  jobs.highlightJobButton();
-  // clear the summary fields
+function cloneJob() {
+  // set the new job id
+  utils.setCurrentJobId(0);
+  // update some of the fields
   document.getElementById("txtJobOwner").value = utils.getUserName();
   document.getElementById("txtJobStatus").value = "";
   document.getElementById("txtJobStatus").parentNode.style.display = "none";
-  document.getElementById("cmbAppName").value = job.get("app_name");
   document.getElementById("cmbAppName").disabled = false;
-  document.getElementById("cmbStrategy").value = job.get("strategy");
   document.getElementById("cmbStrategy").disabled = false;
-  document.getElementById("txtSelectedHost").parentNode.style.display = "none";
-  document.getElementById("txtJobDescription").value = job.get("description");
-  document.getElementById("txtJobDescription").disabled = false;
   document.getElementById("divDates").style.display = "none";
   document.getElementById("divButtonsNext").style.display = "block";
   document.getElementById("divButtonsSummary").style.display = "none";
   document.getElementById("btnStart").parentNode.style.display = "block";
-  // clear the parameters fields
-  FORM.innerHTML = ""; // FIXME this should already contain the proper settings
-  // clear the log fields
   STD_OUT.textContent = "";
   STD_ERR.textContent = "";
-  // clear the output fields
   document.getElementById("outputSummary").textContent = "Nothing yet...";
   document.getElementById("treeview").innerHTML = "";
   document.getElementById("btnLogs").disabled = true;
   document.getElementById("btnOutput").disabled = true;
-  // document.getElementById("btnRefresh").disabled = true;
-  // open the first tab
-  tabs.openTab("tabSummary");
-  utils.toggleLoadingScreen();
-}
-
-async function loadJob(job_id) {
-  console.log(`loadJob(${job_id})`);
-  document.getElementById("detail").getElementsByTagName("header")[0].style.display = "block";
-  document.getElementById("splash").style.display = "none";
-  utils.toggleLoadingScreen();
-  utils.setCurrentJobId(job_id.replace("job_", ""));
-  const [job, error] = await window.electronAPI.getJobDetails(utils.getCurrentJobId());
-  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
-  if(error != "") dialog.displayErrorMessage("Connection error", error);
-  // lock what needs to be locked
-  for(let item of ["cmbAppName", "cmbStrategy", "txtSelectedHost", "txtJobDescription"]) { document.getElementById(item).disabled = true; }
-  // fill the summary fields
-  // console.log(job);
-  document.getElementById("txtJobOwner").value = job.get("username");
-  document.getElementById("txtJobStatus").parentNode.style.display = "block";
-  document.getElementById("txtJobStatus").value = job.get("status");
-  document.getElementById("cmbAppName").value = job.get("app_name");
-  document.getElementById("cmbStrategy").value = job.get("strategy");
-  document.getElementById("txtSelectedHost").parentNode.style.display = "block";
-  document.getElementById("txtSelectedHost").value = job.get("host");
-  document.getElementById("txtJobDescription").value = job.get("description");
-  document.getElementById("divDates").style.display = "block";
-  document.getElementById("divDates").innerHTML = `<div class="w3-third"><label>Creation date: ${utils.formatDate(job.get("creation_date"))}</label></div><div class="w3-third"><label>Started date: ${utils.formatDate(job.get("start_date"))}</label></div><div class="w3-third"><label>Ended date: ${utils.formatDate(job.get("end_date"))}</label></div>`;
-  document.getElementById("divButtonsNext").style.display = "none";
-  document.getElementById("divButtonsSummary").style.display = "block";
-  document.getElementById("btnStart").parentNode.style.display = "none";
-  // highlight the job in the list on the left
+  // highlight the "New job" button to give the impression that a new job was opened
   jobs.highlightJobButton();
-  // open the first tab
-  tabs.openTab("tabSummary");
-  utils.toggleLoadingScreen();
-  jobs.refreshStatus();
 }
 
 async function startJob() {
-  console.log(`startJob()`);
+  // console.log(`startJob()`);
+  dialog.closeDialogQuestion();
   const appName = document.getElementById("cmbAppName").value;
   const strategy = document.getElementById("cmbStrategy").value;
   const description = document.getElementById("txtJobDescription").value;
   const app = apps.get(appName);
-  const job_id = await window.electronAPI.startJob(utils.getUserName(), appName, strategy, description, app.getSettings(), app.getSharedFiles(), app.getLocalFiles());
-  // reload the job list
-  await jobs.reloadJobList();
-  // open the new job
-  loadJob(`job_${job_id}`);
+  if(app.checkSettings()) {
+    const settings = JSON.stringify(Object.fromEntries(getSettings()));
+    const sharedFiles = JSON.stringify(app.getSharedFiles());
+    const localFiles = JSON.stringify(app.getLocalFiles());
+    const job_id = await window.electronAPI.startJob(utils.getUserName(), appName, strategy, description, settings, sharedFiles, localFiles);
+    // reload the job list
+    await jobs.reloadJobList();
+    // open the new job
+    utils.setCurrentJobId(job_id.replace("job_", ""));
+    jobs.reloadJobList();
+  } else {
+    // TODO display a dialog box with the list of errors
+  }
 }
 
 async function cancelJob() {
-  console.log("cancelJob()");
+  // console.log("cancelJob()");
+  dialog.closeDialogQuestion();
   utils.toggleLoadingScreen();
   const [response, error] = await window.electronAPI.cancelJob(utils.getUserName(), utils.getCurrentJobId());
-  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
   if(error != "") dialog.displayErrorMessage("Connection error", error);
   // console.log(response);
   await jobs.reloadJobList();
@@ -199,53 +190,49 @@ async function cancelJob() {
 }
 
 async function deleteJob() {
-  console.log("deleteJob()");
+  // console.log("deleteJob()");
+  dialog.closeDialogQuestion();
   // TODO warn the user that there is no way back
   utils.toggleLoadingScreen();
   const [response, error] = await window.electronAPI.deleteJob(utils.getUserName(), utils.getCurrentJobId());
-  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
   if(error != "") dialog.displayErrorMessage("Connection error", error);
   // console.log(response);
   await jobs.reloadJobList();
   utils.toggleLoadingScreen();
 }
 
-async function openJobParameters() {
-  console.log("openJobParameters()");
-  // get the appropriate form
-  const app = document.getElementById("cmbAppName").value;
-  if(app != "") {
-    document.getElementById("formParameters").innerHTML = apps.get(app).html;
-    apps.get(app).eventsFunction();
+function getSettings() {
+  const settings = new Map();
+  for(let item of FORM.getElementsByTagName("input")) {
+    if(item.name) {
+      if(item.type == "checkbox") {
+        if(item.checked) settings.set(item.name, true);
+      } else settings.set(item.name, item.value);
+    }
   }
-  // fill the form eventually
-  if(utils.getCurrentJobId() != 0) {
-    utils.toggleLoadingScreen();
-    const [job, error] = await window.electronAPI.getJobDetails(utils.getCurrentJobId() > 0 ? utils.getCurrentJobId() : utils.getCurrentJobId() * -1); // job id can be negative if we are cloning a job
-    // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
-    if(error != "") dialog.displayErrorMessage("Connection error", error);
-    // console.log(job);
-    for(let [key, value] of Object.entries(job.get("settings"))) {
-      const node = document.getElementsByName(key)[0];
-      if(node !== undefined) {
-        if(node.tagName == "INPUT" && node.type == "checkbox") node.checked = value == "on";
-        else node.value = value;
+  for(let item of FORM.getElementsByTagName("select")) {
+    if(item.name) settings.set(item.name, item.value);
+  }
+  settings.set("files", utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
+  // console.log(settings);
+  return settings;
+}
+
+function setSettings(settings) {
+  // console.log(settings);
+  setAppParameters(settings);
+  for(let item of FORM.getElementsByTagName("input")) {
+    if(item.name) {
+      if(item.type == "checkbox") {
+        item.checked = settings.has(item.name);
+      } else if(settings.has(item.name)) {
+        item.value = settings.get(item.name);
       }
     }
-    utils.toggleLoadingScreen();
   }
-  tabs.openTab("tabParameters");
+  for(let item of FORM.getElementsByTagName("select")) {
+    if(item.name && settings.has(item.name)) item.value = settings.get(item.name);
+  }
 }
 
-async function openJobOutput() {
-  console.log("openJobOutput()");
-  utils.toggleLoadingScreen();
-  const [files, error] = utils.getCurrentJobId() != 0 ? await window.electronAPI.getFileList(utils.getUserName(), utils.getCurrentJobId()) : new Array();
-  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
-  if(error != "") dialog.displayErrorMessage("Connection error", error);
-  output.insertOutputFiles(files);
-  utils.toggleLoadingScreen();
-  tabs.openTab("tabOutput");
-}
-
-export { cancelJob, cloneJob, createJob, deleteJob, loadJob, openJobOutput, openJobParameters, refreshJob, startJob };
+export { cancelJob, cloneJob, createJob, deleteJob, refreshJob, startJob, setAppParameters };

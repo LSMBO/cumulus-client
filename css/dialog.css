@@ -1,5 +1,6 @@
 #dialogs {
     display: none;
+    z-index: 15;
 }
 
 .dialog {

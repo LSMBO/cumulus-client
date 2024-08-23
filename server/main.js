@@ -42,6 +42,7 @@ const rest = require('./rest.js');
 const srv = require('./server.js');
 
 var mainWindow = null;
+const DEBUG_MODE = true;
 
 function getUncPaths() {
   const paths = new Map();
@@ -49,8 +50,8 @@ function getUncPaths() {
     const items = line.split(/\s+/);
     if(items.length > 4 && items[0] == "OK") {
       const letter = items[1];
-      const path = execSync(`net use ${letter}`).toString().split(/\r?\n/)[1].replace(/[^\\\/]+[\s\t]+/, "");
-      paths.set(letter, path);
+      const uncPath = execSync(`net use ${letter}`).toString().split(/\r?\n/)[1].replace(/[^\\\/]+[\s\t]+/, "");
+      paths.set(letter, uncPath);
     }
   }
   return paths;
@@ -60,21 +61,26 @@ function getUserName() {
   return process.env.USERNAME;
 }
 
-async function browse(_, type, title, filter, properties) {
-  // console.log(`Type: '${type}' ; title: '${title}' ; filter: '${filter}' ; properties: '${properties}'`);
-  var path = "";
-  if(type == "FASTA") path = config.get("fasta.path");
-  else if(type == "RAW") path = config.get("raw.file.path");
-  // console.log(`Browse here: "${path}"`);
-  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, { title: title, defaultPath: path, filters: filter, properties: properties });
+function getDebugMode() {
+  return DEBUG_MODE;
+}
+
+async function browse(_, type, title, currentPath, filter, properties) {
+  // console.log(`Type: '${type}' ; title: '${title}' ; path: '${currentPath}' ; filter: '${filter}' ; properties: '${properties}'`);
+  var defaultPath = "";
+  if(currentPath != "") defaultPath = path.dirname(currentPath);
+  else if(type == "FASTA") defaultPath = config.get("fasta.path");
+  else if(type == "RAW") defaultPath = config.get("raw.file.path");
+  // console.log(`Browse here: "${defaultPath}"`);
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, { title: title, defaultPath: defaultPath, filters: filter, properties: properties });
   return canceled ? "" : filePaths;
 }
 
-function countExistingFiles(_, path, files) {
+function countExistingFiles(_, currentPath, files) {
   var nbExistingFiles = 0;
   for(let file of files) {
-    // console.log(`Testing file ${path}/${file}}`);
-    if(fs.existsSync(path + "/" + file)) nbExistingFiles++;
+    // console.log(`Testing file ${currentPath}/${file}}`);
+    if(fs.existsSync(currentPath + "/" + file)) nbExistingFiles++;
   }
   // console.log(`${nbExistingFiles} files are already there`);
   return nbExistingFiles;
@@ -84,7 +90,7 @@ function createWindow () {
   // Create the browser window.
   // const mainWindow = new BrowserWindow({
   mainWindow = new BrowserWindow({
-    width: 1800, // TODO use 1280 in prod?
+    width: DEBUG_MODE ? 1800 : 1280,
     height: 800,
     autoHideMenuBar: true,
     icon: path.join(__dirname, 'img/favicon.png'),
@@ -100,8 +106,7 @@ function createWindow () {
   // mainWindow.maximize();
 
   // Open the DevTools.
-  // TODO comment this when going to prod
-  mainWindow.webContents.openDevTools()
+  if(DEBUG_MODE) mainWindow.webContents.openDevTools()
 }
 
 function exitApp() {
@@ -118,10 +123,12 @@ app.whenReady().then(() => {
   ipcMain.handle('set-config', config.saveConfig);
   ipcMain.handle('reset-config', config.resetConfig);
   ipcMain.handle('get-user-name', getUserName);
+  ipcMain.handle('get-debug-mode', getDebugMode);
   ipcMain.handle('get-last-jobs', srv.getLastJobs);
   ipcMain.handle('search-jobs', srv.searchJobs);
   ipcMain.handle('get-job-details', srv.jobDetails);
   ipcMain.handle('get-job-status', srv.jobStatus);
+  ipcMain.handle('get-transfer-progress', srv.transferProgress);
   ipcMain.handle('get-file-list', srv.listJobFiles);
   // ipcMain.handle('check-version', srv.checkVersion);
   ipcMain.handle('list-storage', srv.listStorage);
