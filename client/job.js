@@ -46,8 +46,9 @@ const STD_ERR = document.getElementById("stderr");
 function setAppParameters(settings = null) {
   const app = document.getElementById("cmbAppName").value;
   if(app != "") {
-    document.getElementById("formParameters").innerHTML = apps.get(app).html;
-    apps.get(app).eventsFunction();
+    // document.getElementById("formParameters").innerHTML = apps.get(app).html;
+    // apps.get(app).eventsFunction();
+    apps.get(app).initialize(document.getElementById("formParameters"));
     if(settings != null) apps.get(app).setSettings(settings);
     // enable parameter tab
     document.getElementById("btnParameters").disabled = false;
@@ -59,6 +60,7 @@ function setAppParameters(settings = null) {
 }
 
 function refreshJob(job) {
+  // console.log(job);
   // TODO what if job is null, or new job or search?
   // summary
   document.getElementById("txtJobOwner").value = job.owner;
@@ -81,6 +83,11 @@ function refreshJob(job) {
   document.getElementById("btnStart").parentNode.style.display = "none";
   // settings
   setSettings(new Map(Object.entries(job.settings)));
+  // TODO update the transfer progress if status is PENDING
+  //      problem with current system is that it only show the raw file progression, some future apps could not be centered around lists of raw files
+  //      it's probably best if we display a progress bar somewhere with the name of the file currently transferred and the total pct?
+  //      this could be an opportunity to tell the user that the search will begin when all the files are uploaded
+  //      it should not prevent from reading the search parameters, so where do we put this screen? a dialog with a button to close and another one to display it? or another tab?
   // logs
   STD_OUT.textContent = job.stdout;
   STD_ERR.textContent = job.stderr;

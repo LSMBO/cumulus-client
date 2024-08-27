@@ -128,7 +128,7 @@ btnSearch.addEventListener("mouseout", () => {
 });
 
 function keydownEvent(event) {
-  utils.setActive(true);
+  // utils.setActive(true);
   if (event.key === 'Control' || event.key === 'Shift') return; // do nothing
   if(event.ctrlKey && ((!event.shiftKey && event.code === 'Tab') || event.code === 'PageDown')) tabs.goToNextTab();
   else if(event.ctrlKey && (event.shiftKey && event.code === 'Tab' || event.code === 'PageUp')) tabs.goToPreviousTab();
@@ -137,7 +137,7 @@ function keydownEvent(event) {
   // else if(event.ctrlKey && event.key === 'n') document.getElementById("new_job").click();
 }
 async function keyupEvent(event) {
-  utils.setActive(true);
+  // utils.setActive(true);
   // console.log(event);
   if(DEBUG_MODE && event.ctrlKey && event.key === 't') {
     // utils.toggleLoadingScreen();
@@ -158,10 +158,12 @@ async function keyupEvent(event) {
 window.addEventListener('keydown', keydownEvent, true);
 window.addEventListener('keyup', keyupEvent, true);
 window.addEventListener("resize", tabs.resizeLogAreas);
-document.addEventListener("click", (event) => {
-  dialog.closeDialogInfo();
-  utils.setActive(true);
-  utils.checkboxListEventListener(event.target);
+window.addEventListener("click", e => {
+  if(utils.isFocus()) {
+    // console.log(e);
+    dialog.closeDialogInfo();
+    utils.setActive(true);
+  }
 });
 
 async function loadRemoteHosts() {
@@ -233,7 +235,7 @@ async function initialize() {
     // add the tooltip texts
     addTooltips();
     window.addEventListener("focus", (_) => {
-      dialog.closeDialogInfo();
+      // dialog.closeDialogInfo();
       utils.setFocus(true);
     });
     // when the app is not in focus, set the interval to 5 minutes
@@ -248,6 +250,7 @@ async function initialize() {
     // document.getElementById("new_job").click();
     job.createJob();
     jobs.resetInterval();
+    utils.setActive(true); // only required on debug mode
   }
 }
 

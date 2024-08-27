@@ -136,12 +136,16 @@ utils.addCheckboxList(mainSearchStatus, "Status", {"pending": "Pending", "runnin
 document.getElementById("btnSearchMe").addEventListener("click", (e) => { e.preventDefault(); document.getElementById("txtSearchOwner").value = utils.getUserName(); });
 document.getElementById("btnSearchOk").addEventListener("click", async (e) => {
     e.preventDefault();
-    jobs.searchJobs(false);
+    // jobs.searchJobs(false);
+    jobs.setSearchMode(true);
+    jobs.reloadJobList(false);
 });
 document.getElementById("btnSearchReset").addEventListener("click", (e) => {
     e.preventDefault();
     setDefaultValues();
-    jobs.getLastJobs();
+    // jobs.getLastJobs();
+    jobs.setSearchMode(false);
+    jobs.reloadJobList();
 });
 
 // initialize on first opening

@@ -1,7 +1,7 @@
 import { addBrowsedFiles, App, browse, getBrowsedFiles, tooltip } from "../utils.js";
 
-export function getDiann181Html() {
-    return `<h3>Diann 1.8.1 parameters</h3>
+export function initialize(parent) {
+  parent.innerHTML = `<h3>Diann 1.8.1 parameters</h3>
           <table id="diann181_main" class="w3-table">
             <tr><td class="w3-half">
               <div class="w3-row w3-section">
@@ -186,48 +186,46 @@ export function getDiann181Html() {
           <td colspan="3"><input id="diann181_txtVerbose" name="verbose" type="number" class="w3-input w3-border" value="1" min="1" max="5"></td>
         </tr>
         </table>`;
-}
 
-export function getDiann181Events() {
-    // it's important to add event.preventDefault() to avoid the GUI to be reloaded!
-    document.getElementById("diann181_btnBrowseRaw").addEventListener("click", (event) => {
-      event.preventDefault();
-      const type = document.getElementById("diann181_cmbRawType").value;
-      if(type == "raw") browse("RAW", "Select your RAW files", [ { name: "Thermo RAW file", extensions: ['raw'] }], ['openFile', 'multiSelections'], "diann181_rawFiles");
-      else browse("RAW", "Select your Bruker analyses", [ { name: "Bruker analysis", extensions: ['d'] }], ['openDirectory', 'multiSelections'], "diann181_rawFiles");
-    });
-    document.getElementById("diann181_btnBrowseFasta").addEventListener("click", async (event) => { event.preventDefault(); await browse("FASTA", "Select your Fasta file", [ { name: "Fasta file", extensions: ['fasta'] }], ['openFile'], "diann181_txtFasta"); });
-    document.getElementById("diann181_btnClearRaw").addEventListener("click", (event) => { event.preventDefault(); document.getElementById("diann181_rawFiles").textContent = ""; });
-    document.getElementById("diann181_rawFiles").addEventListener("click", (event) => {
-      event.preventDefault;
-      if(event.target.tagName == "SPAN") event.target.parentNode.outerHTML = "";
-    });
-    document.getElementById("diann181_advancedParamsHeader").addEventListener("click", (event) => {
-      event.preventDefault;
-      if(document.getElementById("diann181_advancedParams").className.includes("w3-hide")) document.getElementById("diann181_advancedParams").classList.remove("w3-hide");
-      else document.getElementById("diann181_advancedParams").classList.add("w3-hide");
-    });
-    // add the tooltip texts
-    tooltip(document.getElementById("diann181_btnBrowseFasta").parentElement.nextElementSibling, "Select the FASTA file for the library-free approach");
-    tooltip(document.getElementById("diann181_cmbRawType"), "Select the type of RAW data you want to load");
-    tooltip(document.getElementById("diann181_btnClearRaw"), "Remove all files");
-    tooltip(document.getElementById("diann181_cmbEnzyme").previousElementSibling, "Enzyme used for the digest");
-    tooltip(document.getElementById("diann181_txtMc").previousElementSibling, "Maximum number of missed cleavages allowed");
-    tooltip(document.getElementById("diann181_txtVarMods").previousElementSibling, "Warning: more than 3 variable modifications will significantly increase the search space, use with caution");
-    tooltip(document.getElementById("diann181_txtFdr").previousElementSibling, "False discovery rate level at which the output files will be filtered");
-    tooltip(document.getElementById("diann181_txtMs1Acc").previousElementSibling, "Leave at 0.0 for automatic inference");
-    tooltip(document.getElementById("diann181_txtMassAcc").previousElementSibling, "Leave at 0.0 for automatic inference");
-    tooltip(document.getElementById("diann181_txtWindow").previousElementSibling, "Radius (in scans) of the retention time window that is used to scan extracted chromatograms of precursor ions");
-    tooltip(document.getElementById("diann181_txtMinLen").parentElement.previousElementSibling, "The peptide length range has an impact on the size of the seach space");
-    tooltip(document.getElementById("diann181_txtMinCharge").parentElement.previousElementSibling, "The precursor charge range has an impact on the size of the seach space");
-    tooltip(document.getElementById("diann181_txtMinMz").parentElement.previousElementSibling, "The precursor m/z range has an impact on the size of the seach space");
-    tooltip(document.getElementById("diann181_txtPepMinMz").parentElement.previousElementSibling, "The peptide m/z range has an impact on the size of the seach space");
-    tooltip(document.getElementById("diann181_cmbInference").parentElement.previousElementSibling, "Select the way that the protein isoforms are grouped by");
-    tooltip(document.getElementById("diann181_cmbClassifier").parentElement.previousElementSibling, "Double-pass mode is the best in most cases but is about twice slower than single-pass");
-    tooltip(document.getElementById("diann181_cmbQuant").parentElement.previousElementSibling, "Select if you want to prioritize precision or accuracy");
-    tooltip(document.getElementById("diann181_cmbNorm").parentElement.previousElementSibling, "Normalized quantities are reported along with the raw quantities");
-    tooltip(document.getElementById("diann181_cmbSpeed").parentElement.previousElementSibling, "Optimal results gives the most identifications, Low RAM is almost as good but requires less RAM and is a little faster, the others return significantly less identifications but are significantly faster");
-    tooltip(document.getElementById("diann181_txtVerbose").parentElement.previousElementSibling, "Select the detail of the log output, values are between 0 to 5");
+  // it's important to add event.preventDefault() to avoid the GUI to be reloaded!
+  document.getElementById("diann181_btnBrowseRaw").addEventListener("click", (event) => {
+    event.preventDefault();
+    const type = document.getElementById("diann181_cmbRawType").value;
+    if(type == "raw") browse("RAW", "Select your RAW files", [ { name: "Thermo RAW file", extensions: ['raw'] }], ['openFile', 'multiSelections'], "diann181_rawFiles");
+    else browse("RAW", "Select your Bruker analyses", [ { name: "Bruker analysis", extensions: ['d'] }], ['openDirectory', 'multiSelections'], "diann181_rawFiles");
+  });
+  document.getElementById("diann181_btnBrowseFasta").addEventListener("click", async (event) => { event.preventDefault(); await browse("FASTA", "Select your Fasta file", [ { name: "Fasta file", extensions: ['fasta'] }], ['openFile'], "diann181_txtFasta"); });
+  document.getElementById("diann181_btnClearRaw").addEventListener("click", (event) => { event.preventDefault(); document.getElementById("diann181_rawFiles").textContent = ""; });
+  document.getElementById("diann181_rawFiles").addEventListener("click", (event) => {
+    event.preventDefault;
+    if(event.target.tagName == "SPAN") event.target.parentNode.outerHTML = "";
+  });
+  document.getElementById("diann181_advancedParamsHeader").addEventListener("click", (event) => {
+    event.preventDefault;
+    if(document.getElementById("diann181_advancedParams").className.includes("w3-hide")) document.getElementById("diann181_advancedParams").classList.remove("w3-hide");
+    else document.getElementById("diann181_advancedParams").classList.add("w3-hide");
+  });
+  // add the tooltip texts
+  tooltip(document.getElementById("diann181_btnBrowseFasta").parentElement.nextElementSibling, "Select the FASTA file for the library-free approach");
+  tooltip(document.getElementById("diann181_cmbRawType"), "Select the type of RAW data you want to load");
+  tooltip(document.getElementById("diann181_btnClearRaw"), "Remove all files");
+  tooltip(document.getElementById("diann181_cmbEnzyme").previousElementSibling, "Enzyme used for the digest");
+  tooltip(document.getElementById("diann181_txtMc").previousElementSibling, "Maximum number of missed cleavages allowed");
+  tooltip(document.getElementById("diann181_txtVarMods").previousElementSibling, "Warning: more than 3 variable modifications will significantly increase the search space, use with caution");
+  tooltip(document.getElementById("diann181_txtFdr").previousElementSibling, "False discovery rate level at which the output files will be filtered");
+  tooltip(document.getElementById("diann181_txtMs1Acc").previousElementSibling, "Leave at 0.0 for automatic inference");
+  tooltip(document.getElementById("diann181_txtMassAcc").previousElementSibling, "Leave at 0.0 for automatic inference");
+  tooltip(document.getElementById("diann181_txtWindow").previousElementSibling, "Radius (in scans) of the retention time window that is used to scan extracted chromatograms of precursor ions");
+  tooltip(document.getElementById("diann181_txtMinLen").parentElement.previousElementSibling, "The peptide length range has an impact on the size of the seach space");
+  tooltip(document.getElementById("diann181_txtMinCharge").parentElement.previousElementSibling, "The precursor charge range has an impact on the size of the seach space");
+  tooltip(document.getElementById("diann181_txtMinMz").parentElement.previousElementSibling, "The precursor m/z range has an impact on the size of the seach space");
+  tooltip(document.getElementById("diann181_txtPepMinMz").parentElement.previousElementSibling, "The peptide m/z range has an impact on the size of the seach space");
+  tooltip(document.getElementById("diann181_cmbInference").parentElement.previousElementSibling, "Select the way that the protein isoforms are grouped by");
+  tooltip(document.getElementById("diann181_cmbClassifier").parentElement.previousElementSibling, "Double-pass mode is the best in most cases but is about twice slower than single-pass");
+  tooltip(document.getElementById("diann181_cmbQuant").parentElement.previousElementSibling, "Select if you want to prioritize precision or accuracy");
+  tooltip(document.getElementById("diann181_cmbNorm").parentElement.previousElementSibling, "Normalized quantities are reported along with the raw quantities");
+  tooltip(document.getElementById("diann181_cmbSpeed").parentElement.previousElementSibling, "Optimal results gives the most identifications, Low RAM is almost as good but requires less RAM and is a little faster, the others return significantly less identifications but are significantly faster");
+  tooltip(document.getElementById("diann181_txtVerbose").parentElement.previousElementSibling, "Select the detail of the log output, values are between 0 to 5");
 }
 
 function getSharedFiles() {
@@ -250,5 +248,6 @@ function setSpecificSettings(settings) {
 }
 
 export function get() {
-  return new App("diann_1.8.1", "Dia-NN", "1.8.1", getDiann181Html(), getDiann181Events, getSharedFiles, getLocalFiles, checkSettings, setSpecificSettings);
+  // return new App("diann_1.8.1", "Dia-NN", "1.8.1", getDiann181Html(), getDiann181Events, getSharedFiles, getLocalFiles, checkSettings, setSpecificSettings);
+  return new App("diann_1.8.1", "Dia-NN", "1.8.1", initialize, getSharedFiles, getLocalFiles, checkSettings, setSpecificSettings);
 }

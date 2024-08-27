@@ -1,8 +1,7 @@
 import { addBrowsedFiles, App, browse, getBrowsedFiles, tooltip } from "../utils.js";
-// import * as utils from "../utils.js";
 
-function getDiann191Html() {
-    return `<h3>Diann 1.9.1 parameters</h3>
+export function initialize(parent) {
+    parent.innerHTML = `<h3>Diann 1.9.1 parameters</h3>
     <table id="diann191_main" class="w3-table">
         <tr><td class="w3-half">
         <div class="w3-row w3-section">
@@ -186,26 +185,26 @@ function getDiann191Html() {
     <td colspan="3"><input id="diann191_txtVerbose" name="verbose" type="number" class="w3-input w3-border" value="1" min="1" max="5"></td>
     </tr>
     </table>`;
-}
-function getDiann191Events() {
+
     // it's important to add event.preventDefault() to avoid the GUI to be reloaded!
     document.getElementById("diann191_btnBrowseRaw").addEventListener("click", (event) => {
-    event.preventDefault();
-    const type = document.getElementById("diann191_cmbRawType").value;
-    if(type == "raw") browse("RAW", "Select your RAW files", [ { name: "Thermo RAW file", extensions: ['raw'] }], ['openFile', 'multiSelections'], "diann191_rawFiles");
-    else browse("RAW", "Select your Bruker analyses", [ { name: "Bruker analysis", extensions: ['d'] }], ['openDirectory', 'multiSelections'], "diann191_rawFiles");
+        event.preventDefault();
+        const type = document.getElementById("diann191_cmbRawType").value;
+        if(type == "raw") browse("RAW", "Select your RAW files", [ { name: "Thermo RAW file", extensions: ['raw'] }], ['openFile', 'multiSelections'], "diann191_rawFiles");
+        else browse("RAW", "Select your Bruker analyses", [ { name: "Bruker analysis", extensions: ['d'] }], ['openDirectory', 'multiSelections'], "diann191_rawFiles");
     });
     document.getElementById("diann191_btnBrowseFasta").addEventListener("click", async (event) => { event.preventDefault(); await browse("FASTA", "Select your Fasta file", [ { name: "Fasta file", extensions: ['fasta'] }], ['openFile'], "diann191_txtFasta"); });
     document.getElementById("diann191_btnClearRaw").addEventListener("click", (event) => { event.preventDefault(); document.getElementById("diann191_rawFiles").textContent = ""; });
     document.getElementById("diann191_rawFiles").addEventListener("click", (event) => {
-    event.preventDefault;
-    if(event.target.tagName == "SPAN") event.target.parentNode.outerHTML = "";
+        event.preventDefault;
+        if(event.target.tagName == "SPAN") event.target.parentNode.outerHTML = "";
     });
     document.getElementById("diann191_advancedParamsHeader").addEventListener("click", (event) => {
-    event.preventDefault;
-    if(document.getElementById("diann191_advancedParams").className.includes("w3-hide")) document.getElementById("diann191_advancedParams").classList.remove("w3-hide");
-    else document.getElementById("diann191_advancedParams").classList.add("w3-hide");
+        event.preventDefault;
+        if(document.getElementById("diann191_advancedParams").className.includes("w3-hide")) document.getElementById("diann191_advancedParams").classList.remove("w3-hide");
+        else document.getElementById("diann191_advancedParams").classList.add("w3-hide");
     });
+
     // add the tooltip texts
     tooltip(document.getElementById("diann191_btnBrowseFasta").parentElement.nextElementSibling, "Select the FASTA file for the library-free approach");
     tooltip(document.getElementById("diann191_cmbRawType"), "Select the type of RAW data you want to load");
@@ -250,5 +249,6 @@ function setSpecificSettings(settings) {
 }
 
 export function get() {
-    return new App("diann_1.9.1", "Dia-NN", "1.9.1", getDiann191Html(), getDiann191Events, getSharedFiles, getLocalFiles, checkSettings, setSpecificSettings);
+    // return new App("diann_1.9.1", "Dia-NN", "1.9.1", getDiann191Html(), getDiann191Events, getSharedFiles, getLocalFiles, checkSettings, setSpecificSettings);
+    return new App("diann_1.9.1", "Dia-NN", "1.9.1", initialize, getSharedFiles, getLocalFiles, checkSettings, setSpecificSettings);
 }

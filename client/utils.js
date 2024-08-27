@@ -32,27 +32,31 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
+import * as dialog from "./dialog.js";
+
 var CURRENT_JOB_ID = 0;
 var USERNAME = "";
 var IS_ACTIVE = true; // used for sleep mode, it can be inactive even if app has focus
 var IS_FOCUS = true;
 var LAST_ACTIVITY = new Date();
+var NB_SKIPS_BEFORE_REFRESH = 0;
+const TIME_BEFORE_SLEEP_IN_SECONDS = 100; // 300
 const TOOLTIPTEXT = document.getElementById("tooltiptext");
 const UNC_PATHS = new Map();
 const LOADER = document.getElementById("loading");
 const UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
 
 class App {
-    // constructor(id, name, version, html, eventsFunction, getSettings, getSharedFiles, getLocalFiles) {
-    constructor(id, name, version, html, eventsFunction, getSharedFiles, getLocalFiles, checkSettings, setSettings) {
+    // constructor(id, name, version, html, eventsFunction, getSharedFiles, getLocalFiles, checkSettings, setSettings) {
+    constructor(id, name, version, initialize, getSharedFiles, getLocalFiles, checkSettings, setSettings) {
         this.id = id;
         this.name = name;
         this.version = version;
-        this.html = html;
+        // this.html = html;
         // call this function after adding the html to an object to create the events listeners
-        this.eventsFunction = eventsFunction;
+        // this.eventsFunction = eventsFunction;
+        this.initialize = initialize;
         // // call this function to put the user's values in a map and return it for validation
-        // this.getSettings = getSettings;
         this.getSharedFiles = getSharedFiles;
         this.getLocalFiles = getLocalFiles;
         this.checkSettings = checkSettings;
@@ -208,7 +212,10 @@ function sleep(ms) {
 function setActive(value) {
     IS_ACTIVE = value;
     // store the time of the last time the app was set active
-    if(value) LAST_ACTIVITY = new Date();
+    if(IS_ACTIVE) {
+        LAST_ACTIVITY = new Date();
+        updateSkipsBetweenRefreshs(true);
+    }
     // console.log(`Last activity was at: ${LAST_ACTIVITY}`);
 }
 
@@ -224,11 +231,43 @@ function setFocus(value) {
     IS_FOCUS = value;
     // if the app gets focus, it's active again
     // if the app looses focus, it's not active
-    setActive(IS_FOCUS);
+    // setActive(IS_FOCUS);
 }
 
 function isFocus() {
     return IS_FOCUS;
+}
+
+function updateSkipsBetweenRefreshs(reset = false) {
+    if(reset) {
+        NB_SKIPS_BEFORE_REFRESH = 0;
+    } else if(NB_SKIPS_BEFORE_REFRESH <= 0) {
+        // update every minute if asleep
+        if(!isActive()) NB_SKIPS_BEFORE_REFRESH = 11;
+        // update every 15 seconds if just blur
+        else if(!isFocus()) NB_SKIPS_BEFORE_REFRESH = 2;
+        // update every 5 seconds otherwise
+        else NB_SKIPS_BEFORE_REFRESH = 0;
+    } else NB_SKIPS_BEFORE_REFRESH -= 1;
+    // console.log(`Number of skips before refreshing jobs: ${NB_SKIPS_BEFORE_REFRESH}`);
+}
+
+function checkSleepMode() {
+    const timeSinceLastActivity = Math.floor((new Date() - getLastActivity()) / 1000);
+    // console.log(`Seconds since last activity: ${timeSinceLastActivity} (isActive=${isActive()})`);
+    // sleep mode is on if the time since last activity exceeds the threshold
+    if(isActive() && timeSinceLastActivity > TIME_BEFORE_SLEEP_IN_SECONDS) {
+        // console.log("App appears to be inactive");
+        // set the app as inactive
+        setActive(false);
+        dialog.openDialogInfo("Sleeping mode", "Cumulus will be refreshed less often, but do not worry your jobs are still running!");
+    }
+    // update the counter at every step
+    updateSkipsBetweenRefreshs();
+}
+
+function doRefresh() {
+    return NB_SKIPS_BEFORE_REFRESH <= 0;
 }
 
 function getUserName() {
@@ -273,11 +312,6 @@ function selectCheckboxListItem(target, name, value) {
 }
 
 function getCheckboxListSelection(target) {
-    // const items = [];
-    // for(let lbl of target.getElementsByTagName("div")[0].getElementsByTagName("label")) {
-    //     items.push(lbl.textContent);
-    // }
-    // return items;
     const items = {};
     for(let label of target.getElementsByTagName("div")[1].getElementsByTagName("label")) {
         if(label.children[0].checked) items[label.children[0].name] = label.textContent;
@@ -286,20 +320,22 @@ function getCheckboxListSelection(target) {
 }
 
 function checkboxListEventListener(target) {
-    console.log(target);
-    if(target.classList.contains("w3-input") && target.parentElement != null && target.parentElement.classList.contains("selector")) {
-        // this is the txt with the results as labels in it
+    // console.log(target);
+    if(target.classList.contains("w3-input") && target.parentElement.classList.contains("selector")) {
+        // user has clicked on the visible div where labels are displayed, show the div with the checkboxes
         toggleClass(target.parentElement.getElementsByTagName("div")[1], "w3-hide");
-    } else if(target.tagName == "LABEL" && target.parentElement != null && target.parentElement.classList.contains("w3-input") && target.parentElement.parentElement != null && target.parentElement.parentElement.classList.contains("selector")) {
-        // this is one result in the txt
+        toggleClass(target.parentElement.getElementsByTagName("div")[2], "w3-hide");
+    } else if(target.tagName == "LABEL" && target.parentElement.parentElement.classList.contains("selector")) {
+        // user has clicked on a label in the visible div, show the div with the checkboxes
         toggleClass(target.parentElement.parentElement.getElementsByTagName("div")[1], "w3-hide");
-    } {
-        // hide the list of results when clicking anywhere else, except if it's on the list itself
-        for(let div of document.getElementsByClassName("selector")) {
-            if(!div.contains(target)) {
-                div.getElementsByClassName("selector-items")[0].classList.add("w3-hide");
-            }
-        }
+        toggleClass(target.parentElement.parentElement.getElementsByTagName("div")[2], "w3-hide");
+    } else if(target.tagName == "INPUT" && target.type == "checkbox") {
+        // user has selected/unselected a checkbox, update the visible div
+        updateCheckboxList(target.parentElement.parentElement.parentElement);
+    } else if(target.classList.contains("selector-outside")) {
+        // user has clicked outside of the div with the checkboxes, hide the list of results
+        toggleClass(target.previousElementSibling, "w3-hide");
+        toggleClass(target, "w3-hide");
     }
 }
 
@@ -312,11 +348,10 @@ function addCheckboxList(parent, label, items, tooltiptext) {
     for(let key in items) {
         html += `<label><input type="checkbox" name="${key}" checked />${items[key]}</label>`;
     }
-    html += "</div></div>";
+    html += "</div><div class='selector-outside w3-hide'></div></div>";
     parent.innerHTML = html;
-    // document.addEventListener("click", (event) => checkboxListEventListener(event.target));
-    parent.getElementsByTagName("div")[1].addEventListener("click", (_) => updateCheckboxList(parent));
+    parent.addEventListener("click", (e) => checkboxListEventListener(e.target));
     tooltip(parent.getElementsByTagName("label")[0], tooltiptext);
 }
 
-export { addBrowsedFiles, addCheckboxList, App, browse, checkboxListEventListener, convertToUncPath, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setUserName, sleep, toHumanReadable, toggleLoadingScreen, tooltip, updateCheckboxList };
+export { addBrowsedFiles, addCheckboxList, App, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setUserName, sleep, toHumanReadable, toggleLoadingScreen, tooltip, updateCheckboxList };

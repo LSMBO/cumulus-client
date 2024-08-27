@@ -51,11 +51,14 @@ function closeDialog(dialog_id) {
 }
 
 function openDialogInfo(title, message) {
-    // document.getElementById("dialogs").addEventListener("click", closeDialogInfo());
+    document.getElementById("dialogs").addEventListener("click", closeDialogInfo());
     openDialog("dialog_info", title, message);
 }
 function isDialogInfoOpen() { return isDialogOpen("dialog_info"); }
-function closeDialogInfo() { closeDialog("dialog_info"); }
+function closeDialogInfo() {
+    closeDialog("dialog_info");
+    document.getElementById("dialogs").removeEventListener("click", closeDialogInfo);
+}
 
 function openDialogQuestion(title, message, onYes, onYesLabel = "Yes", onYesArgs = undefined, onNo = undefined, onNoLabel = "No", onNoArgs = undefined) {
     // apply the Yes button

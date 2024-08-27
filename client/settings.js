@@ -80,10 +80,10 @@ async function saveSettings() {
     CONFIG.set("fasta.path", document.getElementById("txtSettingsDefaultFastaFilesPath").value);
     const selectedOptions = Object.entries(utils.getCheckboxListSelection(jobLabels)).map(kv => kv[0]);
     for(let option of ["display.job.id", "display.job.owner", "display.app.name", "display.job.start.date"]) {
-        // TODO this does not seem to work!
-        CONFIG.set(option, selectedOptions.contains(option));
+        CONFIG.set(option, selectedOptions.includes(option));
     }
     await window.electronAPI.setConfig(CONFIG);
+    jobs.setJobListDisplay();
     jobs.resetInterval();
 }
 
@@ -91,7 +91,7 @@ async function resetSettings() {
     dialog.closeDialogQuestion();
     await window.electronAPI.resetConfig();
     await loadSettings();
-    await openSettings();
+    openSettings();
     jobs.resetInterval();
 }
 
