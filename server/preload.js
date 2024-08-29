@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 // TODO check if all functions are still used
 contextBridge.exposeInMainWorld('electronAPI', {
+    checkRsyncAgent: () => ipcRenderer.invoke('check-rsync'),
     checkServer: () => ipcRenderer.invoke('check-server'),
     getUncPaths: () => ipcRenderer.invoke('get-unc-paths'),
     getConfig: () => ipcRenderer.invoke('get-config'),

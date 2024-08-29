@@ -137,7 +137,6 @@ function keydownEvent(event) {
   // else if(event.ctrlKey && event.key === 'n') document.getElementById("new_job").click();
 }
 async function keyupEvent(event) {
-  // utils.setActive(true);
   // console.log(event);
   if(DEBUG_MODE && event.ctrlKey && event.key === 't') {
     // utils.toggleLoadingScreen();
@@ -161,7 +160,7 @@ window.addEventListener("resize", tabs.resizeLogAreas);
 window.addEventListener("click", e => {
   if(utils.isFocus()) {
     // console.log(e);
-    dialog.closeDialogInfo();
+    if(dialog.isDialogInfoOpen()) dialog.closeDialogInfo();
     utils.setActive(true);
   }
 });
@@ -216,7 +215,7 @@ function addTooltips() {
 async function initialize() {
   // check that the client have the same version number as the server
   const error = await window.electronAPI.checkServer();
-  // if(error != "") dialog.displayErrorMessage(`Connection error: '${error}'. Warn the admin and restart later.`, true);
+  // TODO rethink the error management
   if(error != "") dialog.displayErrorMessage("Connection error", error);
   else {
     // get the username and the configuration
@@ -224,6 +223,8 @@ async function initialize() {
     utils.setUserName(await window.electronAPI.getUserName())
     await settings.loadSettings();
     document.getElementsByTagName("title")[0].textContent = `Cumulus [${settings.CONFIG.get("cumulus.version")}]`;
+    // create event listeners
+    dialog.initializeDialogs();
     // adjust the size of the elements
     tabs.resizeLogAreas();
     // list all the available hosts
@@ -243,7 +244,8 @@ async function initialize() {
       // if(!DEBUG_MODE) dialog.openDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
       utils.setFocus(false);
     });
-    await jobs.reloadJobList();
+    // await jobs.reloadJobList();
+    jobs.reloadJobList();
     // window does not have focus at startup when devtools are open
     // load the first job on the list
     // console.log(document);

@@ -1,10 +1,18 @@
-#dialogs {
+.dialog-parent {
     display: none;
-    z-index: 15;
+    z-index: 10;
+    padding-top: 100px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 .dialog {
-    display: none;
+    /* display: none; */
     z-index: 12;
     background-color: white;
     border-radius: 10px;

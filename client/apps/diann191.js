@@ -1,4 +1,4 @@
-import { addBrowsedFiles, App, browse, getBrowsedFiles, tooltip } from "../utils.js";
+import { addBrowsedFiles, App, browse, fixFilePath, getBrowsedFiles, tooltip } from "../utils.js";
 
 export function initialize(parent) {
     parent.innerHTML = `<h3>Diann 1.9.1 parameters</h3>
@@ -104,9 +104,9 @@ export function initialize(parent) {
     <table id="diann191_advancedParams" class="w3-table w3-bordered w3-hide">
     <tr>
     <td><label for="diann191_txtMinLen" class="w3-col">Peptide length range</label></td>
-    <td><input id="diann191_txtMinLen" name="min-pep-len" type="number" class="w3-input w3-border" value="7" min="1"></td>
+    <td><input id="diann191_txtMinLen" name="min-pep-length" type="number" class="w3-input w3-border" value="7" min="1"></td>
     <td>&nbsp;—&nbsp;</td>
-    <td><input id="diann191_txtMaxLen" name="max-pep-len" type="number" class="w3-input w3-border" value="30" min="1"></td>
+    <td><input id="diann191_txtMaxLen" name="max-pep-length" type="number" class="w3-input w3-border" value="30" min="1"></td>
     </tr>
     <tr>
     <td><label for="diann191_txtMinCharge" class="w3-col">Precursor charge state range</label></td>
@@ -235,16 +235,16 @@ function getSharedFiles() {
 
 function getLocalFiles() {
     // return the list of fasta files
-    return [utils.fixFilePath(document.getElementById("diann191_txtFasta").value)];
+    return [fixFilePath(document.getElementById("diann191_txtFasta").value)];
 }
 
 function checkSettings() {
-  document.getElementById("diann191_txtFasta").value = utils.fixFilePath(document.getElementById("diann191_txtFasta").value);
+  document.getElementById("diann191_txtFasta").value = fixFilePath(document.getElementById("diann191_txtFasta").value);
   return [];
 }
 
 function setSpecificSettings(settings) {
-    console.log(settings);
+    // console.log(settings);
     addBrowsedFiles(document.getElementsByClassName("raw-file")[0], settings.get("files"));
 }
 

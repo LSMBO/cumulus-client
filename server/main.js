@@ -117,6 +117,7 @@ function exitApp() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  ipcMain.handle('check-rsync', srv.checkRsyncAgent);
   ipcMain.handle('check-server', srv.checkServer);
   ipcMain.handle('get-unc-paths', getUncPaths);
   ipcMain.handle('get-config', config.getConfig);

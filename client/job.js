@@ -59,6 +59,29 @@ function setAppParameters(settings = null) {
   }
 }
 
+async function displayFileTransfers(job) {
+  // get the transfer progression from the rsync client
+  // console.log(job);
+  const [data, error] = await window.electronAPI.getTransferProgress(job.owner, job.id);
+  // TODO manage the error if any
+  const map = new Map (Object.entries(data));
+  // console.log(map);
+  // get the list of files
+  const app = apps.get(job.app_name);
+  const files = app.getLocalFiles().concat(app.getSharedFiles());
+  // console.log(files);
+  // display the list of files
+  var html = "";
+  for(let file of files) {
+    // only display the basename
+    const name = file.split(file.includes("/") ? "/" : "\\").pop();
+    // add a span with the percentage: 0%, n%, or ✓ (in bold, accent bgcolor and round icon?)
+    const pct = map.has(file) ? `<span>${map.get(file)}%</span>` : "<span class='done'>✓</span>";
+    html += `<li>${name}${pct}</li>`;
+  }
+  document.getElementById("tabLogs").getElementsByTagName("ul")[0].innerHTML = html;
+}
+
 function refreshJob(job) {
   // console.log(job);
   // TODO what if job is null, or new job or search?
@@ -81,23 +104,36 @@ function refreshJob(job) {
   document.getElementById("divButtonsNext").style.display = "none";
   document.getElementById("divButtonsSummary").style.display = "block";
   document.getElementById("btnStart").parentNode.style.display = "none";
+  // if job is ended, remove the Cancel button and show the delete button
+  // TODO maybe leave btnDelete all the time, and onclick it cancels and deletes?
+  document.getElementById("btnCancel").style.display = "inline-block";
+  document.getElementById("btnDelete").style.display = "none";
+  if(job.status != "PENDING" && job.status != "RUNNING") {
+    document.getElementById("btnCancel").style.display = "none";
+    document.getElementById("btnDelete").style.display = "inline-block";
+  }
   // settings
   setSettings(new Map(Object.entries(job.settings)));
-  // TODO update the transfer progress if status is PENDING
-  //      problem with current system is that it only show the raw file progression, some future apps could not be centered around lists of raw files
-  //      it's probably best if we display a progress bar somewhere with the name of the file currently transferred and the total pct?
-  //      this could be an opportunity to tell the user that the search will begin when all the files are uploaded
-  //      it should not prevent from reading the search parameters, so where do we put this screen? a dialog with a button to close and another one to display it? or another tab?
   // logs
-  STD_OUT.textContent = job.stdout;
-  STD_ERR.textContent = job.stderr;
-  STD_OUT.scrollTop = job.status == "RUNNING" ? STD_OUT.scrollHeight : 0;
-  STD_ERR.scrollTop = job.status == "RUNNING" ? STD_ERR.scrollHeight : 0;
+  if(job.status == "PENDING") {
+    document.getElementById("tabLogs").children[0].classList.remove("w3-hide");
+    document.getElementById("tabLogs").children[1].classList.add("w3-hide");
+    // display the progression for each file
+    displayFileTransfers(job);
+  } else {
+    document.getElementById("tabLogs").children[0].classList.add("w3-hide");
+    document.getElementById("tabLogs").children[1].classList.remove("w3-hide");
+    STD_OUT.textContent = job.stdout;
+    STD_OUT.scrollTop = job.status == "RUNNING" ? STD_OUT.scrollHeight : 0;
+    STD_ERR.textContent = job.stderr;
+    STD_ERR.scrollTop = job.status == "RUNNING" ? STD_ERR.scrollHeight : 0;
+  }
   // output files
   output.insertOutputFiles(job.files);
   // enable or disable tabs depending on the status
   document.getElementById("btnParameters").disabled = false;
-  document.getElementById("btnLogs").disabled = job.status == "PENDING";
+  // document.getElementById("btnLogs").disabled = job.status == "PENDING";
+  document.getElementById("btnLogs").disabled = false;
   document.getElementById("btnOutput").disabled = (job.status != "DONE" && job.status != "ARCHIVED_DONE");
   // highlight the job in the list on the left
   jobs.highlightJobButton();
@@ -149,8 +185,11 @@ function cloneJob() {
   document.getElementById("txtJobStatus").parentNode.style.display = "none";
   document.getElementById("cmbAppName").disabled = false;
   document.getElementById("cmbStrategy").disabled = false;
+  document.getElementById("txtSelectedHost").parentNode.style.display = "none";
+  document.getElementById("txtJobDescription").disabled = false;
   document.getElementById("divDates").style.display = "none";
   document.getElementById("divButtonsNext").style.display = "block";
+  document.getElementById("btnNext").disabled = false;
   document.getElementById("divButtonsSummary").style.display = "none";
   document.getElementById("btnStart").parentNode.style.display = "block";
   STD_OUT.textContent = "";
@@ -176,10 +215,10 @@ async function startJob() {
     const localFiles = JSON.stringify(app.getLocalFiles());
     const job_id = await window.electronAPI.startJob(utils.getUserName(), appName, strategy, description, settings, sharedFiles, localFiles);
     // reload the job list
-    await jobs.reloadJobList();
-    // open the new job
-    utils.setCurrentJobId(job_id.replace("job_", ""));
+    utils.setCurrentJobId(job_id);
     jobs.reloadJobList();
+    document.getElementById("btnLogs").disabled = false;
+    tabs.openTab("tabLogs");
   } else {
     // TODO display a dialog box with the list of errors
   }
@@ -190,21 +229,24 @@ async function cancelJob() {
   dialog.closeDialogQuestion();
   utils.toggleLoadingScreen();
   const [response, error] = await window.electronAPI.cancelJob(utils.getUserName(), utils.getCurrentJobId());
+  // TODO rethink the error management
   if(error != "") dialog.displayErrorMessage("Connection error", error);
   // console.log(response);
-  await jobs.reloadJobList();
+  // await jobs.reloadJobList();
+  jobs.reloadJobList();
   utils.toggleLoadingScreen();
 }
 
 async function deleteJob() {
   // console.log("deleteJob()");
   dialog.closeDialogQuestion();
-  // TODO warn the user that there is no way back
   utils.toggleLoadingScreen();
   const [response, error] = await window.electronAPI.deleteJob(utils.getUserName(), utils.getCurrentJobId());
+  // TODO rethink the error management
   if(error != "") dialog.displayErrorMessage("Connection error", error);
   // console.log(response);
-  await jobs.reloadJobList();
+  // await jobs.reloadJobList();
+  jobs.reloadJobList();
   utils.toggleLoadingScreen();
 }
 

@@ -55,61 +55,36 @@ async function sendGetRequest(url) {
     return [data, error];
 }
 
-// async function sendGetRequest(url) {
+// async function sendPostRequest(url, form) {
 //     var data = "";
 //     var is_ended = false;
-//     var headers;
-//     var error = "";
-//     console.log(`GET ${url}`);
-//     const request = net.request(url);
+//     const request = net.request({ method: 'POST', url: url, headers: form.getHeaders() });
+//     form.pipe(request);
 //     request.on('response', (response) => {
-//         headers = response.headers;
 //         response.on('data', (chunk) => data += chunk);
 //         response.on('end', () => is_ended = true);
 //     });
-//     request.on('error', (err) => {
-//         console.log(`ERROR: ${err}`);
-//         error = err.toString();
-//     });
 //     request.end();
 //     while(!is_ended) await wait(WAIT_TIME); // wait until the request ends before starting the next one
-//     console.log(`FINAL ERROR: ${error}`);
-//     return [data, headers, error];
-// }
-
-// async function sendGetRequestH(url) {
-//     var data = "";
-//     var is_ended = false;
-//     var headers;
-//     console.log(`GET ${url}`);
-//     const request = net.request(url);
-//     request.on('response', (response) => {
-//         headers = response.headers;
-//         response.on('data', (chunk) => data += chunk);
-//         response.on('end', () => is_ended = true);
-//     })
-//     request.end();
-//     while(!is_ended) await wait(WAIT_TIME); // wait until the request ends before starting the next one
-//     return [data, headers];
-// }
-
-// async function sendGetRequest(url) {
-//     const [data, _] = await sendGetRequestH(url);
 //     return data;
 // }
-
 async function sendPostRequest(url, form) {
     var data = "";
-    var is_ended = false;
-    const request = net.request({ method: 'POST', url: url, headers: form.getHeaders() });
-    form.pipe(request);
-    request.on('response', (response) => {
-        response.on('data', (chunk) => data += chunk);
-        response.on('end', () => is_ended = true);
-    });
-    request.end();
-    while(!is_ended) await wait(WAIT_TIME); // wait until the request ends before starting the next one
-    return data;
+    var error = "";
+    try {
+        var is_ended = false;
+        const request = net.request({ method: 'POST', url: url, headers: form.getHeaders() });
+        form.pipe(request);
+        request.on('response', (response) => {
+            response.on('data', (chunk) => data += chunk);
+            response.on('end', () => is_ended = true);
+        });
+        request.end();
+        while(!is_ended) await wait(WAIT_TIME); // wait until the request ends before starting the next one
+    } catch(err) {
+        error = err.toString();
+    }
+    return [data, error];
 }
 
 function getUrl(route, args = [], rsyncAgent = false) {

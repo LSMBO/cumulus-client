@@ -13,11 +13,9 @@
     <title>Cumulus</title>
   </head>
   <body>
-    <div id="dialogs" class="w3-modal">
-      <div class="w3-modal-content dialog" id="dialog_info"><img src="img/info.png"/><header>Information</header><label></label></div>
-      <div class="w3-modal-content dialog" id="dialog_question"><img src="img/question.png"/><header>Question</header><label></label><div class="w3-bar"><button id="btn_dialq_2" class="w3-bar-item w3-button color-primary-border">No</button><button id="btn_dialq_1" class="w3-bar-item w3-button color-accent">Yes</button></div></div>
-      <div class="w3-modal-content dialog" id="dialog_warning"><img src="img/warning.png"/><header>Warning</header><label></label><div class="w3-bar"><button id="btn_dialw" class="w3-bar-item w3-button color-primary-border">Yes</button></div></div>
-    </div>
+    <div class="dialog-parent w3-animate-opacity"><div class="w3-modal-content dialog" id="dialog_info"><img src="img/info.png"/><header>Information</header><label></label></div></div>
+    <div class="dialog-parent w3-animate-opacity"><div class="w3-modal-content dialog" id="dialog_question"><img src="img/question.png"/><header>Question</header><label></label><div class="w3-bar"><button id="btn_dialq_2" class="w3-bar-item w3-button color-primary-border">No</button><button id="btn_dialq_1" class="w3-bar-item w3-button color-accent">Yes</button></div></div></div>
+    <div class="dialog-parent w3-animate-opacity"><div class="w3-modal-content dialog" id="dialog_warning"><img src="img/warning.png"/><header>Warning</header><label></label><div class="w3-bar"><button id="btn_dialw" class="w3-bar-item w3-button color-primary-border">Yes</button></div></div></div>
     <span id="tooltiptext">Tooltip text</span>
     <div id="loading" class="w3-modal w3-animate-opacity">
       <div class="w3-modal-content"><span></span><label>Loading...</label></div>
@@ -83,6 +81,11 @@
         </div>
         <!-- Tab 3: show the content of stdout and stderr, add clipboard buttons -->
         <div id="tabLogs" class="tab">
+          <div class="w3-row-padding w3-hide">
+            <h3>File transfer</h3>
+            <label>Your job will begin once all the files listed below will be completely transferred.</label>
+            <ul></ul>
+          </div>
           <div class="w3-row-padding">
             <div class="w3-half">
               <label for="stdout">Output log (stdout)</label>

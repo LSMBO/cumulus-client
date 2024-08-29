@@ -43,7 +43,9 @@ const jobLabels = document.getElementById("divSettingsJobLabelElement");
 async function loadSettings() {
     CONFIG.clear();
     for(let [key, value] of await window.electronAPI.getConfig()) {
-        CONFIG.set(key, value);
+        if(value == "true") CONFIG.set(key, true);
+        else if(value == "false") CONFIG.set(key, false);
+        else CONFIG.set(key, value);
     }
 }
 

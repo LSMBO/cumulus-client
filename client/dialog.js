@@ -32,38 +32,72 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-function openDialog(dialog_id, title = "Title", message = "") {
-    document.getElementById(dialog_id).getElementsByTagName("header")[0].textContent = title;
-    document.getElementById(dialog_id).getElementsByTagName("label")[0].textContent = message;
-    document.getElementById("dialogs").style.display = "block";
-    document.getElementById(dialog_id).style.display = "block";
+const INFO = document.getElementById("dialog_info");
+const QUESTION = document.getElementById("dialog_question");
+const WARNING = document.getElementById("dialog_warning");
+
+const ICON_INFO = "img/info.png";
+const ICON_QUESTION = "img/question.png";
+const ICON_WARNING = "img/warning.png";
+const ICON_SLEEP = "img/sleep.png";
+const ICON_OFFLINE = "img/offline.png";
+
+function initializeDialogs() {
+    INFO.parentElement.addEventListener("click", closeDialogInfo());
+    QUESTION.parentElement.addEventListener("click", closeDialogQuestion());
+    WARNING.parentElement.addEventListener("click", closeDialogWarning());
 }
 
-function isDialogOpen(dialog_id) {
-    return document.getElementById(dialog_id).style.display == "block";
+function updateZIndex(dialog) {
+    // make sure that the last open dialog is above the previous ones (if any)
+    var nb = 10;
+    if(isDialogInfoOpen() && parseInt(INFO.style.zIndex) >= nb) nb = parseInt(INFO.style.zIndex) + 1;
+    if(isDialogQuestionOpen() && parseInt(QUESTION.style.zIndex) >= nb) nb = parseInt(QUESTION.style.zIndex) + 1;
+    if(isDialogWarningOpen() && parseInt(WARNING.style.zIndex) >= nb) nb = parseInt(WARNING.style.zIndex) + 1;
+    dialog.style.zIndex = nb;
+    dialog.parentElement.style.zIndex = nb;
 }
 
-function closeDialog(dialog_id) {
-    document.getElementById(dialog_id).getElementsByTagName("header")[0].textContent = "";
-    document.getElementById(dialog_id).getElementsByTagName("label")[0].textContent = "";
-    document.getElementById("dialogs").style.display = "none";
-    document.getElementById(dialog_id).style.display = "none";
+// TODO in the future, we may want to be able to open several dialogs of the same type
+//      at the moment we only reuse the same dialog, so we loose the previous one in the process
+//      to do so, we should create dynamically the dialogs with an id that increments automatically (with the z-index)
+function openDialog(dialog, title = "Title", message = "", icon = "") {
+    dialog.getElementsByTagName("header")[0].textContent = title;
+    dialog.getElementsByTagName("label")[0].innerHTML = message;
+    if(icon != "") dialog.getElementsByTagName("img")[0].src = icon;
+    dialog.parentElement.style.display = "block";
+    // dialog.style.display = "block";
+    updateZIndex(dialog);
 }
 
-function openDialogInfo(title, message) {
-    document.getElementById("dialogs").addEventListener("click", closeDialogInfo());
-    openDialog("dialog_info", title, message);
+function isDialogOpen(dialog) {
+    // return dialog.style.display == "block";
+    return dialog.parentElement.style.display == "block";
 }
-function isDialogInfoOpen() { return isDialogOpen("dialog_info"); }
+
+function closeDialog(dialog) {
+    dialog.getElementsByTagName("header")[0].textContent = "";
+    dialog.getElementsByTagName("label")[0].textContent = "";
+    dialog.parentElement.style.display = "none";
+    // dialog.style.display = "none";
+    updateZIndex(dialog);
+}
+
+function openDialogInfo(title, message, icon = ICON_INFO) {
+    openDialog(INFO, title, message, icon);
+}
+function openDialogSleep() {
+    openDialog(INFO, "Sleep mode", "Cumulus is in sleep mode and will be refreshed less often, but do not worry your jobs are still running!", ICON_SLEEP);
+}
+function isDialogInfoOpen() { return isDialogOpen(INFO); }
 function closeDialogInfo() {
-    closeDialog("dialog_info");
-    document.getElementById("dialogs").removeEventListener("click", closeDialogInfo);
+    closeDialog(INFO);
 }
 
-function openDialogQuestion(title, message, onYes, onYesLabel = "Yes", onYesArgs = undefined, onNo = undefined, onNoLabel = "No", onNoArgs = undefined) {
+function openDialogQuestion(title, message, onYes, onYesLabel = "Yes", onYesArgs = undefined, onNo = undefined, onNoLabel = "No", onNoArgs = undefined, icon = ICON_QUESTION) {
     // apply the Yes button
     document.getElementById("btn_dialq_1").textContent = onYesLabel;
-    document.getElementById("btn_dialq_1").addEventListener("click", () => onYesArgs !== undefined ? onYes(onYesArgs) : onYes(), { once: true });
+    document.getElementById("btn_dialq_1").addEventListener("click", () => onYesArgs !== undefined ? onYes(onYesArgs) : onYes(), { once: true }); // once = true, so the listener will disappear after being used once
     // apply the No button
     document.getElementById("btn_dialq_2").textContent = onNoLabel;
     if(onNo !== undefined) {
@@ -72,12 +106,12 @@ function openDialogQuestion(title, message, onYes, onYesLabel = "Yes", onYesArgs
         document.getElementById("btn_dialq_2").addEventListener("click", () => closeDialogQuestion());
     }
     // document.getElementById("dialogs").removeEventListener("click");
-    openDialog("dialog_question", title, message);
+    openDialog(QUESTION, title, message, icon);
 }
-function isDialogQuestionOpen() { return isDialogOpen("dialog_question"); }
-function closeDialogQuestion() { closeDialog("dialog_question"); }
+function isDialogQuestionOpen() { return isDialogOpen(QUESTION); }
+function closeDialogQuestion() { closeDialog(QUESTION); }
 
-function openDialogWarning(title, message, action = undefined, label = "Close", args = undefined) {
+function openDialogWarning(title, message, action = undefined, label = "Close", args = undefined, icon = ICON_WARNING) {
     // apply the Close button
     document.getElementById("btn_dialw").textContent = label;
     if(action !== undefined) {
@@ -85,19 +119,16 @@ function openDialogWarning(title, message, action = undefined, label = "Close", 
     } else {
         document.getElementById("btn_dialw").addEventListener("click", () => closeDialogWarning());
     }
-    // document.getElementById("dialogs").removeEventListener("click");
-    openDialog("dialog_warning", title, message);
+    openDialog(WARNING, title, message, icon);
 }
-function isDialogWarningOpen() { return isDialogOpen("dialog_warning"); }
-function closeDialogWarning() { closeDialog("dialog_warning"); }
+function isDialogWarningOpen() { return isDialogOpen(WARNING); }
+function closeDialogWarning() { closeDialog(WARNING); }
 
-// function displayErrorMessage(message, exitInsteadOfClose = false) {
-//     if(exitInsteadOfClose == false) openDialogWarning("Error", message);
-//     else openDialogWarning("Error", message, async () => await window.electronAPI.exitApp());
-// }
 function displayErrorMessage(title = "Connection error", error = "") {
     openDialogWarning(title, error, async () => await window.electronAPI.exitApp());
-    document.getElementById("dialog_warning").getElementsByTagName("label")[0].innerHTML += "<br /><br />Warn the admin and restart later.";
+    document.getElementById(WARNING).getElementsByTagName("label")[0].innerHTML += "<br /><br />Warn the admin and restart later.";
 }
 
-export { closeDialogInfo, closeDialogQuestion, closeDialogWarning, displayErrorMessage, isDialogInfoOpen, isDialogQuestionOpen, isDialogWarningOpen, openDialogInfo, openDialogQuestion, openDialogWarning };
+function isDialogOfflineOpen() { return isDialogQuestionOpen() && QUESTION.getElementsByTagName("img")[0].src.endsWith(ICON_OFFLINE);  }
+
+export { closeDialogInfo, closeDialogQuestion, closeDialogWarning, displayErrorMessage, ICON_INFO, ICON_OFFLINE, ICON_QUESTION, ICON_SLEEP, ICON_WARNING, initializeDialogs, isDialogInfoOpen, isDialogOfflineOpen, isDialogQuestionOpen, isDialogWarningOpen, openDialogInfo, openDialogQuestion, openDialogSleep, openDialogWarning };

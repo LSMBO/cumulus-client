@@ -37,10 +37,11 @@ import * as dialog from "./dialog.js";
 var CURRENT_JOB_ID = 0;
 var USERNAME = "";
 var IS_ACTIVE = true; // used for sleep mode, it can be inactive even if app has focus
+var IS_OFFLINE = false;
 var IS_FOCUS = true;
 var LAST_ACTIVITY = new Date();
 var NB_SKIPS_BEFORE_REFRESH = 0;
-const TIME_BEFORE_SLEEP_IN_SECONDS = 100; // 300
+const TIME_BEFORE_SLEEP_IN_SECONDS = 300;
 const TOOLTIPTEXT = document.getElementById("tooltiptext");
 const UNC_PATHS = new Map();
 const LOADER = document.getElementById("loading");
@@ -143,7 +144,8 @@ function addBrowsedFile(filePath) {
     const name = items.pop();
     // return `<li><span class="color-primary-hover">&times;</span><label>${items.join("/")}/</label>${name}`;
     // return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}`;
-    return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}<div style="width:0%"></div></li>`;
+    // return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}<div style="width:0%"></div></li>`;
+    return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}</li>`;
 }
 
 function addBrowsedFiles(target, files) {
@@ -219,6 +221,10 @@ function setActive(value) {
     // console.log(`Last activity was at: ${LAST_ACTIVITY}`);
 }
 
+function setOffline(value) {
+    IS_OFFLINE = value;
+}
+
 function isActive() {
     return IS_ACTIVE;
 }
@@ -243,7 +249,7 @@ function updateSkipsBetweenRefreshs(reset = false) {
         NB_SKIPS_BEFORE_REFRESH = 0;
     } else if(NB_SKIPS_BEFORE_REFRESH <= 0) {
         // update every minute if asleep
-        if(!isActive()) NB_SKIPS_BEFORE_REFRESH = 11;
+        if(!isActive() ||IS_OFFLINE) NB_SKIPS_BEFORE_REFRESH = 11;
         // update every 15 seconds if just blur
         else if(!isFocus()) NB_SKIPS_BEFORE_REFRESH = 2;
         // update every 5 seconds otherwise
@@ -260,7 +266,8 @@ function checkSleepMode() {
         // console.log("App appears to be inactive");
         // set the app as inactive
         setActive(false);
-        dialog.openDialogInfo("Sleeping mode", "Cumulus will be refreshed less often, but do not worry your jobs are still running!");
+        // dialog.openDialogInfo("Sleeping mode", "Cumulus will be refreshed less often, but do not worry your jobs are still running!");
+        dialog.openDialogSleep();
     }
     // update the counter at every step
     updateSkipsBetweenRefreshs();
@@ -354,4 +361,4 @@ function addCheckboxList(parent, label, items, tooltiptext) {
     tooltip(parent.getElementsByTagName("label")[0], tooltiptext);
 }
 
-export { addBrowsedFiles, addCheckboxList, App, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setUserName, sleep, toHumanReadable, toggleLoadingScreen, tooltip, updateCheckboxList };
+export { addBrowsedFiles, addCheckboxList, App, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };

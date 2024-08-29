@@ -141,6 +141,26 @@ body {
     display: inline;
 }
 
+#tabLogs li {
+    display: block;
+    position: relative;
+    line-height: 20px;
+    padding: 10px 0px;
+    border-bottom: 1px solid var(--primary-color-dark);
+}
+
+#tabLogs li span {
+    position: absolute;
+    right: 0;
+}
+
+#tabLogs li span.done {
+    color: white;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    padding: 1px 7px;
+}
+
 #tabLogs textarea {
     height: 500px;
     text-wrap: nowrap;

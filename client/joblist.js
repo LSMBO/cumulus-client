@@ -120,6 +120,8 @@ function getJobAsHtml(job) {
 }
 
 function addJobsToJobList(jobs) {
+  // close the offline dialog if it was open before
+  if(dialog.isDialogOfflineOpen()) dialog.closeDialogQuestion();
   // top button is used to create a new job, or to cancel the search
   var html = IS_SEARCH ? getClearSearchAsHtml(jobs.length) : getNewJobAsHtml();
   for(let j of jobs) {
@@ -173,18 +175,37 @@ async function searchJobs(reloadPreviousSettings = true) {
 
 async function reloadJobList(reloadPreviousSettings = true) {
   // refresh the list of jobs
-  if(utils.doRefresh()) {
-    const [jobs, error] = IS_SEARCH ? await searchJobs(reloadPreviousSettings) : await getLastJobs();
-    if(error != "") dialog.displayErrorMessage("Connection error", error);
-    addJobsToJobList(jobs);
-  }
+  // console.log("reloadJobList()");
+  const [jobs, error] = IS_SEARCH ? await searchJobs(reloadPreviousSettings) : await getLastJobs();
+  const errorMessage = error ? error : await window.electronAPI.checkRsyncAgent();
+  if(errorMessage) {
+    // do not reopen the dialog if it's already open
+    if(!dialog.isDialogOfflineOpen()) {
+      utils.setOffline(true);
+      const title = "Cumulus is disconnected!";
+      const message = `Cumulus has lost the connection with the ${error ? "server" : "RSync agent"} with the following error:<br/>${errorMessage}<br/><br/>Please contact your administrator.`;
+      dialog.openDialogQuestion(title, message, retryReloadJobList, "Retry", undefined, async () => await window.electronAPI.exitApp(), "Quit", undefined, dialog.ICON_OFFLINE);
+    }
+  } else addJobsToJobList(jobs);
+}
+
+function retryReloadJobList() {
+  dialog.closeDialogQuestion();
+  utils.setOffline(false);
+  reloadJobList();
+}
+
+function reloadJobListOrSleep(reloadPreviousSettings = true) {
+  // refresh the list of jobs
+  if(utils.doRefresh()) reloadJobList(reloadPreviousSettings);
   // check sleepiness
   utils.checkSleepMode();
 }
 
 function resetInterval() {
   if(INTERVAL) clearInterval(INTERVAL);
-  INTERVAL = window.setInterval(reloadJobList, settings.CONFIG.get("refresh.rate") * 1000);
+  // INTERVAL = window.setInterval(reloadJobList, settings.CONFIG.get("refresh.rate") * 1000);
+  INTERVAL = window.setInterval(reloadJobListOrSleep, settings.CONFIG.get("refresh.rate") * 1000);
 }
 
 function pauseRefresh() {

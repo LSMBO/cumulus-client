@@ -36,6 +36,13 @@ const FormData = require('form-data');
 const config = require('./config.js');
 const rest = require('./rest.js');
 
+async function checkRsyncAgent() {
+    const [response, error] = await rest.sendGetRequest(rest.getUrl("/", [], true));
+    if(error) return error;
+    else if(response != "OK") return "The RSync agent was reached but the expected code was incorrect.";
+    else return "";
+}
+
 async function checkServer() {
     const localVersion = config.get("cumulus.version");
     // check that the server can be reached
@@ -44,12 +51,13 @@ async function checkServer() {
     // check that the client version matches the server version
     else if(localVersion != remoteVersion) return `Local version '${localVersion}' does not match with server version '${remoteVersion}', please update.`;
     // check that the rsync agent can be reached
-    else {
-        const [response, error2] = await rest.sendGetRequest(rest.getUrl("/", [], true));
-        if(error2) return error2;
-        else if(response != "OK") return "The RSync agent was reached but the expected code was incorrect.";
-        else return "";
-    }
+    // else {
+    //     const [response, error2] = await rest.sendGetRequest(rest.getUrl("/", [], true));
+    //     if(error2) return error2;
+    //     else if(response != "OK") return "The RSync agent was reached but the expected code was incorrect.";
+    //     else return "";
+    // }
+    else return checkRsyncAgent();
 }
 
 // async function checkRsyncAgent() {
@@ -107,14 +115,10 @@ async function createJob(_, owner, app, strategy, description, settings, rawfile
     form.append("app_name", app);
     form.append("strategy", strategy);
     form.append("description", description);
-    // stringify the settings
-    // const txt_settings = JSON.stringify(Object.fromEntries(settings));
-    // form.append("settings", str = txt_settings);
     form.append("settings", str = settings);
     // send the request
     const url = rest.getUrl("start");
-    const data = await rest.sendPostRequest(url, form);
-    // return id;
+    const [data, error] = await rest.sendPostRequest(url, form);
     // console.log("start: "+data);
     const [job_id, job_dir] = JSON.parse(data)
     // console.log(data);
@@ -126,8 +130,6 @@ async function createJob(_, owner, app, strategy, description, settings, rawfile
     form2.append("owner", owner);
     form2.append("files", rawfiles);
     form2.append("local_files", fastafiles);
-    // form2.append("files", JSON.parse(rawfiles));
-    // form2.append("local_files", JSON.parse(fastafiles));
     await rest.sendPostRequest(rest.getUrl("send-rsync", [], true), form2);
     // return the job id
     return job_id;
@@ -152,7 +154,7 @@ async function getLastJobs(_, job_id, number) {
     // console.log(`getLastJobs(_, ${job_id}, ${number})`);
     const url = rest.getUrl("joblist", [job_id, number]);
     const [data, error] = await rest.sendGetRequest(url);
-    return [JSON.parse(data), error];
+    return [error ? data : JSON.parse(data), error];
 }
 
 async function searchJobs(_, current_job_id, owner, app, file, desc, statuses, date, from, to, number) {
@@ -170,9 +172,11 @@ async function searchJobs(_, current_job_id, owner, app, file, desc, statuses, d
     }
     form.append("number", number);
     // send the request
-    const data = await rest.sendPostRequest(rest.getUrl("search"), form);
+    // const data = await rest.sendPostRequest(rest.getUrl("search"), form);
+    const [data, error] = await rest.sendPostRequest(rest.getUrl("search"), form);
     // console.log(data);
-    return [JSON.parse(data), ""];
+    // return [JSON.parse(data), ""];
+    return [error ? data : JSON.parse(data), error];
 }
 
 async function jobStatus(_, job_id) {
@@ -184,7 +188,8 @@ async function jobStatus(_, job_id) {
 
 async function transferProgress(_, owner, job_id) {
     const [data, error] = await rest.sendGetRequest(rest.getUrl("progress-rsync", [owner, job_id], true));
-    console.log(data);
+    // const [data, error] = await rest.sendGetRequest(rest.getUrl("test", [], true));
+    // console.log(data);
     return [JSON.parse(data), error];
 }
 
@@ -219,4 +224,4 @@ async function downloadFile(_, owner, job_id, file_name, target) {
     await rest.download(url, target);
 }
 
-module.exports = { cancelJob, checkServer, createJob, deleteJob, downloadFile, getLastJobs, jobDetails, jobStatus, listHosts, listJobFiles, listStorage, searchJobs, transferProgress }
+module.exports = { cancelJob, checkRsyncAgent, checkServer, createJob, deleteJob, downloadFile, getLastJobs, jobDetails, jobStatus, listHosts, listJobFiles, listStorage, searchJobs, transferProgress }
