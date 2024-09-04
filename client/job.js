@@ -38,6 +38,7 @@ import * as tabs from "./tabs.js";
 import * as jobs from "./joblist.js";
 import * as output from "./output.js";
 import * as apps from "./apps/applist.js";
+import * as settings from "./settings.js";
 
 const FORM = document.getElementById("formParameters");
 const STD_OUT = document.getElementById("stdout");
@@ -46,8 +47,6 @@ const STD_ERR = document.getElementById("stderr");
 function setAppParameters(settings = null) {
   const app = document.getElementById("cmbAppName").value;
   if(app != "") {
-    // document.getElementById("formParameters").innerHTML = apps.get(app).html;
-    // apps.get(app).eventsFunction();
     apps.get(app).initialize(document.getElementById("formParameters"));
     if(settings != null) apps.get(app).setSettings(settings);
     // enable parameter tab
@@ -63,88 +62,88 @@ async function displayFileTransfers(job) {
   // get the transfer progression from the rsync client
   // console.log(job);
   const [data, error] = await window.electronAPI.getTransferProgress(job.owner, job.id);
-  // TODO manage the error if any
   const map = new Map (Object.entries(data));
-  // console.log(map);
   // get the list of files
   const app = apps.get(job.app_name);
   const files = app.getLocalFiles().concat(app.getSharedFiles());
-  // console.log(files);
   // display the list of files
   var html = "";
+  var nb = 0;
   for(let file of files) {
     // only display the basename
     const name = file.split(file.includes("/") ? "/" : "\\").pop();
     // add a span with the percentage: 0%, n%, or ✓ (in bold, accent bgcolor and round icon?)
     const pct = map.has(file) ? `<span>${map.get(file)}%</span>` : "<span class='done'>✓</span>";
     html += `<li>${name}${pct}</li>`;
+    if(!map.has(file)) nb++;
   }
-  document.getElementById("tabLogs").getElementsByTagName("ul")[0].innerHTML = html;
+  const ul = document.getElementById("tabLogs").getElementsByTagName("ul")[0];
+  ul.innerHTML = html;
+  ul.previousElementSibling.textContent = error ? error : "Your job will begin once all the files listed below will be completely transferred.";
+  ul.previousElementSibling.previousElementSibling.textContent = `File transfer ${nb}/${files.length}`;
 }
 
 function refreshJob(job) {
   // console.log(job);
-  // TODO what if job is null, or new job or search?
-  // summary
-  document.getElementById("txtJobOwner").value = job.owner;
-  document.getElementById("txtJobOwner").disabled = true;
-  document.getElementById("txtJobStatus").value = job.status;
-  document.getElementById("txtJobStatus").disabled = true;
-  document.getElementById("txtJobStatus").parentNode.style.display = "block";
-  document.getElementById("cmbAppName").value = job.app_name;
-  document.getElementById("cmbAppName").disabled = true;
-  document.getElementById("cmbStrategy").value = job.strategy;
-  document.getElementById("cmbStrategy").disabled = true;
-  document.getElementById("txtSelectedHost").value = job.host;
-  document.getElementById("txtSelectedHost").parentNode.style.display = "block";
-  document.getElementById("txtJobDescription").value = job.description;
-  document.getElementById("txtJobDescription").disabled = true;
-  document.getElementById("divDates").style.display = "block";
-  document.getElementById("divDates").innerHTML = `<div class="w3-third"><label>Creation date: ${utils.formatDate(job.creation_date)}</label></div><div class="w3-third"><label>Started date: ${utils.formatDate(job.start_date)}</label></div><div class="w3-third"><label>Ended date: ${utils.formatDate(job.end_date)}</label></div>`;
-  document.getElementById("divButtonsNext").style.display = "none";
-  document.getElementById("divButtonsSummary").style.display = "block";
-  document.getElementById("btnStart").parentNode.style.display = "none";
-  // if job is ended, remove the Cancel button and show the delete button
-  // TODO maybe leave btnDelete all the time, and onclick it cancels and deletes?
-  document.getElementById("btnCancel").style.display = "inline-block";
-  document.getElementById("btnDelete").style.display = "none";
-  if(job.status != "PENDING" && job.status != "RUNNING") {
-    document.getElementById("btnCancel").style.display = "none";
-    document.getElementById("btnDelete").style.display = "inline-block";
-  }
-  // settings
-  setSettings(new Map(Object.entries(job.settings)));
-  // logs
-  if(job.status == "PENDING") {
-    document.getElementById("tabLogs").children[0].classList.remove("w3-hide");
-    document.getElementById("tabLogs").children[1].classList.add("w3-hide");
-    // display the progression for each file
-    displayFileTransfers(job);
-  } else {
-    document.getElementById("tabLogs").children[0].classList.add("w3-hide");
-    document.getElementById("tabLogs").children[1].classList.remove("w3-hide");
-    STD_OUT.textContent = job.stdout;
-    STD_OUT.scrollTop = job.status == "RUNNING" ? STD_OUT.scrollHeight : 0;
-    STD_ERR.textContent = job.stderr;
-    STD_ERR.scrollTop = job.status == "RUNNING" ? STD_ERR.scrollHeight : 0;
-  }
-  // output files
-  output.insertOutputFiles(job.files);
-  // enable or disable tabs depending on the status
-  document.getElementById("btnParameters").disabled = false;
-  // document.getElementById("btnLogs").disabled = job.status == "PENDING";
-  document.getElementById("btnLogs").disabled = false;
-  document.getElementById("btnOutput").disabled = (job.status != "DONE" && job.status != "ARCHIVED_DONE");
-  // highlight the job in the list on the left
-  jobs.highlightJobButton();
+  // sometimes the job or its settings can be null, it can happen when the refreshing of the job list is not done yet
+  if(job != null && job.settings != null) {
+    // summary
+    document.getElementById("txtJobOwner").value = job.owner;
+    document.getElementById("txtJobOwner").disabled = true;
+    document.getElementById("txtJobStatus").value = job.status;
+    document.getElementById("txtJobStatus").disabled = true;
+    document.getElementById("txtJobStatus").parentNode.style.display = "block";
+    document.getElementById("cmbAppName").value = job.app_name;
+    document.getElementById("cmbAppName").disabled = true;
+    document.getElementById("cmbStrategy").value = job.strategy;
+    document.getElementById("cmbStrategy").disabled = true;
+    document.getElementById("txtSelectedHost").value = job.host;
+    document.getElementById("txtSelectedHost").parentNode.style.display = "block";
+    document.getElementById("txtJobDescription").value = job.description;
+    document.getElementById("txtJobDescription").disabled = true;
+    document.getElementById("divDates").style.display = "block";
+    document.getElementById("divDates").innerHTML = `<div class="w3-third"><label>Creation date: ${utils.formatDate(job.creation_date)}</label></div><div class="w3-third"><label>Started date: ${utils.formatDate(job.start_date)}</label></div><div class="w3-third"><label>Ended date: ${utils.formatDate(job.end_date)}</label></div>`;
+    document.getElementById("divButtonsNext").style.display = "none";
+    document.getElementById("divButtonsSummary").style.display = "block";
+    document.getElementById("btnStart").parentNode.style.display = "none";
+    // if job is ended, remove the Cancel button and show the delete button
+    // TODO maybe leave btnDelete all the time, and onclick it cancels and deletes?
+    document.getElementById("btnCancel").style.display = "inline-block";
+    document.getElementById("btnDelete").style.display = "none";
+    if(job.status != "PENDING" && job.status != "RUNNING") {
+      document.getElementById("btnCancel").style.display = "none";
+      document.getElementById("btnDelete").style.display = "inline-block";
+    }
+    // settings
+    setSettings(new Map(Object.entries(job.settings)));
+    // logs
+    if(job.status == "PENDING") {
+      document.getElementById("tabLogs").children[0].classList.remove("w3-hide");
+      document.getElementById("tabLogs").children[1].classList.add("w3-hide");
+      // display the progression for each file
+      displayFileTransfers(job);
+    } else {
+      document.getElementById("tabLogs").children[0].classList.add("w3-hide");
+      document.getElementById("tabLogs").children[1].classList.remove("w3-hide");
+      STD_OUT.textContent = job.stdout;
+      STD_OUT.scrollTop = job.status == "RUNNING" ? STD_OUT.scrollHeight : 0;
+      STD_ERR.textContent = job.stderr;
+      STD_ERR.scrollTop = job.status == "RUNNING" ? STD_ERR.scrollHeight : 0;
+    }
+    // output files
+    if(job.status == "DONE") output.insertOutputFiles(job.files);
+    // else output.removeOutputFiles();
+    // enable or disable tabs depending on the status
+    document.getElementById("btnParameters").disabled = false;
+    // document.getElementById("btnLogs").disabled = job.status == "PENDING";
+    document.getElementById("btnLogs").disabled = false;
+    document.getElementById("btnOutput").disabled = (job.status != "DONE" && job.status != "ARCHIVED_DONE");
+    // highlight the job in the list on the left
+    jobs.highlightJobButton();
+  } else console.log("Failed to load the job");
 }
 
-function createJob() {
-  // console.log("createJob()");
-  document.getElementById("detail").getElementsByTagName("header")[0].style.display = "block";
-  document.getElementById("splash").style.display = "none";
-  utils.setCurrentJobId(0);
-  jobs.highlightJobButton();
+function cleanJob() {
   // clear the summary fields
   document.getElementById("txtJobOwner").value = utils.getUserName();
   document.getElementById("txtJobStatus").value = "";
@@ -168,6 +167,21 @@ function createJob() {
   // clear the output fields
   document.getElementById("outputSummary").textContent = "Nothing yet...";
   document.getElementById("treeview").innerHTML = "";
+}
+
+function createJob() {
+  // console.log("createJob()");
+  document.getElementById("detail").getElementsByTagName("header")[0].style.display = "block";
+  document.getElementById("splash").style.display = "none";
+  utils.setCurrentJobId(0);
+  jobs.highlightJobButton();
+  // clear the summary fields
+  cleanJob();
+  // set the default strategy
+  const cmbStrategy = document.getElementById("cmbStrategy");
+  for(let i = 0; i < cmbStrategy.options.length; i++) {
+    if(cmbStrategy.options[i].value == settings.CONFIG.get("default.strategy")) cmbStrategy.selectedIndex = i;
+  }
   // disable the other tabs
   document.getElementById("btnParameters").disabled = true;
   document.getElementById("btnLogs").disabled = true;
@@ -204,12 +218,12 @@ function cloneJob() {
 
 async function startJob() {
   // console.log(`startJob()`);
-  dialog.closeDialogQuestion();
   const appName = document.getElementById("cmbAppName").value;
   const strategy = document.getElementById("cmbStrategy").value;
   const description = document.getElementById("txtJobDescription").value;
   const app = apps.get(appName);
-  if(app.checkSettings()) {
+  const settingsErrors = app.checkSettings();
+  if(settingsErrors.length == 0) {
     const settings = JSON.stringify(Object.fromEntries(getSettings()));
     const sharedFiles = JSON.stringify(app.getSharedFiles());
     const localFiles = JSON.stringify(app.getLocalFiles());
@@ -220,32 +234,29 @@ async function startJob() {
     document.getElementById("btnLogs").disabled = false;
     tabs.openTab("tabLogs");
   } else {
-    // TODO display a dialog box with the list of errors
+    // display a dialog box with the list of errors
+    dialog.createDialogWarning("Incorrect settings", "- " + settingsErrors.join("<br/>- "));
   }
 }
 
 async function cancelJob() {
   // console.log("cancelJob()");
-  dialog.closeDialogQuestion();
   utils.toggleLoadingScreen();
   const [response, error] = await window.electronAPI.cancelJob(utils.getUserName(), utils.getCurrentJobId());
   // TODO rethink the error management
-  if(error != "") dialog.displayErrorMessage("Connection error", error);
+  if(error != "") dialog.createDialogWarning("The job could not be canceled", error);
   // console.log(response);
-  // await jobs.reloadJobList();
   jobs.reloadJobList();
   utils.toggleLoadingScreen();
 }
 
 async function deleteJob() {
   // console.log("deleteJob()");
-  dialog.closeDialogQuestion();
   utils.toggleLoadingScreen();
   const [response, error] = await window.electronAPI.deleteJob(utils.getUserName(), utils.getCurrentJobId());
   // TODO rethink the error management
-  if(error != "") dialog.displayErrorMessage("Connection error", error);
+  if(error != "") dialog.createDialogWarning("The job could not be deleted", error);
   // console.log(response);
-  // await jobs.reloadJobList();
   jobs.reloadJobList();
   utils.toggleLoadingScreen();
 }
@@ -284,4 +295,4 @@ function setSettings(settings) {
   }
 }
 
-export { cancelJob, cloneJob, createJob, deleteJob, refreshJob, startJob, setAppParameters };
+export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, refreshJob, startJob, setAppParameters };

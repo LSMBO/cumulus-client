@@ -118,7 +118,8 @@ function exitApp() {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   ipcMain.handle('check-rsync', srv.checkRsyncAgent);
-  ipcMain.handle('check-server', srv.checkServer);
+  // ipcMain.handle('check-server', srv.checkServer);
+  ipcMain.handle('check-server', srv.checkServerVersion);
   ipcMain.handle('get-unc-paths', getUncPaths);
   ipcMain.handle('get-config', config.getConfig);
   ipcMain.handle('set-config', config.saveConfig);

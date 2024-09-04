@@ -48,16 +48,11 @@ const LOADER = document.getElementById("loading");
 const UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
 
 class App {
-    // constructor(id, name, version, html, eventsFunction, getSharedFiles, getLocalFiles, checkSettings, setSettings) {
     constructor(id, name, version, initialize, getSharedFiles, getLocalFiles, checkSettings, setSettings) {
         this.id = id;
         this.name = name;
         this.version = version;
-        // this.html = html;
-        // call this function after adding the html to an object to create the events listeners
-        // this.eventsFunction = eventsFunction;
         this.initialize = initialize;
-        // // call this function to put the user's values in a map and return it for validation
         this.getSharedFiles = getSharedFiles;
         this.getLocalFiles = getLocalFiles;
         this.checkSettings = checkSettings;
@@ -123,15 +118,7 @@ function tooltip(element, text) {
     });
 }
 
-// function getPathAndFileName(fullPath) {
-//     const separator = fullPath.includes("/") ? "/" : "\\";
-//     const items = fullPath.split(separator);
-//     const name = items.pop();
-//     return [items.join("/"), name];
-// }
-
 function fixFilePath(file) {
-    // return JSON.stringify(file).replaceAll("\\\\", "/");
     // use JSON.stringify to force the file path separator to be "\\"
     // then replace the Windows separator with the standard separator "/"
     const fixedPath = JSON.stringify(file).replaceAll("\\\\", "/");
@@ -142,9 +129,6 @@ function fixFilePath(file) {
 function addBrowsedFile(filePath) {
     const items = filePath.split(filePath.includes("/") ? "/" : "\\");
     const name = items.pop();
-    // return `<li><span class="color-primary-hover">&times;</span><label>${items.join("/")}/</label>${name}`;
-    // return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}`;
-    // return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}<div style="width:0%"></div></li>`;
     return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}</li>`;
 }
 
@@ -235,9 +219,6 @@ function getLastActivity() {
 
 function setFocus(value) {
     IS_FOCUS = value;
-    // if the app gets focus, it's active again
-    // if the app looses focus, it's not active
-    // setActive(IS_FOCUS);
 }
 
 function isFocus() {
@@ -266,8 +247,7 @@ function checkSleepMode() {
         // console.log("App appears to be inactive");
         // set the app as inactive
         setActive(false);
-        // dialog.openDialogInfo("Sleeping mode", "Cumulus will be refreshed less often, but do not worry your jobs are still running!");
-        dialog.openDialogSleep();
+        dialog.createDialogSleep();
     }
     // update the counter at every step
     updateSkipsBetweenRefreshs();
@@ -333,9 +313,9 @@ function checkboxListEventListener(target) {
         toggleClass(target.parentElement.getElementsByTagName("div")[1], "w3-hide");
         toggleClass(target.parentElement.getElementsByTagName("div")[2], "w3-hide");
     } else if(target.tagName == "LABEL" && target.parentElement.parentElement.classList.contains("selector")) {
-        // user has clicked on a label in the visible div, show the div with the checkboxes
-        toggleClass(target.parentElement.parentElement.getElementsByTagName("div")[1], "w3-hide");
-        toggleClass(target.parentElement.parentElement.getElementsByTagName("div")[2], "w3-hide");
+        // user has clicked on a label in the visible div, show the div with the checkboxes (only when not visible)
+        target.parentElement.parentElement.getElementsByTagName("div")[1].classList.remove("w3-hide");
+        target.parentElement.parentElement.getElementsByTagName("div")[2].classList.remove("w3-hide");
     } else if(target.tagName == "INPUT" && target.type == "checkbox") {
         // user has selected/unselected a checkbox, update the visible div
         updateCheckboxList(target.parentElement.parentElement.parentElement);

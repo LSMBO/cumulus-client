@@ -36,47 +36,43 @@ const FormData = require('form-data');
 const config = require('./config.js');
 const rest = require('./rest.js');
 
+async function checkServerVersion() {
+    // get controller config
+    const [data, error1] = await rest.sendGetRequest(rest.getUrl("config"));
+    if(error1 != "") return error1;
+    for(let [key, value] of Object.entries(JSON.parse(data))) {
+        config.set(key, value);
+    }
+    // get rsync agent config
+    const [version, error2] = await rest.sendGetRequest(rest.getUrl("/", [], true));
+    if(error2) return error2;
+    config.set("rsync.version", version);
+    // check that all versions are compatible
+    return config.checkVersion();
+}
+
 async function checkRsyncAgent() {
     const [response, error] = await rest.sendGetRequest(rest.getUrl("/", [], true));
     if(error) return error;
-    else if(response != "OK") return "The RSync agent was reached but the expected code was incorrect.";
+    // else if(response != "OK") return "The RSync agent was reached but the expected code was incorrect.";
     else return "";
 }
 
-async function checkServer() {
-    const localVersion = config.get("cumulus.version");
-    // check that the server can be reached
-    const [remoteVersion, error] = await rest.sendGetRequest(rest.getUrl("version"));
-    if(error != "") return error;
-    // check that the client version matches the server version
-    else if(localVersion != remoteVersion) return `Local version '${localVersion}' does not match with server version '${remoteVersion}', please update.`;
-    // check that the rsync agent can be reached
-    // else {
-    //     const [response, error2] = await rest.sendGetRequest(rest.getUrl("/", [], true));
-    //     if(error2) return error2;
-    //     else if(response != "OK") return "The RSync agent was reached but the expected code was incorrect.";
-    //     else return "";
-    // }
-    else return checkRsyncAgent();
-}
-
-// async function checkRsyncAgent() {
-//     const [response, error] = await rest.sendGetRequest(rest.getUrl("/", [], true));
-//     if(error) return error;
-//     else if(response != "OK") return "Error with the RSync agent";
-//     else return "";
-// }
-
-// async function checkVersion() {
+// async function checkServer() {
 //     const localVersion = config.get("cumulus.version");
-//     const url = rest.getUrl("version");
-//     const [remoteVersion, error] = await rest.sendGetRequest(url);
-//     console.log(`Client version: '${localVersion}'; Server version: '${remoteVersion}'; error message: '${error}'`);
-//     // if(localVersion == remoteVersion) return ["", error];
-//     // else return [`Local version '${localVersion}' does not match with server version '${remoteVersion}', please update.`, error];
+//     // check that the server can be reached
+//     const [remoteVersion, error] = await rest.sendGetRequest(rest.getUrl("version"));
 //     if(error != "") return error;
+//     // check that the client version matches the server version
 //     else if(localVersion != remoteVersion) return `Local version '${localVersion}' does not match with server version '${remoteVersion}', please update.`;
-//     else return "";
+//     // check that the rsync agent can be reached
+//     // else {
+//     //     const [response, error2] = await rest.sendGetRequest(rest.getUrl("/", [], true));
+//     //     if(error2) return error2;
+//     //     else if(response != "OK") return "The RSync agent was reached but the expected code was incorrect.";
+//     //     else return "";
+//     // }
+//     else return checkRsyncAgent();
 // }
 
 async function listStorage() {
@@ -224,4 +220,4 @@ async function downloadFile(_, owner, job_id, file_name, target) {
     await rest.download(url, target);
 }
 
-module.exports = { cancelJob, checkRsyncAgent, checkServer, createJob, deleteJob, downloadFile, getLastJobs, jobDetails, jobStatus, listHosts, listJobFiles, listStorage, searchJobs, transferProgress }
+module.exports = { cancelJob, checkRsyncAgent, checkServer, checkServerVersion, createJob, deleteJob, downloadFile, getLastJobs, jobDetails, jobStatus, listHosts, listJobFiles, listStorage, searchJobs, transferProgress }

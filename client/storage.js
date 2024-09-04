@@ -36,88 +36,89 @@ import * as tabs from "./tabs.js";
 import * as utils from "./utils.js";
 
 function localSort(a, b, asc = true) {
-    if(isNaN(a)) {
-      if(asc) {
-        if(a.toLowerCase() > b.toLowerCase()) return 1;
-        if(a.toLowerCase() < b.toLowerCase()) return -1;
-        return 0;
-      } else {
-        if(a.toLowerCase() > b.toLowerCase()) return -1;
-        if(a.toLowerCase() < b.toLowerCase()) return 1;
-        return 0;
-      }
+  if(isNaN(a)) {
+    if(asc) {
+      if(a.toLowerCase() > b.toLowerCase()) return 1;
+      if(a.toLowerCase() < b.toLowerCase()) return -1;
+      return 0;
     } else {
-      return asc ? a - b : b - a;
+      if(a.toLowerCase() > b.toLowerCase()) return -1;
+      if(a.toLowerCase() < b.toLowerCase()) return 1;
+      return 0;
     }
+  } else {
+    return asc ? a - b : b - a;
+  }
 }
 
 function sortStorage(byName = true, asc = true) {
-    // console.log(`sortStorage(${byName}, ${asc})`);
-    // store each row in a map, the key is the row number, the value is the content of the column we want to sort
-    const map = new Map();
-    const table = document.getElementById("tabStorage").getElementsByTagName("table")[0];
-    for(let row of table.rows) {
-      if(row.rowIndex > 0) {
-        // console.log(row);
-        if(byName) {
-          map.set(row.rowIndex, row.cells[0].getElementsByTagName("label")[0].textContent);
-        } else {
-          map.set(row.rowIndex, parseInt(row.cells[1].getElementsByTagName("label")[0].textContent));
-        }
+  // console.log(`sortStorage(${byName}, ${asc})`);
+  // store each row in a map, the key is the row number, the value is the content of the column we want to sort
+  const map = new Map();
+  const table = document.getElementById("tabStorage").getElementsByTagName("table")[0];
+  for(let row of table.rows) {
+    if(row.rowIndex > 0) {
+      // console.log(row);
+      if(byName) {
+        map.set(row.rowIndex, row.cells[0].getElementsByTagName("label")[0].textContent);
+      } else {
+        map.set(row.rowIndex, parseInt(row.cells[1].getElementsByTagName("label")[0].textContent));
       }
     }
-    // sort by value
-    const sortedMap = new Map([...map.entries()].sort((a, b) => localSort(a[1], b[1], asc)));
-    // recreate the table content
-    table.rows[0].getElementsByTagName("i")[0].textContent = byName ? asc ? "⏶" : "⏷" : "";
-    table.rows[0].getElementsByTagName("i")[1].textContent = byName ? "" : asc ? "⏶" : "⏷";
-    var content = table.rows[0].outerHTML;
-    for(let rowIndex of sortedMap.keys()) {
-      content += table.rows[rowIndex].outerHTML;
-    }
-    table.innerHTML = content;
-    table.rows[0].cells[0].addEventListener("click", sortStorageEvent);
-    table.rows[0].cells[1].addEventListener("click", sortStorageEvent);
+  }
+  // sort by value
+  const sortedMap = new Map([...map.entries()].sort((a, b) => localSort(a[1], b[1], asc)));
+  // recreate the table content
+  table.rows[0].getElementsByTagName("i")[0].textContent = byName ? asc ? "⏶" : "⏷" : "";
+  table.rows[0].getElementsByTagName("i")[1].textContent = byName ? "" : asc ? "⏶" : "⏷";
+  var content = table.rows[0].outerHTML;
+  for(let rowIndex of sortedMap.keys()) {
+    content += table.rows[rowIndex].outerHTML;
+  }
+  table.innerHTML = content;
+  table.rows[0].cells[0].addEventListener("click", sortStorageEvent);
+  table.rows[0].cells[1].addEventListener("click", sortStorageEvent);
 }
 
 function sortStorageEvent(event) {
-    // console.log(event);
-    const byName = event.target.cellIndex == 0;
-    const asc = event.target.getElementsByTagName("i")[0].textContent != "⏶";
-    sortStorage(byName, asc);
+  // console.log(event);
+  const byName = event.target.cellIndex == 0;
+  const asc = event.target.getElementsByTagName("i")[0].textContent != "⏶";
+  sortStorage(byName, asc);
 }
 
 function searchStorage(_) {
-    const tag = document.getElementById("txtStorageSearch").value.toLowerCase();
-    const table = document.getElementById("tabStorage").getElementsByTagName("table")[0];
-    for(let row of table.rows) {
-      row.style.display = row.cells[0].childNodes[0].textContent.toLowerCase().includes(tag) ? "" : "none";
-    }
+  const tag = document.getElementById("txtStorageSearch").value.toLowerCase();
+  const table = document.getElementById("tabStorage").getElementsByTagName("table")[0];
+  for(let row of table.rows) {
+    row.style.display = row.cells[0].childNodes[0].textContent.toLowerCase().includes(tag) ? "" : "none";
+  }
 }
 
 async function refreshStorage() {
-    utils.toggleLoadingScreen();
-    const table = document.getElementById("tabStorage").getElementsByTagName("table")[0];
-    const [data, _] = await window.electronAPI.listStorage();
-    var content = "<tr class='color-secondary'><th>File name<i></i></th><th>Size<i></i></th></tr>";
-    for(const [file, size] of data) {
-      const cls = size == -1 ? "rsync" : "";
-      const fsize = size == -1 ? "Queued for transfer" : utils.toHumanReadable(size);
-      if(file == "Human_pSP_CMO_20190213.fasta")
-        content += `<tr><td><label class="${cls}">${file}${file}${file}<label></td><td><label>${size}</label><span class="${cls}">${fsize}</span></td></tr>`;
-      else 
-        content += `<tr><td><label class="${cls}">${file}<label></td><td><label>${size}</label><span class="${cls}">${fsize}</span></td></tr>`;
-    }
-    table.innerHTML = content;
-    sortStorage();
-    utils.toggleLoadingScreen();
+  utils.toggleLoadingScreen();
+  document.getElementById("tabStorage").getElementsByTagName("h4")[0].innerHTML = `Files will be automatically removed after ${settings.CONFIG.get("data.max.age.in.days")} days (unless they are being used)`;
+  const table = document.getElementById("tabStorage").getElementsByTagName("table")[0];
+  const [data, _] = await window.electronAPI.listStorage();
+  var content = "<tr class='color-secondary'><th>File name<i></i></th><th>Size<i></i></th></tr>";
+  for(const [file, size] of data) {
+    const cls = size == -1 ? "rsync" : "";
+    const fsize = size == -1 ? "Queued for transfer" : utils.toHumanReadable(size);
+    // if(file == "Human_pSP_CMO_20190213.fasta")
+    //   content += `<tr><td><label class="${cls}">${file}${file}${file}<label></td><td><label>${size}</label><span class="${cls}">${fsize}</span></td></tr>`;
+    // else 
+    //   content += `<tr><td><label class="${cls}">${file}<label></td><td><label>${size}</label><span class="${cls}">${fsize}</span></td></tr>`;
+    content += `<tr><td><label class="${cls}">${file}<label></td><td><label>${size}</label><span class="${cls}">${fsize}</span></td></tr>`;
+  }
+  table.innerHTML = content;
+  sortStorage();
+  utils.toggleLoadingScreen();
 }
 
 function openStorage() {
-    // ask the server for the list of files
-    refreshStorage();
-    tabs.openTab("tabStorage");
-  
+  // ask the server for the list of files
+  refreshStorage();
+  tabs.openTab("tabStorage");
 }
 
 export { openStorage, refreshStorage, searchStorage };

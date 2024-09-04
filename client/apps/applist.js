@@ -45,7 +45,6 @@ function addApplication(app) {
 // WARNING, this is where the actual apps are made available to the user
 // MAKE SURE that you only add apps that are available on the server!!
 addApplication(diann181.get());
-// addApplication(diann182.get());
 addApplication(diann191.get()); // TODO should we put this app first? or keep the alphabetical order?
 addApplication(test.get());
 
@@ -66,4 +65,13 @@ function getFullName(id) {
     return id;
 }
 
-export { get, getFullName, has, list };
+function getOptionList(selectedItem = "") {
+    var html = "";
+    for(let [id, app] of APP_LIST) {
+        var sel = selectedItem == id ? "selected='true'" : "";
+        html += `<option value="${id}" ${sel}>${app.toString()}</option>`;
+    }
+    return html;
+}
+
+export { get, getFullName, getOptionList, has, list };

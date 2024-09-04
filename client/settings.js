@@ -34,9 +34,9 @@ knowledge of the CeCILL license and that you accept its terms.
 
 import * as tabs from "./tabs.js";
 import * as jobs from "./joblist.js";
-import * as dialog from "./dialog.js";
 import * as utils from "./utils.js";
 
+// TODO check that all settings are actually used!
 const CONFIG = new Map();
 const jobLabels = document.getElementById("divSettingsJobLabelElement");
 
@@ -70,7 +70,6 @@ function openSettings() {
 
 async function saveSettings() {
     // TODO add some checks
-    dialog.closeDialogQuestion();
     CONFIG.set("cumulus.controller", document.getElementById("txtSettingsServerAddress").value);
     CONFIG.set("cumulus.port", document.getElementById("txtSettingsServerPort").value);
     CONFIG.set("rsync.agent", document.getElementById("txtSettingsRsyncAddress").value);
@@ -90,7 +89,6 @@ async function saveSettings() {
 }
 
 async function resetSettings() {
-    dialog.closeDialogQuestion();
     await window.electronAPI.resetConfig();
     await loadSettings();
     openSettings();

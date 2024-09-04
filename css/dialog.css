@@ -1,5 +1,4 @@
-.dialog-parent {
-    display: none;
+#dialogs {
     z-index: 10;
     padding-top: 100px;
     position: fixed;
@@ -12,13 +11,16 @@
 }
 
 .dialog {
-    /* display: none; */
-    z-index: 12;
     background-color: white;
     border-radius: 10px;
     width: 600px;
     min-height: 125px;
     padding: 15px;
+    position: fixed;
+    border: 1px solid var(--primary-color-dark);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .dialog img {
@@ -38,7 +40,6 @@
     display: block;
     width: 535px !important;
     margin-left: 50px;
-    /* background-color: aliceblue; */
     max-height: 300px;
     text-align: justify;
     padding: 5px 25px;

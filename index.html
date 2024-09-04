@@ -13,9 +13,7 @@
     <title>Cumulus</title>
   </head>
   <body>
-    <div class="dialog-parent w3-animate-opacity"><div class="w3-modal-content dialog" id="dialog_info"><img src="img/info.png"/><header>Information</header><label></label></div></div>
-    <div class="dialog-parent w3-animate-opacity"><div class="w3-modal-content dialog" id="dialog_question"><img src="img/question.png"/><header>Question</header><label></label><div class="w3-bar"><button id="btn_dialq_2" class="w3-bar-item w3-button color-primary-border">No</button><button id="btn_dialq_1" class="w3-bar-item w3-button color-accent">Yes</button></div></div></div>
-    <div class="dialog-parent w3-animate-opacity"><div class="w3-modal-content dialog" id="dialog_warning"><img src="img/warning.png"/><header>Warning</header><label></label><div class="w3-bar"><button id="btn_dialw" class="w3-bar-item w3-button color-primary-border">Yes</button></div></div></div>
+    <div id="dialogs" class="w3-hide"></div>
     <span id="tooltiptext">Tooltip text</span>
     <div id="loading" class="w3-modal w3-animate-opacity">
       <div class="w3-modal-content"><span></span><label>Loading...</label></div>
@@ -112,7 +110,6 @@
           </div> 
         </div>
         <!-- Extra tab: the global settings -->
-        <!-- TODO check that all settings are actually used! -->
         <div id="tabSettings">
           <h3>Cumulus configuration</h3>
           <div class="w3-row w3-section">
@@ -124,16 +121,6 @@
             <input id="txtSettingsRefreshRate" type="number" class="w3-input w3-border w3-rest" value="" min="5" step="1" placeholder="Number of seconds between each refresh of the job list and job status (minimal value is 5 seconds)" />
           </div>
           <div id="divSettingsJobLabelElement"></div>
-          <!-- <div id="divSettingsJobLabelElement" class="w3-row w3-section selector">
-            <label for="txtSettingsJobLabel" class="w3-col">Job description</label>
-            <div id="txtSettingsJobLabel" class="w3-input w3-border w3-rest"></div>
-            <div id="divSettingsJobLabel" class="w3-hide selector-items">
-              <label><input type="checkbox" name="id" checked />Job ID</label>
-              <label><input type="checkbox" name="owner" checked />Job owner</label>
-              <label><input type="checkbox" name="app" checked />App name</label>
-              <label><input type="checkbox" name="start" checked />Start date</label>
-            </div>
-          </div> -->
           <div class="w3-row w3-section">
             <label for="cmbSettingsDefaultStrategy" class="w3-col">Default strategy</label>
             <select id="cmbSettingsDefaultStrategy" class="w3-select w3-border w3-rest"></select>
@@ -174,6 +161,7 @@
         </div>
         <div id="tabStorage">
           <h3>Cumulus remote storage content</h3>
+          <h4></h4>
           <button id="btnStorageRefresh" class="w3-button color-opposite">Refresh</button>
           <input type="text" id="txtStorageSearch" class="w3-input w3-border" placeholder="Search for a file" />
           <table class="w3-table-all"></table>

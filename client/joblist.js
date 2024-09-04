@@ -56,9 +56,6 @@ function refreshStatus() {
   // log tab: not if PENDING or new job
   document.getElementById("btnLogs").disabled = true;
   if(utils.getCurrentJobId() > 0 && status != "PENDING") document.getElementById("btnLogs").disabled = false;
-  // refresh button: only if RUNNING or PENDING
-  // document.getElementById("btnRefresh").disabled = true;
-  // if(CURRENT_JOB_ID > 0 && (status == "PENDING" || status == "RUNNING")) document.getElementById("btnRefresh").disabled = false;
   // cancel button: only if RUNNING or PENDING
   document.getElementById("btnCancel").style.display = "none";
   if(utils.getCurrentJobId() > 0 && (status == "PENDING" || status == "RUNNING")) document.getElementById("btnCancel").style.display = "inline-block";
@@ -83,16 +80,21 @@ function highlightJobButton() {
       a.classList.add("color-secondary");
     }
   }
-  // if(utils.getCurrentJobId() <= 0 && document.getElementById("splash").style.display == "none") document.getElementById("jobs").children[0].classList.remove("w3-hide");
 }
 
-function getNewJobAsHtml() {
-  return `<a id="new_job" href="#" class="w3-button"><span><img src="./img/new_job.png" /></span><label>New job</label></a>`;
-}
+// function getNewJobAsHtml() {
+//   return `<a id="new_job" href="#" class="w3-button"><span><img src="./img/new_job.png" /></span><label>New job</label></a>`;
+// }
 
-function getClearSearchAsHtml(nb) {
-  const label = nb == 1 ? "Cancel search (1 result)" : `Cancel search (${nb} results)`;
-  return `<a id="clear_search" href="#" class="w3-button"><span><img src="./img/unfilter.png" /></span><label>${label}</label></a>`;
+// function getClearSearchAsHtml(nb) {
+//   const label = nb == 1 ? "Cancel search (1 result)" : `Cancel search (${nb} results)`;
+//   return `<a id="clear_search" href="#" class="w3-button"><span><img src="./img/unfilter.png" /></span><label>${label}</label></a>`;
+// }
+
+function getHeadJobButton(nb) {
+  var html = `<a id="new_job" href="#" class="w3-button ${IS_SEARCH ? "w3-hide" : ""}"><span><img src="./img/new_job.png" /></span><label>New job</label></a>
+  <a id="clear_search" href="#" class="w3-button ${IS_SEARCH ? "" : "w3-hide"}"><span><img src="./img/unfilter.png" /></span><label>Cancel search (${nb} result${nb > 1 ? "s" : ""})</label></a>`;
+  return html;
 }
 
 function setJobListDisplay() {
@@ -120,10 +122,9 @@ function getJobAsHtml(job) {
 }
 
 function addJobsToJobList(jobs) {
-  // close the offline dialog if it was open before
-  if(dialog.isDialogOfflineOpen()) dialog.closeDialogQuestion();
   // top button is used to create a new job, or to cancel the search
-  var html = IS_SEARCH ? getClearSearchAsHtml(jobs.length) : getNewJobAsHtml();
+  // var html = IS_SEARCH ? getClearSearchAsHtml(jobs.length) : getNewJobAsHtml();
+  var html = getHeadJobButton(jobs.length);
   for(let j of jobs) {
     html += getJobAsHtml(j);
     if(j.id == utils.getCurrentJobId()) job.refreshJob(j);
@@ -140,11 +141,14 @@ function addJobsToJobList(jobs) {
   for(let a of document.getElementById("jobs").getElementsByTagName("a")) {
     if(a.id == "new_job") a.addEventListener("click", () => job.createJob());
     else if(a.id == "clear_search") a.addEventListener("click", async () => { IS_SEARCH = false; await reloadJobList(); });
-    // else a.addEventListener("click", async () => await job.loadJob(a.id));
     else a.addEventListener("click", async () => {
       utils.setCurrentJobId(a.id.replace("job_", ""));
-      await reloadJobList();
-      tabs.openTab("tabSummary");
+      highlightJobButton(); // immediately highlight the selected job
+      utils.toggleLoadingScreen(); // show the loading screen
+      job.cleanJob(); // remove the previous list of output files
+      await reloadJobList(); // refresh the list of jobs
+      utils.toggleLoadingScreen(); // remove the loading screen
+      tabs.openTab("tabSummary"); // open the main tab
     });
   }
   // display what the user wants to see in the list
@@ -153,20 +157,19 @@ function addJobsToJobList(jobs) {
   highlightJobButton();
 }
 
+function isSearchMode() { return IS_SEARCH; }
 function setSearchMode(value) {
   IS_SEARCH = value;
 }
 
 async function getLastJobs() {
   // console.log("getLastJobs()");
-  // IS_SEARCH = false;
   return await window.electronAPI.getLastJobs(utils.getCurrentJobId(), settings.CONFIG.get("max.nb.jobs"));
 }
 
 async function searchJobs(reloadPreviousSettings = true) {
   // console.log("searchJobs()");
   // the search is refreshed, so we store the settings in case the user changes a field without validating
-  // IS_SEARCH = true;
   const [owner, app, file, desc, statuses, date, from, to, number] = reloadPreviousSettings ? search.getPreviousSearchSettings() : search.getCurrentSearchSettings();
   search.storeSearchSettings(owner, app, file, desc, statuses, date, from, to, number);
   // send the search request
@@ -184,13 +187,12 @@ async function reloadJobList(reloadPreviousSettings = true) {
       utils.setOffline(true);
       const title = "Cumulus is disconnected!";
       const message = `Cumulus has lost the connection with the ${error ? "server" : "RSync agent"} with the following error:<br/>${errorMessage}<br/><br/>Please contact your administrator.`;
-      dialog.openDialogQuestion(title, message, retryReloadJobList, "Retry", undefined, async () => await window.electronAPI.exitApp(), "Quit", undefined, dialog.ICON_OFFLINE);
+      dialog.createDialogOffline(title, message, retryReloadJobList);
     }
   } else addJobsToJobList(jobs);
 }
 
 function retryReloadJobList() {
-  dialog.closeDialogQuestion();
   utils.setOffline(false);
   reloadJobList();
 }
@@ -204,7 +206,6 @@ function reloadJobListOrSleep(reloadPreviousSettings = true) {
 
 function resetInterval() {
   if(INTERVAL) clearInterval(INTERVAL);
-  // INTERVAL = window.setInterval(reloadJobList, settings.CONFIG.get("refresh.rate") * 1000);
   INTERVAL = window.setInterval(reloadJobListOrSleep, settings.CONFIG.get("refresh.rate") * 1000);
 }
 
@@ -218,4 +219,4 @@ function pauseRefresh() {
   }
 }
 
-export { highlightJobButton, pauseRefresh, refreshStatus, reloadJobList, resetInterval, setJobListDisplay, setSearchMode };
+export { highlightJobButton, isSearchMode, pauseRefresh, refreshStatus, reloadJobList, resetInterval, setJobListDisplay, setSearchMode };

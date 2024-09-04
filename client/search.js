@@ -40,29 +40,14 @@ import * as apps from "./apps/applist.js";
 
 const LAST_SEARCH_SETTINGS = new Map();
 const mainSearchStatus = document.getElementById("divSearchStatusElement");
-// const divSearchStatus = document.getElementById("divSearchStatus");
-// const txtSearchStatus = document.getElementById("txtSearchStatus");
 const txtSearchAppName = document.getElementById("txtSearchAppName");
 
 function openSearch() {
     tabs.openTab("tabSearch");
 }
 
-// function updateStatusList() {
-//     txtSearchStatus.innerHTML = "";
-//     for(let label of divSearchStatus.getElementsByTagName("label")) {
-//         if(label.children[0].checked) txtSearchStatus.innerHTML += `<label>${label.textContent}</label>`;
-//     }
-// }
-
 function setDefaultValues() {
-    // owner: utils.getUserName()
     document.getElementById("txtSearchOwner").value = "";
-    // status: check all
-    // for(let input of divSearchStatus.getElementsByTagName("input")) {
-    //     input.checked = true;
-    // }
-    // updateStatusList();
     utils.setDefaultCheckboxList(mainSearchStatus);
     txtSearchAppName.selectedIndex = 0;
     document.getElementById("txtSearchFile").value = "";
@@ -104,11 +89,6 @@ function getCurrentSearchSettings() {
   const app = document.getElementById("txtSearchAppName").value;
   const file = document.getElementById("txtSearchFile").value;
   const desc = document.getElementById("txtSearchTag").value;
-//   const statuses = [];
-//   for(let lbl of txtSearchStatus.getElementsByTagName("label")) {
-//       statuses.push(lbl.textContent);
-//   }
-//   const statuses = utils.getCheckboxListSelection(mainSearchStatus);
   const statuses = Object.entries(utils.getCheckboxListSelection(mainSearchStatus)).map(kv => kv[1]);
   const date = document.getElementById("cmbSearchDate").value;
   const from = document.getElementById("txtSearchDate1").value;
@@ -117,41 +97,22 @@ function getCurrentSearchSettings() {
   return [owner, app, file, desc, statuses, date, from, to, number];
 }
 
-// document.addEventListener("click", (event) => {
-//     if(event.target.id == "txtSearchStatus" || (event.target.parentElement != null && event.target.parentElement.id == "txtSearchStatus")) {
-//         // toggle the list of statuses when clicking on the main div
-//         if(divSearchStatus.classList.contains("w3-hide")) {
-//             divSearchStatus.classList.remove("w3-hide");
-//         } else {
-//             divSearchStatus.classList.add("w3-hide");
-//         }
-//     } else if(!divSearchStatus.contains(event.target)) {
-//         // hide the list of statuses when clicking anywhere else, except if it's on the list itself
-//         divSearchStatus.classList.add("w3-hide");
-//     }
-// });
 utils.addCheckboxList(mainSearchStatus, "Status", {"pending": "Pending", "running": "Running", "done": "Done", "failed": "Failed", "cancelled": "Cancelled", "archived": "Archived"}, "Restrict the search to specific statuses (if no status is selected then the filter will be disabled).");
 
-// divSearchStatus.addEventListener("click", (_) => updateStatusList());
 document.getElementById("btnSearchMe").addEventListener("click", (e) => { e.preventDefault(); document.getElementById("txtSearchOwner").value = utils.getUserName(); });
 document.getElementById("btnSearchOk").addEventListener("click", async (e) => {
     e.preventDefault();
-    // jobs.searchJobs(false);
     jobs.setSearchMode(true);
     jobs.reloadJobList(false);
 });
 document.getElementById("btnSearchReset").addEventListener("click", (e) => {
     e.preventDefault();
     setDefaultValues();
-    // jobs.getLastJobs();
     jobs.setSearchMode(false);
     jobs.reloadJobList();
 });
 
 // initialize on first opening
-txtSearchAppName.innerHTML = "<option value='all' selected></option>";
-for(let [id, _] of apps.list()) {
-    txtSearchAppName.innerHTML += `<option value="${id}">${apps.getFullName(id)}</option>`;
-}
+txtSearchAppName.innerHTML = "<option value='all' selected></option>" + apps.getOptionList();
 
 export { getCurrentSearchSettings, getPreviousSearchSettings, openSearch, setDefaultValues, storeSearchSettings };

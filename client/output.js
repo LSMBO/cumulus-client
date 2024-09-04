@@ -34,6 +34,7 @@ knowledge of the CeCILL license and that you accept its terms.
 
 import * as dialog from "./dialog.js";
 import * as utils from "./utils.js";
+import * as settings from "./settings.js";
 
 const TREE_VIEW = document.getElementById("treeview");
 
@@ -152,7 +153,8 @@ function getOutputFileItem(level, name, size) {
     item.appendChild(icon);
     const chk = document.createElement("input");
     chk.type = "checkbox";
-    chk.checked = true;
+    // chk.checked = true;
+    chk.checked = false;
     chk.addEventListener("change", (event) => toggleCheckbox(event.target.parentNode));
     item.appendChild(chk);
     const label = document.createElement("label");
@@ -170,7 +172,13 @@ function getOutputFileItem(level, name, size) {
     return item;
 }
 
+function removeOutputFiles() {
+  document.getElementById("outputSummary").textContent = "No output files available.";
+  TREE_VIEW.innerHTML = "";
+}
+
 function insertOutputFiles(files) {
+  if(TREE_VIEW.innerHTML == "") {
     const directories = new Map();
     var totalSize = 0;
     const children = new Array();
@@ -194,6 +202,12 @@ function insertOutputFiles(files) {
     for(let child of children) { TREE_VIEW.appendChild(child); }
     document.getElementById("outputSummary").textContent = `${directories.size} directories, ${files.length} files, ${utils.toHumanReadable(totalSize)} in total`;
     document.getElementById("tabOutput").getElementsByTagName("button")[0].disabled = false;
+    // an "output" folder is created on server-side, it should be checked by default (but may not work for all apps?)
+    for(let child of TREE_VIEW.childNodes) {
+      // if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == "output") child.getElementsByTagName("input")[0].click();
+      if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("output.folder")) child.getElementsByTagName("input")[0].click();
+    }
+  }
 }
 
 function getTreeName(item) { return item.getElementsByTagName("label")[0].textContent; }
@@ -220,24 +234,23 @@ function getTreePath(item) {
 }
 
 async function downloadFiles(path, files) {
-    dialog.closeDialogQuestion();
-    const btn = document.getElementById("btnOutputDownload");
-    const label = btn.textContent;
-    btn.disabled = true;
-    var i = 0;
-    const total = files.length;
-    for(let file of files) {
-        btn.textContent = `Downloading file ${file}`;
-        await window.electronAPI.downloadFile(utils.getUserName(), utils.getCurrentJobId(), file, path + "/" + file);
-        document.getElementById("downloadProgressBar").style.width = Math.floor((i * 100)/total) + "%";
-        i += 1;
-    }
-    btn.textContent = `${files.length} have been downloaded`;
-    document.getElementById("downloadProgressBar").style.width = "100%";
-    await utils.sleep(2000);
-    document.getElementById("downloadProgressBar").style.width = "0%";
-    btn.textContent = label;
-    btn.disabled = false;
+  const btn = document.getElementById("btnOutputDownload");
+  const label = btn.textContent;
+  btn.disabled = true;
+  var i = 0;
+  const total = files.length;
+  for(let file of files) {
+    btn.textContent = `Downloading file ${file}`;
+    await window.electronAPI.downloadFile(utils.getUserName(), utils.getCurrentJobId(), file, path + "/" + file);
+    document.getElementById("downloadProgressBar").style.width = Math.floor((i * 100)/total) + "%";
+    i += 1;
+  }
+  btn.textContent = `${files.length} have been downloaded`;
+  document.getElementById("downloadProgressBar").style.width = "100%";
+  await utils.sleep(2000);
+  document.getElementById("downloadProgressBar").style.width = "0%";
+  btn.textContent = label;
+  btn.disabled = false;
 }
 
 async function downloadOutput() {
@@ -251,13 +264,13 @@ async function downloadOutput() {
     if(files.length > 0) {
         // get the folder where to download the files
         // FIXME files cannot be seen when browsing for a directory, it seems like it's how Windows manages it. OpenSaveDialog can only save a file, not a list of files
-        const path = await window.electronAPI.browseServer("OUT", "Select where the files will be downloaded", [{ name: 'All files', extensions: ['*'] }], ['openDirectory']);
+        const path = await window.electronAPI.browseServer("OUT", "Select where the files will be downloaded", "", [{ name: 'All files', extensions: ['*'] }], ['openDirectory']);
         if(path != "") {
-            if(await window.electronAPI.countExistingFiles(path[0], files) > 0)
-            dialog.openDialogQuestion("Warning", "Some files will be overwritten, do you want to continue?", async () => downloadFiles(path[0], files));
-            else await downloadFiles(path[0], files);
+          if(await window.electronAPI.countExistingFiles(path[0], files) > 0)
+            dialog.createDialogQuestion("Warning", "Some files will be overwritten, do you want to continue?", async () => downloadFiles(path[0], files));
+          else await downloadFiles(path[0], files);
         }
     }
 }
 
-export { collapseAllFolders, downloadOutput, expandAllFolders, insertOutputFiles, selectAllCheckboxes, unselectAllCheckboxes };
+export { collapseAllFolders, downloadOutput, expandAllFolders, insertOutputFiles, removeOutputFiles, selectAllCheckboxes, unselectAllCheckboxes };

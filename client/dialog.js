@@ -32,103 +32,91 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-const INFO = document.getElementById("dialog_info");
-const QUESTION = document.getElementById("dialog_question");
-const WARNING = document.getElementById("dialog_warning");
-
+const PARENT = document.getElementById("dialogs");
+var ID = 0;
 const ICON_INFO = "img/info.png";
 const ICON_QUESTION = "img/question.png";
 const ICON_WARNING = "img/warning.png";
 const ICON_SLEEP = "img/sleep.png";
 const ICON_OFFLINE = "img/offline.png";
 
-function initializeDialogs() {
-    INFO.parentElement.addEventListener("click", closeDialogInfo());
-    QUESTION.parentElement.addEventListener("click", closeDialogQuestion());
-    WARNING.parentElement.addEventListener("click", closeDialogWarning());
-}
-
-function updateZIndex(dialog) {
-    // make sure that the last open dialog is above the previous ones (if any)
-    var nb = 10;
-    if(isDialogInfoOpen() && parseInt(INFO.style.zIndex) >= nb) nb = parseInt(INFO.style.zIndex) + 1;
-    if(isDialogQuestionOpen() && parseInt(QUESTION.style.zIndex) >= nb) nb = parseInt(QUESTION.style.zIndex) + 1;
-    if(isDialogWarningOpen() && parseInt(WARNING.style.zIndex) >= nb) nb = parseInt(WARNING.style.zIndex) + 1;
-    dialog.style.zIndex = nb;
-    dialog.parentElement.style.zIndex = nb;
-}
-
-// TODO in the future, we may want to be able to open several dialogs of the same type
-//      at the moment we only reuse the same dialog, so we loose the previous one in the process
-//      to do so, we should create dynamically the dialogs with an id that increments automatically (with the z-index)
-function openDialog(dialog, title = "Title", message = "", icon = "") {
-    dialog.getElementsByTagName("header")[0].textContent = title;
-    dialog.getElementsByTagName("label")[0].innerHTML = message;
-    if(icon != "") dialog.getElementsByTagName("img")[0].src = icon;
-    dialog.parentElement.style.display = "block";
-    // dialog.style.display = "block";
-    updateZIndex(dialog);
-}
-
-function isDialogOpen(dialog) {
-    // return dialog.style.display == "block";
-    return dialog.parentElement.style.display == "block";
-}
-
-function closeDialog(dialog) {
-    dialog.getElementsByTagName("header")[0].textContent = "";
-    dialog.getElementsByTagName("label")[0].textContent = "";
-    dialog.parentElement.style.display = "none";
-    // dialog.style.display = "none";
-    updateZIndex(dialog);
-}
-
-function openDialogInfo(title, message, icon = ICON_INFO) {
-    openDialog(INFO, title, message, icon);
-}
-function openDialogSleep() {
-    openDialog(INFO, "Sleep mode", "Cumulus is in sleep mode and will be refreshed less often, but do not worry your jobs are still running!", ICON_SLEEP);
-}
-function isDialogInfoOpen() { return isDialogOpen(INFO); }
-function closeDialogInfo() {
-    closeDialog(INFO);
-}
-
-function openDialogQuestion(title, message, onYes, onYesLabel = "Yes", onYesArgs = undefined, onNo = undefined, onNoLabel = "No", onNoArgs = undefined, icon = ICON_QUESTION) {
-    // apply the Yes button
-    document.getElementById("btn_dialq_1").textContent = onYesLabel;
-    document.getElementById("btn_dialq_1").addEventListener("click", () => onYesArgs !== undefined ? onYes(onYesArgs) : onYes(), { once: true }); // once = true, so the listener will disappear after being used once
-    // apply the No button
-    document.getElementById("btn_dialq_2").textContent = onNoLabel;
-    if(onNo !== undefined) {
-        document.getElementById("btn_dialq_2").addEventListener("click", () => onNoArgs !== undefined ? onNo(onNoArgs) : onNo(), { once: true });
-    } else {
-        document.getElementById("btn_dialq_2").addEventListener("click", () => closeDialogQuestion());
+function createDialog(title, message, icon) {
+    if(ID == 0) {
+        // initialize the event listener on the parent
+        PARENT.addEventListener("click", (e) => {
+            // do not close the last dialog if the click was on the button of another dialog
+            if(e.target.tagName != "BUTTON") closeLastDialogIf([ICON_INFO, ICON_SLEEP]);
+        });
+        ID++;
     }
-    // document.getElementById("dialogs").removeEventListener("click");
-    openDialog(QUESTION, title, message, icon);
+    const dialog = document.createElement("div");
+    dialog.id = `dialog_${ID++}`;
+    dialog.className = "w3-modal-content dialog";
+    dialog.innerHTML = `<img src="${icon}"/><header>${title}</header><label>${message}</label>`;
+    dialog.style.zIndex = 10 + ID;
+    dialog.style.display = "block";
+    if(PARENT.childElementCount == 0) PARENT.classList.remove("w3-hide");
+    return dialog;
 }
-function isDialogQuestionOpen() { return isDialogOpen(QUESTION); }
-function closeDialogQuestion() { closeDialog(QUESTION); }
 
-function openDialogWarning(title, message, action = undefined, label = "Close", args = undefined, icon = ICON_WARNING) {
-    // apply the Close button
-    document.getElementById("btn_dialw").textContent = label;
-    if(action !== undefined) {
-        document.getElementById("btn_dialw").addEventListener("click", () => args !== undefined ? action(args) : action(), { once: true });
-    } else {
-        document.getElementById("btn_dialw").addEventListener("click", () => closeDialogWarning());
+function createDialogInfo(title, message) {
+    PARENT.appendChild(createDialog(title, message, ICON_INFO));
+}
+function createDialogSleep() {
+    PARENT.appendChild(createDialog("Sleep mode", "Cumulus is in sleep mode and will be refreshed less often, but do not worry your jobs are still running!", ICON_SLEEP));
+}
+
+function closeDialog(id) {
+    PARENT.removeChild(document.getElementById(id));
+    // remove the visibility of the cover
+    if(PARENT.childElementCount == 0) PARENT.classList.add("w3-hide");
+}
+
+function closeLastDialogIf(icons) {
+    if(PARENT.childElementCount > 0) {
+        const lastDialog = PARENT.childNodes[PARENT.childElementCount - 1];
+        const lastIcon = lastDialog.getElementsByTagName("img")[0].src;
+        var isExpectedIcon = false;
+        for(let icon of icons) {
+            if(lastIcon.endsWith(icon)) isExpectedIcon = true;
+        }
+        if(isExpectedIcon) closeDialog(lastDialog.id);
     }
-    openDialog(WARNING, title, message, icon);
-}
-function isDialogWarningOpen() { return isDialogOpen(WARNING); }
-function closeDialogWarning() { closeDialog(WARNING); }
-
-function displayErrorMessage(title = "Connection error", error = "") {
-    openDialogWarning(title, error, async () => await window.electronAPI.exitApp());
-    document.getElementById(WARNING).getElementsByTagName("label")[0].innerHTML += "<br /><br />Warn the admin and restart later.";
 }
 
-function isDialogOfflineOpen() { return isDialogQuestionOpen() && QUESTION.getElementsByTagName("img")[0].src.endsWith(ICON_OFFLINE);  }
+function createDialogQuestion(title, message, onYes, onYesLabel = "Yes", onYesArgs = undefined, onNo = undefined, onNoLabel = "No", onNoArgs = undefined) {
+    const dialog = createDialog(title, message, ICON_QUESTION);
+    dialog.innerHTML += `<div class="w3-bar"><button class="w3-bar-item w3-button color-primary-border">${onNoLabel}</button><button class="w3-bar-item w3-button color-accent">${onYesLabel}</button></div>`
+    const buttons = dialog.getElementsByTagName("button");
+    if(onNo === undefined) buttons[0].addEventListener("click", () => closeDialog(dialog.id), { once: true }); // once = true, so the listener will disappear after being used once
+    else buttons[0].addEventListener("click", () => { closeDialog(dialog.id); onNoArgs !== undefined ? onNo(onNoArgs) : onNo(); } , { once: true });
+    if(onYes === undefined) buttons[1].addEventListener("click", () => closeDialog(dialog.id), { once: true });
+    else buttons[1].addEventListener("click", () => { closeDialog(dialog.id); onYesArgs !== undefined ? onYes(onYesArgs) : onYes(); }, { once: true });
+    PARENT.appendChild(dialog);
+}
+function createDialogOffline(errorServer, errorRsync, onRetry) {
+    errorMessage = errorServer ? errorServer : errorRsync;
+    createDialogQuestion("Cumulus is disconnected!", `Cumulus has lost the connection with the ${errorServer ? "server" : "RSync agent"} with the following error:<br/>${errorMessage}<br/><br/>Please contact your administrator.`, onRetry, "Retry", undefined, async () => await window.electronAPI.exitApp(), "Quit", undefined, ICON_OFFLINE);
+}
 
-export { closeDialogInfo, closeDialogQuestion, closeDialogWarning, displayErrorMessage, ICON_INFO, ICON_OFFLINE, ICON_QUESTION, ICON_SLEEP, ICON_WARNING, initializeDialogs, isDialogInfoOpen, isDialogOfflineOpen, isDialogQuestionOpen, isDialogWarningOpen, openDialogInfo, openDialogQuestion, openDialogSleep, openDialogWarning };
+function createDialogWarning(title, message, action = undefined, label = "Close", args = undefined) {
+    const dialog = createDialog(title, message, ICON_WARNING);
+    dialog.innerHTML += `<div class="w3-bar"><button class="w3-bar-item w3-button color-primary-border">${label}</button></div>`
+    if(action === undefined) dialog.getElementsByTagName("button")[0].addEventListener("click", () => closeDialog(dialog.id), { once: true });
+    else dialog.getElementsByTagName("button")[0].addEventListener("click", () => { closeDialog(dialog.id); args !== undefined ? action(args) : onNo(); }, { once: true });
+    PARENT.appendChild(dialog);
+}
+
+function isDialogOpen(icon) {
+    for(let dialog of PARENT.childNodes) {
+        if(dialog.getElementsByTagName("img").src.endsWith(icon)) return true;
+    }
+    return false;
+}
+// function isDialogInfoOpen2() { return isDialogOpen(ICON_INFO); }
+// function isDialogQuestionOpen2() { return isDialogOpen(ICON_QUESTION); }
+// function isDialogWarningOpen2() { return isDialogOpen(ICON_WARNING); }
+// function isDialogSleepOpen2() { return isDialogOpen(ICON_SLEEP); }
+function isDialogOfflineOpen() { return isDialogOpen(ICON_OFFLINE); }
+
+export {createDialogInfo, createDialogQuestion, createDialogSleep, createDialogWarning, createDialogOffline, isDialogOfflineOpen };
