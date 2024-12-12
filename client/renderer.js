@@ -68,8 +68,10 @@ document.getElementById("aCollapse").addEventListener("click", () => output.coll
 document.getElementById("btnClone").addEventListener("click", () => job.cloneJob());
 document.getElementById("btnNext").addEventListener("click", () => tabs.openTab("tabParameters"));
 document.getElementById("btnStart").addEventListener("click", () => job.startJob());
-document.getElementById("btnCancel").addEventListener("click", () => dialog.createDialogQuestion("Warning", "Are you sure you want to cancel this job?", job.cancelJob));
-document.getElementById("btnDelete").addEventListener("click", () => dialog.createDialogQuestion("Warning", "Are you sure you want to delete this job?", job.deleteJob));
+// document.getElementById("btnCancel").addEventListener("click", () => dialog.createDialogQuestion("Warning", "Are you sure you want to cancel this job?", job.cancelJob));
+// document.getElementById("btnDelete").addEventListener("click", () => dialog.createDialogQuestion("Warning", "Are you sure you want to delete this job?", job.deleteJob));
+document.getElementById("btnCancel").addEventListener("click", job.cancelJob);
+document.getElementById("btnDelete").addEventListener("click", job.deleteJob);
 document.getElementById("copyStdout").addEventListener("click", async () => await tabs.copyToClipboard("copyStdout", document.getElementById("stdout")));
 document.getElementById("copyStderr").addEventListener("click", async () => await tabs.copyToClipboard("copyStderr", document.getElementById("stderr")));
 document.getElementById("btnOutputDownload").addEventListener("click", async() => await output.downloadOutput());
@@ -155,6 +157,7 @@ async function keyupEvent(event) {
     // console.log(utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
     // console.log(utils.fixFilePath(document.getElementById("diann191_txtFasta").value));
     jobs.pauseRefresh();
+    // apps.loadXmlFile();
   } else if(DEBUG_MODE && event.ctrlKey && event.key === 'K') {
     dialog.createDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
   } else if(DEBUG_MODE && event.ctrlKey && event.key === 'L') {
@@ -231,6 +234,7 @@ async function initialize() {
     // list all the available hosts
     await loadRemoteHosts();
     // load the list of available apps
+    await apps.updateAppList();
     loadAppList();
     // set default settings to the search tab
     search.setDefaultValues();

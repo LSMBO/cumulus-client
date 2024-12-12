@@ -36,7 +36,6 @@ import * as tabs from "./tabs.js";
 import * as jobs from "./joblist.js";
 import * as utils from "./utils.js";
 
-// TODO check that all settings are actually used!
 const CONFIG = new Map();
 const jobLabels = document.getElementById("divSettingsJobLabelElement");
 

@@ -1,6 +1,16 @@
 body {
     height: 100%;
-    font-size: 14px;
+    font-size: 12px;
+}
+
+h3 {
+    font-weight: bold;
+    font-size: 24px;
+}
+
+h4 {
+    font-weight: bold;
+    font-size: 18px;
 }
 
 #jobs {
@@ -258,37 +268,6 @@ body {
     margin-right: 8px;
 }
 
-ul.raw-file li {
-    text-wrap: nowrap;
-    position: relative;
-}
-ul.raw-file li div {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 5px;
-    background-color: var(--accent-color);
-}
-ul.raw-file span {
-    float: left;
-    position: relative;
-    padding-top: 15px;
-    width: 32px;
-    height: 52px;
-    top: -8px;
-    left: -8px;
-    text-align: center;
-    cursor: pointer;
-}
-/* ul.raw-file span:hover {
-    background-color: var(--secondary-color) !important;
-    color: var(--secondary-color-text) !important;
-} */
-ul.raw-file label {
-    display: block;
-    font-size: 10px;
-}
-
 #tooltiptext {
     display: none;
     position: absolute;
@@ -301,6 +280,39 @@ ul.raw-file label {
     z-index: 2;
 }
 
+#tabStorage {
+    position: relative;
+}
+
+#tabStorage #diskUsage {
+    background-color: var(--primary-color-light);
+    margin: 16px 0;
+    width: 100%;
+    height: 24px;
+    border-radius: 16px;
+    position: relative;
+}
+
+#tabStorage #diskUsage p, #tabStorage #diskUsage div {
+    height: 100%;
+    border-radius: 16px;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#tabStorage #diskUsage p {
+    text-align: center;
+    width: 100%;
+    margin: auto;
+    z-index: 2;
+    top: 4px;
+}
+
+#tabStorage #diskUsage div {
+    background-color: var(--opposite-color-light);
+}
+
 #tabStorage h3 {
     display: inline;
 }
@@ -308,6 +320,13 @@ ul.raw-file label {
 #tabStorage #btnStorageRefresh {
     float: right;
     width: 175px;
+
+    position: absolute;
+    top: 5px;
+    right: 0;
+    margin: 16px;
+    height: 60px;
+    font-weight: bold;
 }
 
 #tabStorage #txtStorageSearch {

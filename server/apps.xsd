@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xs:attributeGroup name="ParamAttributes">
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="label" type="xs:string" use="required" />
+        <xs:attribute name="help" type="xs:string" use="optional" />
+        <xs:attribute name="hidden" type="xs:boolean" use="optional" />
+        <xs:attribute name="command" type="xs:string" use="optional" />
+    </xs:attributeGroup>
+
+    <xs:element name="param" abstract="true" />
+
+    <xs:complexType name="ParamSelect">
+        <xs:sequence minOccurs="0">
+            <xs:element maxOccurs="unbounded" name="option">
+                <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+                            <xs:attribute name="value" type="xs:string" use="required" />
+                            <xs:attribute name="selected" type="xs:boolean" use="optional" />
+                            <xs:attribute name="command" type="xs:string" use="optional" />
+                        </xs:extension>
+                    </xs:simpleContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="ParamAttributes" />
+    </xs:complexType>
+    <xs:element name="select" type="ParamSelect" substitutionGroup="param" />
+    
+    <xs:complexType name="ParamCheckbox">
+        <xs:attribute name="value" type="xs:boolean" use="required" />
+        <xs:attributeGroup ref="ParamAttributes" />
+    </xs:complexType>
+    <xs:element name="checkbox" type="ParamCheckbox" substitutionGroup="param" />
+    
+    <xs:complexType name="ParamString">
+        <xs:attribute name="value" type="xs:string" use="optional" />
+        <xs:attribute name="placeholder" type="xs:string" use="optional" />
+        <xs:attributeGroup ref="ParamAttributes" />
+    </xs:complexType>
+    <xs:element name="string" type="ParamString" substitutionGroup="param" />
+    
+    <xs:complexType name="ParamNumber">
+        <xs:attribute name="value" type="xs:decimal" use="optional" />
+        <xs:attribute name="min" type="xs:decimal" use="optional" />
+        <xs:attribute name="max" type="xs:decimal" use="optional" />
+        <xs:attribute name="step" type="xs:decimal" use="optional" />
+        <xs:attribute name="placeholder" type="xs:string" use="optional" />
+        <xs:attributeGroup ref="ParamAttributes" />
+    </xs:complexType>
+    <xs:element name="number" type="ParamNumber" substitutionGroup="param" />
+    
+    <xs:complexType name="ParamRange">
+        <xs:attribute name="value" type="xs:decimal" use="optional" />
+        <xs:attribute name="value2" type="xs:decimal" use="optional" />
+        <xs:attribute name="min" type="xs:decimal" use="optional" />
+        <xs:attribute name="max" type="xs:decimal" use="optional" />
+        <xs:attribute name="step" type="xs:decimal" use="optional" />
+        <xs:attribute name="placeholder" type="xs:string" use="optional" />
+        <xs:attribute name="placeholder2" type="xs:string" use="optional" />
+        <xs:attributeGroup ref="ParamAttributes" />
+    </xs:complexType>
+    <xs:element name="range" type="ParamRange" substitutionGroup="param" />
+    
+    <xs:complexType name="ParamFileList">
+        <xs:attribute name="multiple" type="xs:boolean" use="required" />
+        <xs:attribute name="is_folder" type="xs:boolean" use="required" />
+        <xs:attribute name="is_raw_input" type="xs:boolean" use="required" />
+        <xs:attribute name="convert_to_mzml" type="xs:boolean" use="optional" />
+        <xs:attribute name="value" type="xs:string" use="optional" />
+        <xs:attribute name="format" type="xs:string" use="optional" />
+        <xs:attribute name="placeholder" type="xs:string" use="optional" />
+        <xs:attribute name="repeated_command" type="xs:string" use="optional" />
+        <xs:attributeGroup ref="ParamAttributes" />
+    </xs:complexType>
+    <xs:element name="filelist" type="ParamFileList" substitutionGroup="param" />
+
+    <!-- Define the 'when' element -->
+    <xs:complexType name="whenType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Contains a list of parameters</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="param" minOccurs="1" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="value" type="xs:string" use="required" />
+    </xs:complexType>
+    <xs:element name="when" type="whenType" />
+
+    <!-- Define the 'conditional' element -->
+    <xs:complexType name="conditionalType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">In this element, we have a "param" followed by one or more "when". When the value of the "param" matches one the "when", its content will be displayed and the others will be hidden</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="param" />
+            <xs:element name="when" type="whenType" minOccurs="1" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required" />
+    </xs:complexType>
+    <xs:element name="conditional" type="conditionalType" />
+
+    <!-- Define the 'section' element -->
+    <xs:complexType name="sectionType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">A section contains a list of params, the title will be displayed on top</xs:documentation>
+        </xs:annotation>
+        <xs:choice>
+            <xs:element ref="param" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="conditional" type="conditionalType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="title" type="xs:string" use="required" />
+        <xs:attribute name="expanded" type="xs:boolean" use="optional" />
+        <xs:attribute name="hidden" type="xs:boolean" use="optional" />
+        <xs:attribute name="help" type="xs:string" use="optional" />
+    </xs:complexType>
+    <xs:element name="section" type="sectionType" />
+
+    <!-- Define the root element -->
+    <xs:complexType name="toolType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Root element, will only contain a list of "section"</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="section" type="sectionType" minOccurs="1" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required" />
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="version" type="xs:string" use="required" />
+        <xs:attribute name="end_tag" type="xs:string" use="required" /> <!-- will be used to check in stdout if the command is finished -->
+        <xs:attribute name="command" type="xs:string" use="required" /> <!-- will be used to start the command line, it's possible to set default arguments already there -->
+        <xs:attribute name="description" type="xs:string" use="optional" />
+    </xs:complexType>
+    <xs:element name="tool" type="toolType" />
+
+</xs:schema>

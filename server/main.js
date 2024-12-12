@@ -40,9 +40,13 @@ const path = require('path')
 const config = require('./config.js');
 const rest = require('./rest.js');
 const srv = require('./server.js');
+// const xsdv = require('xsd-validator');
+const xsdv = require('xsd-schema-validator');
 
 var mainWindow = null;
-const DEBUG_MODE = true;
+const DEBUG_MODE = true; // when true, allows some code to be executed or some extra logs to be displayed
+// const XSD = "client/apps/app.xsd";
+const XSD = "server/apps.xsd";
 
 function getUncPaths() {
   const paths = new Map();
@@ -86,6 +90,16 @@ function countExistingFiles(_, currentPath, files) {
   return nbExistingFiles;
 }
 
+async function checkXsdValidity(_, xmlFilePath) {
+    try {
+      // console.log(`Checking '${xmlFilePath}' against '${XSD}'`);
+      const result = await xsdv.validateXML({file: xmlFilePath}, XSD);
+      return result.valid;
+    } catch(err) {
+      return err;
+    }
+}
+
 function createWindow () {
   // Create the browser window.
   // const mainWindow = new BrowserWindow({
@@ -118,7 +132,6 @@ function exitApp() {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   ipcMain.handle('check-rsync', srv.checkRsyncAgent);
-  // ipcMain.handle('check-server', srv.checkServer);
   ipcMain.handle('check-server', srv.checkServerVersion);
   ipcMain.handle('get-unc-paths', getUncPaths);
   ipcMain.handle('get-config', config.getConfig);
@@ -128,19 +141,22 @@ app.whenReady().then(() => {
   ipcMain.handle('get-debug-mode', getDebugMode);
   ipcMain.handle('get-last-jobs', srv.getLastJobs);
   ipcMain.handle('search-jobs', srv.searchJobs);
-  ipcMain.handle('get-job-details', srv.jobDetails);
-  ipcMain.handle('get-job-status', srv.jobStatus);
+  // ipcMain.handle('get-job-details', srv.jobDetails);
+  // ipcMain.handle('get-job-status', srv.jobStatus);
   ipcMain.handle('get-transfer-progress', srv.transferProgress);
-  ipcMain.handle('get-file-list', srv.listJobFiles);
+  // ipcMain.handle('get-file-list', srv.listJobFiles);
   // ipcMain.handle('check-version', srv.checkVersion);
-  ipcMain.handle('list-storage', srv.listStorage);
+  ipcMain.handle('list-apps', srv.listApps);
   ipcMain.handle('list-hosts', srv.listHosts);
+  ipcMain.handle('list-storage', srv.listStorage);
+  ipcMain.handle('get-disk-usage', srv.getDiskUsage);
   ipcMain.handle('browse', browse);
   ipcMain.handle('count-existing-files', countExistingFiles);
   ipcMain.handle('download', srv.downloadFile);
   ipcMain.handle('start-job', srv.createJob);
   ipcMain.handle('cancel-job', srv.cancelJob);
   ipcMain.handle('delete-job', srv.deleteJob);
+  ipcMain.handle('xsd-validator', checkXsdValidity);
   ipcMain.handle('close-app', exitApp);
 
   createWindow()

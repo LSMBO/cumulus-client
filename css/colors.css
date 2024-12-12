@@ -8,12 +8,15 @@
     --secondary-color-dark: #000000;
     --secondary-color-text: #FFFFFF;
     --accent-color: #E91E63;
-    --accent-color-light: #EC618F;
-    --accent-color-dark: #C5104C;
+    /* --accent-color-light: #EC618F; */
+    --accent-color-light: #ED457D;
+    /* --accent-color-dark: #C5104C; */
+    --accent-color-dark: #A71143;
     --accent-color-text: #FFFFFF;
     --opposite-color: #009688;
-    --opposite-color-light: #16E19C;
-    --opposite-color-dark: #006259;
+    --opposite-color-light: #00CCB8;
+    /* --opposite-color-dark: #006259; */
+    --opposite-color-dark: #005249;
     --opposite-color-text: #FFFFFF;
 
     /* --status-grey: #C0C0C0;

@@ -32,46 +32,378 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-import * as diann181 from "./diann181.js";
-import * as diann191 from "./diann191.js";
-import * as test from "./test.js"; // TODO remove this app
+import { browse, fixFilePath, getBrowsedFiles, tooltip } from "../utils.js";
 
-const APP_LIST = new Map();
+const XML_APP_LIST = new Map();
+const SHARED_FILES_IDS = new Array();
+const LOCAL_FILES_IDS = new Array();
 
-function addApplication(app) {
-    APP_LIST.set(app.id, app);
+function getAppMainInformations(app_id) {
+    const xml = XML_APP_LIST.get(app_id);
+    // console.log(xml);
+    const parser = new DOMParser();
+    const tool = parser.parseFromString(xml, "text/xml").getElementsByTagName("tool")[0];
+    const desc = tool.hasAttribute("description") ? tool.getAttribute("description") : "";
+    return [tool.getAttribute("name"), tool.getAttribute("version"), desc];
 }
 
-// WARNING, this is where the actual apps are made available to the user
-// MAKE SURE that you only add apps that are available on the server!!
-addApplication(diann181.get());
-addApplication(diann191.get()); // TODO should we put this app first? or keep the alphabetical order?
-addApplication(test.get());
-
-function list() {
-    return APP_LIST;
+function getFullName(app_id) {
+    if(XML_APP_LIST.has(app_id)) {
+        const [name, version, _] = getAppMainInformations(app_id);
+        return `${name} ${version}`;
+    } else return app_id;
 }
 
-function get(id) {
-    return APP_LIST.get(id);
+async function updateAppList() {
+    XML_APP_LIST.clear();
+    const apps = await window.electronAPI.listApps();
+    for(let [id, xml] of apps) {
+        XML_APP_LIST.set(id, xml);
+    }
 }
-
-function has(id) {
-    return APP_LIST.has(id);
-}
-
-function getFullName(id) {
-    if(APP_LIST.has(id)) return APP_LIST.get(id).toString();
-    return id;
-}
-
 function getOptionList(selectedItem = "") {
     var html = "";
-    for(let [id, app] of APP_LIST) {
+    for(let id of XML_APP_LIST.keys()) {
         var sel = selectedItem == id ? "selected='true'" : "";
-        html += `<option value="${id}" ${sel}>${app.toString()}</option>`;
+        html += `<option value="${id}" ${sel}>${getFullName(id)}</option>`;
     }
     return html;
 }
 
-export { get, getFullName, getOptionList, has, list };
+function initialize(app_id, parent_id, button_id) {
+    document.getElementById(parent_id).innerHTML = "";
+    if(XML_APP_LIST.has(app_id)) {
+        // add the id of the xml app
+        const xml = XML_APP_LIST.get(app_id);
+        // load the xml file
+        const parser = new DOMParser();
+        const main = parser.parseFromString(xml, "text/xml").getElementsByTagName("tool")[0];
+        const div = createAppPage(main);
+        document.getElementById(parent_id).appendChild(div);
+        document.getElementById(button_id).disabled = false;
+    } else {
+        document.getElementById(button_id).disabled = true;
+    }
+}
+
+function getFiles(ids) {
+    const files = new Array();
+    for(let id of ids) {
+        const param = document.getElementById(id);
+        if(param.tagName.toUpperCase() == "INPUT") { // a single file
+            const path = fixFilePath(param.value);
+            if(!files.includes(path)) files.push(path);
+        } else { // a list of files
+            for(let path of getBrowsedFiles(document.getElementById(id))) {
+                if(!files.includes(path)) files.push(path); // these paths are already fixed and cannot be modified by user
+            }
+        }
+    }
+}
+function getLocalFiles() {
+    // during initialize, store the ids of the elements that will contain local files (any file except raw data)
+    // return the unique list of file paths for all these elements
+    return getFiles(LOCAL_FILES_IDS);
+}
+
+function getSharedFiles() {
+    // during initialize, store the ids of the elements that will contain shared files (only raw data)
+    // return the unique list of file paths for all these elements
+    return getFiles(SHARED_FILES_IDS);
+}
+
+// function checkSettings() {
+//     // is it really necessary?
+//     // is it even possible now?
+//     // veriffications may just be included in the xml file...
+// }
+
+function createDiv(id, classname) {
+    const div = document.createElement("div");
+    if(id != "") div.id = id;
+    if(classname != "") div.className = classname;
+    return div;
+}
+function createLabel(param, target="") {
+    const label = document.createElement("label");
+    label.textContent = param.getAttribute("label");
+    if(param.hasAttribute("help") && param.getAttribute("help") != "") tooltip(label, param.getAttribute("help"));
+    if(target != "") label.setAttribute("for", target);
+    return label;
+}
+
+function createInputNumber(id, param, value, placeholder="", name="") {
+    const input = document.createElement("input");
+    input.type = "number";
+    input.id = id;
+    input.name = name == "" ? param.getAttribute("name") : name;
+    if(param.hasAttribute("min")) input.min = param.getAttribute("min");
+    if(param.hasAttribute("max")) input.max = param.getAttribute("max");
+    if(param.hasAttribute("step")) input.step = parseFloat(param.getAttribute("step"));
+    input.placeholder = placeholder;
+    input.value = value;
+    input.className = "w3-input w3-border";
+    return input;
+}
+
+function createButton(id, label, event) {
+    const button = document.createElement("button");
+    button.id = id;
+    button.className = "w3-button color-opposite";
+    button.textContent = label;
+    button.addEventListener("click", event);
+    return button;
+}
+
+function addHoverEvent() {
+    if(arguments.length >= 2) {
+        const source = arguments[0];
+        for(let i = 1; i < arguments.length; i++) {
+            source.addEventListener("mouseover", () => arguments[i].classList.add("hover"));
+            source.addEventListener("mouseout", () => arguments[i].classList.remove("hover"));
+        }
+    }
+}
+
+function createSelect(id, param) {
+    const parent = createDiv("", "param-row param-select");
+    const input_id = `${id}-${param.getAttribute("name")}`;
+    parent.appendChild(createLabel(param, input_id));
+    const input = document.createElement("select");
+    input.id = input_id;
+    input.name = param.getAttribute("name");
+    input.className = "w3-select w3-border";
+    for(let option of param.children) {
+        if(option.hasAttribute("value")) {
+            const opt = document.createElement("option");
+            opt.value = option.getAttribute("value");
+            if(option.hasAttribute("selected") && option.getAttribute("selected")) opt.selected = true;
+            opt.textContent = option.textContent;
+            input.appendChild(opt);
+        }
+    }
+    parent.appendChild(input);
+    addHoverEvent(parent.children[0], parent.children[1]);
+    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    return parent;
+}
+
+function createFileList(id, param, useFolder) {
+    const input_id = `${id}-${param.getAttribute("name")}`;
+    const parent = createDiv("", "param-row param-file-list");
+    const header = createDiv("", "param-row");
+    const ext = param.getAttribute("format");
+    const type = param.getAttribute("is_raw_input") == "true" ? "RAW" : "FASTA";
+    header.appendChild(createLabel(param));
+    header.appendChild(createButton(input_id+"-clear", "╳", (event) => {
+        event.preventDefault();
+        document.getElementById(input_id).innerHTML = "";
+    })); // add the cancel button first, because both buttons will be float:right
+    header.appendChild(createButton(input_id+"-browse", "Browse...", (event) => {
+        event.preventDefault();
+        browse(type, param.getAttribute("label"), [ { name: useFolder ? `.${ext} folders` : `.${ext} files`, extensions: [ext] }], [useFolder ? 'openDirectory' : 'openFile', 'multiSelections'], input_id);
+    }));
+    parent.appendChild(header);
+    const list = createDiv("", "param-row");
+    const ul = document.createElement("ul");
+    ul.id = input_id;
+    ul.name = param.getAttribute("name");
+    ul.className = "w3-ul w3-border w3-hoverable";
+    if(type == "RAW") SHARED_FILES_IDS.push(input_id);
+    else LOCAL_FILES_IDS.push(input_id);
+    list.appendChild(ul);
+    parent.appendChild(list);
+    addHoverEvent(header.children[0], parent.children[1]);
+    return parent;
+}
+
+function createFileInput(id, param, useFolder) {
+    const input_id = `${id}-${param.getAttribute("name")}`;
+    const parent = createDiv("", "param-row param-file");
+    parent.appendChild(createLabel(param, input_id));
+    const input = document.createElement("input");
+    const ext = param.getAttribute("format");
+    const type = param.getAttribute("is_raw_input") == "true" ? "RAW" : "FASTA";
+    input.type = "text";
+    input.id = input_id;
+    input.name = param.getAttribute("name");
+    if(param.hasAttribute("value")) input.value = param.getAttribute("value");
+    input.className = "w3-input w3-border";
+    input.placeholder = `Select a ${ext.toUpperCase()} file`;
+    parent.appendChild(createButton(input_id+"-btn", "…", (event) => {
+        event.preventDefault();
+        browse(type, param.getAttribute("label"), [ { name: useFolder ? `.${ext} folder` : `.${ext} file`, extensions: [ext] }], [useFolder ? 'openDirectory' : 'openFile'], input_id);
+    }));
+    if(type == "RAW") SHARED_FILES_IDS.push(input_id);
+    else LOCAL_FILES_IDS.push(input_id);
+    parent.appendChild(input); // add this later because both button and input will be float:right
+    addHoverEvent(parent.children[0], parent.children[2]);
+    return parent;
+}
+
+function createCheckbox(id, param) {
+    const input_id = `${id}-${param.getAttribute("name")}`;
+    const parent = createDiv("", "param-row param-checkbox");
+    parent.appendChild(createLabel(param, input_id));
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.id = input_id;
+    input.name = param.getAttribute("name");
+    input.checked = param.getAttribute("value") == "true";
+    input.className = "w3-check";
+    parent.appendChild(input);
+    addHoverEvent(parent.children[0], input);
+    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    return parent;
+}
+
+function createNumber(id, param) {
+    const input_id = `${id}-${param.getAttribute("name")}`;
+    const parent = createDiv("", "param-row param-number");
+    parent.appendChild(createLabel(param, input_id));
+    parent.appendChild(createInputNumber(input_id, param, param.hasAttribute("value") ? param.getAttribute("value") : "", param.hasAttribute("placeholder") ? param.getAttribute("placeholder") : ""));
+    addHoverEvent(parent.children[0], parent.children[1]);
+    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    return parent;
+}
+
+function createRange(id, param) {
+    const input_id = `${id}-${param.getAttribute("name")}`;
+    const parent = createDiv("", "param-row param-range");
+    parent.appendChild(createLabel(param, input_id));
+    parent.appendChild(createInputNumber(input_id+"-2", param, param.hasAttribute("value2") ? param.getAttribute("value2") : "", param.hasAttribute("placeholder2") ? param.getAttribute("placeholder2") : "", param.getAttribute("name")+"-max")); // add this one first, because both inputs will be float:right
+    parent.appendChild(createInputNumber(input_id, param, param.hasAttribute("value") ? param.getAttribute("value") : "", param.hasAttribute("placeholder") ? param.getAttribute("placeholder") : "", param.getAttribute("name")+"-min"));
+    addHoverEvent(parent.children[0], parent.children[1], parent.children[2]);
+    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    return parent;
+}
+
+function createTextfield(id, param) {
+    const input_id = `${id}-${param.getAttribute("name")}`;
+    const parent = createDiv("", "param-row param-text");
+    parent.appendChild(createLabel(param, input_id));
+    
+    const input = document.createElement("input");
+    input.type = "text";
+    input.id = input_id;
+    input.name = param.getAttribute("name");
+    if(param.hasAttribute("placeholder")) input.placeholder = param.getAttribute("placeholder");
+    if(param.hasAttribute("value")) input.value = param.getAttribute("value");
+    input.className = "w3-input w3-border";
+    parent.appendChild(input);
+    addHoverEvent(parent.children[0], parent.children[1]);
+    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    return parent;
+}
+
+function createParam(id, param) {
+    if(param.tagName == "select") return createSelect(id, param);
+    else if(param.tagName == "checkbox") return createCheckbox(id, param);
+    else if(param.tagName == "string") return createTextfield(id, param);
+    else if(param.tagName == "number") return createNumber(id, param);
+    else if(param.tagName == "range") return createRange(id, param);
+    else if(param.tagName == "filelist") {
+        if(param.getAttribute("multiple") == "true") return createFileList(id, param, param.getAttribute("is_folder") == "true");
+        else return createFileInput(id, param, param.getAttribute("is_folder") == "true");
+    }
+}
+
+function getConditionalParamElement(param) {
+    if(param.classList.contains("param-select")) return param.getElementsByTagName("SELECT")[0];
+    else if(param.classList.contains("param-file")) return param.getElementsByTagName("INPUT")[0];
+    else if(param.classList.contains("param-checkbox")) return param.getElementsByTagName("INPUT")[0];
+    else if(param.classList.contains("param-number")) return param.getElementsByTagName("INPUT")[0];
+}
+
+function getConditionalEventType(param) {
+    if(param.classList.contains("param-select") || param.classList.contains("param-checkbox")) return "change";
+    else if(param.classList.contains("param-file") || param.classList.contains("param-number")) return "input";
+}
+
+function displayWhen(parent_id, displayed_id) {
+    // hide all whens
+    for(let when of document.getElementById(parent_id).children) {
+        if(when.classList.contains("when")) when.classList.add("w3-hide");
+    }
+    // display the selected when
+    document.getElementById(displayed_id).classList.remove("w3-hide");
+}
+
+function createConditional(id, cond) {
+    const cond_id = `${id}-${cond.getAttribute("name")}`;
+    const parent = createDiv(cond_id, "");
+    // get the first (and only) param from the children of cond (there are many param in cond's children, do not confuse them)
+    var i = 0;
+    var param = cond.children[i++];
+    while(i < cond.childElementCount && param.tagName.toUpperCase() == "WHEN") param = cond.children[i++];
+    const item = createParam(id, param);
+    parent.appendChild(item);
+    const map = new Map(); // used for the event listener
+    var i = 1;
+    for(let when of cond.children) {
+        if(when.tagName.toUpperCase() == "WHEN") {
+            const div_id = `${cond_id}-${i}`;
+            const div = createDiv(div_id, "when");
+            if((item.classList.contains("param-checkbox") && !getConditionalParamElement(item).checked) || (!item.classList.contains("param-checkbox") && getConditionalParamElement(item).value != when.getAttribute("value"))) div.classList.add("w3-hide");
+            map.set(when.getAttribute("value"), div_id);
+            for(let child of when.children) {
+                if(child.tagName.toUpperCase() != "WHEN") div.appendChild(createParam(id, child));
+            }
+            i++;
+            parent.appendChild(div);
+        }
+    }
+    // for the event listener, i need the id of the element to target (or the element itself), and the type of event to listen to
+    // for now, conditional does not support file-list and range
+    getConditionalParamElement(item).addEventListener(getConditionalEventType(item), (e) => displayWhen(cond_id, map.get(e.target.value)));
+    return parent;
+}
+
+function createSection(id, section) {
+    const up = `<i class="section-minus"></i>`;
+    const down = `<i class="section-plus"></i>`;
+    const sort = section.getAttribute("expanded") == "true" ? up : down;
+    const sectionId = `${id}-section-${section.getAttribute("name")}`;
+    const parent = createDiv("", "section-parent");
+
+    const title = document.createElement("h4");
+    title.innerHTML = `${sort}${section.getAttribute("title")}`;
+    title.addEventListener("click", (event) => {
+        // console.log(event.target);
+        const target = event.target.tagName.toUpperCase() == "I" ? event.target.parentElement : event.target;
+        if(target.nextElementSibling.classList.contains("w3-hide")) {
+            target.getElementsByTagName("i")[0].classList.replace("section-plus", "section-minus");
+            target.nextElementSibling.classList.remove("w3-hide");
+        } else {
+            target.getElementsByTagName("i")[0].classList.replace("section-minus", "section-plus");
+            target.nextElementSibling.classList.add("w3-hide");
+        }
+    });
+    if(section.hasAttribute("help") && section.getAttribute("help") != "") tooltip(title, section.getAttribute("help"));
+    parent.appendChild(title);
+
+    const params = createDiv(sectionId, section.getAttribute("expanded") ? "section" : "section w3-hide");
+    for(let child of section.children) {
+        if(child.tagName.toUpperCase() == "CONDITIONAL") params.appendChild(createConditional(id, child));
+        else params.appendChild(createParam(id, child));
+    }
+    parent.appendChild(params);
+    if(section.hasAttribute("hidden") && section.getAttribute("hidden")) parent.classList.add("w3-hide");
+    return parent;
+}
+
+function createAppPage(parent) {
+    const id = parent.getAttribute("id");
+    const div = createDiv(`${id}-main`, "app_settings")
+    const title = document.createElement("h3");
+    title.textContent = `${parent.getAttribute("name")} ${parent.getAttribute("version")} parameters`;
+    div.appendChild(title)
+    // for(let section of parent.getElementsByTagName("section")) {
+    for(let section of parent.children) {
+        div.appendChild(createSection(id, section));
+    }
+    return div;
+}
+
+// export { get, getFullName, getOptionList, has, list };
+export { getFullName, getLocalFiles, getOptionList, getSharedFiles, initialize, updateAppList };

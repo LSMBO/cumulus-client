@@ -34,6 +34,7 @@ knowledge of the CeCILL license and that you accept its terms.
 
 import * as tabs from "./tabs.js";
 import * as utils from "./utils.js";
+import * as settings from "./settings.js";
 
 function localSort(a, b, asc = true) {
   if(isNaN(a)) {
@@ -97,7 +98,16 @@ function searchStorage(_) {
 
 async function refreshStorage() {
   utils.toggleLoadingScreen();
-  document.getElementById("tabStorage").getElementsByTagName("h4")[0].innerHTML = `Files will be automatically removed after ${settings.CONFIG.get("data.max.age.in.days")} days (unless they are being used)`;
+  // get disk usage
+  const disk = await window.electronAPI.getDiskUsage();
+  document.getElementById("diskUsage").getElementsByTagName("p")[0].textContent = `Server storage usage: ${utils.toHumanReadable(disk.get("used"))} / ${utils.toHumanReadable(disk.get("total"))}`;
+  var pct = disk.get("used") / disk.get("total");
+  if(pct < 1) pct = 1;
+  else if(pct > 100) pct = 100;
+  document.getElementById("diskUsage").getElementsByTagName("div")[0].style.width = `${pct}%`;
+  document.getElementById("diskUsage").getElementsByTagName("div")[0].style.backgroundColor = pct > 80 ? "var(--accent-color-light)" : "var(--opposite-color-light)";
+  // get uploaded files
+  document.getElementById("tabStorage").getElementsByTagName("h6")[0].innerHTML = `Files will be automatically removed after ${settings.CONFIG.get("data.max.age.in.days")} days (unless they are being used)`;
   const table = document.getElementById("tabStorage").getElementsByTagName("table")[0];
   const [data, _] = await window.electronAPI.listStorage();
   var content = "<tr class='color-secondary'><th>File name<i></i></th><th>Size<i></i></th></tr>";

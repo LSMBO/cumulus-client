@@ -1,0 +1,151 @@
+#formParameters .section-parent {
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+#formParameters h4 {
+    position: relative;
+    margin-left: 20px;
+    padding-left: 10px;
+    border-top: 1px solid var(--opposite-color) !important;
+}
+
+#formParameters h4:hover {
+    cursor: pointer;
+}
+
+#formParameters h4 i {
+    background-color: var(--opposite-color) !important;
+    color: var(--opposite-color-text) !important;
+    width: 25px;
+    height: 41px;
+    border-radius: 20% 0 20% 0;
+    display: block;
+    position: absolute;
+    top: -1px;
+    left: -20px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#formParameters h4 i.section-plus::before {
+    position: absolute;
+    top: 2px;
+    left: 5px;
+    content: "+";
+}
+
+#formParameters h4 i.section-minus::before {
+    position: absolute;
+    top: 2px;
+    left: 8px;
+    content: "-";
+}
+
+#formParameters .section {
+    border-left: 1px solid var(--opposite-color) !important;
+    padding-left: 10px;
+    padding-top: 5px;
+}
+
+#formParameters .param-row {
+    display: block;
+    height: 36px;
+    margin: 4px 0 !important;
+    clear: both;
+}
+
+#formParameters label {
+    width: calc(100% - 300px);
+    display: block;
+    float: left;
+    height: inherit;
+    padding: 8px 0;
+}
+
+#formParameters input:focus {
+    outline: 2px solid var(--accent-color) !important;
+}
+#formParameters .hover {
+    outline: 1px solid var(--accent-color) !important;
+}
+
+#formParameters .param-select select {
+    width: auto;
+    min-width: 300px;
+    float: right;
+}
+
+#formParameters .param-file-list {
+    height: auto;
+}
+#formParameters .param-file-list button {
+    float: right;
+}
+#formParameters .param-file-list button:first-of-type {
+    width: 50px;
+}
+#formParameters .param-file-list button:last-of-type {
+    width: 245px;
+    margin-right: 5px;
+}
+#formParameters .param-file-list .param-row:last-of-type {
+    height: auto;
+    max-height: 300px;
+    overflow-y: auto;
+}
+#formParameters .param-file-list ul {
+    overflow: auto;
+    height: 100%;
+    list-style-type: none;
+    min-height: 2em;
+}
+#formParameters .param-file-list li {
+    text-wrap: nowrap;
+    padding: initial;
+    line-height: 3em;
+}
+#formParameters .param-file-list li span {
+    cursor: pointer;
+    font-size: 16px;
+    position: absolute;
+    padding: 0 8px;
+}
+#formParameters .param-file-list li span:hover {
+    background-color: var(--accent-color) !important;
+    color: var(--primary-color) !important;
+}
+#formParameters .param-file-list li label {
+    display: inline;
+    float: none;
+    padding-left: 36px;
+}
+
+#formParameters .param-file input {
+    width: auto;
+    min-width: 250px;
+    float: right;
+}
+
+#formParameters .param-file button {
+    width: 50px;
+    float: right;
+}
+
+#formParameters .param-checkbox input {
+    float: right;
+}
+
+#formParameters .param-number input {
+    width: 300px;
+    float: right;
+}
+
+#formParameters .param-range input {
+    width: 145px;
+    float: right;
+}
+
+#formParameters .param-range input:last-of-type {
+    margin-right: 10px;
+}

@@ -46,16 +46,18 @@ const STD_ERR = document.getElementById("stderr");
 
 function setAppParameters(settings = null) {
   const app = document.getElementById("cmbAppName").value;
-  if(app != "") {
-    apps.get(app).initialize(document.getElementById("formParameters"));
-    if(settings != null) apps.get(app).setSettings(settings);
-    // enable parameter tab
-    document.getElementById("btnParameters").disabled = false;
-  } else {
-    document.getElementById("formParameters").innerHTML = "";
-    // disable parameter tab
-    document.getElementById("btnParameters").disabled = true;
-  }
+  // if(app != "") {
+  //   apps.get(app).initialize(document.getElementById("formParameters"));
+  //   if(settings != null) apps.get(app).setSettings(settings);
+  //   // enable parameter tab
+  //   document.getElementById("btnParameters").disabled = false;
+  // } else {
+  //   document.getElementById("formParameters").innerHTML = "";
+  //   // disable parameter tab
+  //   document.getElementById("btnParameters").disabled = true;
+  // }
+  apps.initialize(app, "formParameters", "btnParameters");
+  // if(settings != null) apps.setSettings(settings);
 }
 
 async function displayFileTransfers(job) {
@@ -64,8 +66,9 @@ async function displayFileTransfers(job) {
   const [data, error] = await window.electronAPI.getTransferProgress(job.owner, job.id);
   const map = new Map (Object.entries(data));
   // get the list of files
-  const app = apps.get(job.app_name);
-  const files = app.getLocalFiles().concat(app.getSharedFiles());
+  // const app = apps.get(job.app_name);
+  // const files = app.getLocalFiles().concat(app.getSharedFiles());
+  const files = apps.getLocalFiles().concat(apps.getSharedFiles());
   // display the list of files
   var html = "";
   var nb = 0;
@@ -221,44 +224,70 @@ async function startJob() {
   const appName = document.getElementById("cmbAppName").value;
   const strategy = document.getElementById("cmbStrategy").value;
   const description = document.getElementById("txtJobDescription").value;
-  const app = apps.get(appName);
-  const settingsErrors = app.checkSettings();
-  if(settingsErrors.length == 0) {
+  // const app = apps.get(appName); // TODO use the app id instead
+  // const settingsErrors = app.checkSettings();
+  // if(settingsErrors.length == 0) {
     const settings = JSON.stringify(Object.fromEntries(getSettings()));
-    const sharedFiles = JSON.stringify(app.getSharedFiles());
-    const localFiles = JSON.stringify(app.getLocalFiles());
+    // const sharedFiles = JSON.stringify(app.getSharedFiles());
+    // const localFiles = JSON.stringify(app.getLocalFiles());
+    const sharedFiles = JSON.stringify(apps.getSharedFiles());
+    const localFiles = JSON.stringify(apps.getLocalFiles());
     const job_id = await window.electronAPI.startJob(utils.getUserName(), appName, strategy, description, settings, sharedFiles, localFiles);
     // reload the job list
     utils.setCurrentJobId(job_id);
     jobs.reloadJobList();
     document.getElementById("btnLogs").disabled = false;
     tabs.openTab("tabLogs");
-  } else {
-    // display a dialog box with the list of errors
-    dialog.createDialogWarning("Incorrect settings", "- " + settingsErrors.join("<br/>- "));
-  }
+  // } else {
+  //   // display a dialog box with the list of errors
+  //   dialog.createDialogWarning("Incorrect settings", "- " + settingsErrors.join("<br/>- "));
+  // }
 }
 
-async function cancelJob() {
-  // console.log("cancelJob()");
-  utils.toggleLoadingScreen();
-  const [response, error] = await window.electronAPI.cancelJob(utils.getUserName(), utils.getCurrentJobId());
-  // TODO rethink the error management
-  if(error != "") dialog.createDialogWarning("The job could not be canceled", error);
-  // console.log(response);
-  jobs.reloadJobList();
-  utils.toggleLoadingScreen();
+// async function cancelJob() {
+//   // console.log("cancelJob()");
+//   utils.toggleLoadingScreen();
+//   const [response, error] = await window.electronAPI.cancelJob(utils.getUserName(), utils.getCurrentJobId());
+//   // TODO rethink the error management
+//   if(error != "") dialog.createDialogWarning("The job could not be canceled", error);
+//   // console.log(response);
+//   jobs.reloadJobList();
+//   utils.toggleLoadingScreen();
+// }
+
+function cancelJob() {
+  const owner = document.getElementById("txtJobOwner").value;
+  const title = owner == utils.getUserName() ? "Warning" : "Warning - This job does not belong to you!";
+  dialog.createDialogQuestion(title, "Are you sure you want to cancel this job?", async () => {
+    utils.toggleLoadingScreen();
+    const [_, error] = await window.electronAPI.cancelJob(utils.getUserName(), utils.getCurrentJobId());
+    if(error != "") dialog.createDialogWarning("The job could not be canceled", error);
+    jobs.reloadJobList();
+    utils.toggleLoadingScreen();
+  });
 }
 
-async function deleteJob() {
-  // console.log("deleteJob()");
-  utils.toggleLoadingScreen();
-  const [response, error] = await window.electronAPI.deleteJob(utils.getUserName(), utils.getCurrentJobId());
-  // TODO rethink the error management
-  if(error != "") dialog.createDialogWarning("The job could not be deleted", error);
-  // console.log(response);
-  jobs.reloadJobList();
-  utils.toggleLoadingScreen();
+// async function deleteJob() {
+//   // console.log("deleteJob()");
+//   utils.toggleLoadingScreen();
+//   const [response, error] = await window.electronAPI.deleteJob(utils.getUserName(), utils.getCurrentJobId());
+//   // TODO rethink the error management
+//   if(error != "") dialog.createDialogWarning("The job could not be deleted", error);
+//   // console.log(response);
+//   jobs.reloadJobList();
+//   utils.toggleLoadingScreen();
+// }
+
+function deleteJob() {
+  const owner = document.getElementById("txtJobOwner").value;
+  const title = owner == utils.getUserName() ? "Warning" : "Warning - This job does not belong to you!";
+  dialog.createDialogQuestion(title, "Are you sure you want to delete this job?", async () => {
+    utils.toggleLoadingScreen();
+    const [_, error] = await window.electronAPI.deleteJob(utils.getUserName(), utils.getCurrentJobId());
+    if(error != "") dialog.createDialogWarning("The job could not be deleted", error);
+    jobs.reloadJobList();
+    utils.toggleLoadingScreen();
+  });
 }
 
 function getSettings() {
@@ -273,26 +302,88 @@ function getSettings() {
   for(let item of FORM.getElementsByTagName("select")) {
     if(item.name) settings.set(item.name, item.value);
   }
-  settings.set("files", utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
+  // settings.set("files", utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
+  for(let item of FORM.getElementsByTagName("ul")) {
+    settings.set(item.name, utils.getBrowsedFiles(item));
+  }
   // console.log(settings);
   return settings;
+}
+
+// temp code to keep it compatible with ancient jobs
+function getOldJobCompatibleName(name) {
+  if(name == "fasta-file") return "fasta";
+  else if(name == "dia-pasef-list") return "files";
+  else if(name == "protein-inference") return "inference";
+  else if(name == "ptm-carba") return "carba";
+  else if(name == "machine-learning") return "classifier";
+  else if(name == "ms2-acc") return "mass-acc";
+  else if(name == "fragment-mz-max") return "max-fr-mz";
+  else if(name == "peptide-length-max") return "max-pep-length";
+  else if(name == "precursor-charge-max") return "max-pr-charge";
+  else if(name == "precursor-mz-max") return "max-pr-mz";
+  else if(name == "fragment-mz-min") return "min-fr-mz";
+  else if(name == "peptide-length-min") return "min-pep-length";
+  else if(name == "precursor-charge-min") return "min-pr-charge";
+  else if(name == "precursor-mz-min") return "min-pr-mz";
+  else if(name == "cross-run-norm") return "norm";
+  else if(name == "quantification-strategy") return "quant";
+  else if(name == "raw-type") return "rawType";
+  else if(name == "speed-ram") return "speed";
+  else if(name == "max-var-mod") return "var-mods";
+  else if(name == "loglevel") return "verbose";
+  else if(name == "scan-window") return "window";
+  else return name;
+}
+function getOldJobCompatibleValue(value) {
+  if(value == "diapasef") return "dia-pasef";
+  else if(value == "slicepasef") return "slice-pasef";
+  else if(value == "raw") return "thermo-raw";
+  else if(value == "ums/prec") return "quantums-precision";
+  else if(value == "ums/acc") return "quantums-accuracy";
+  else if(value == "low ram") return "low-ram";
+  else if(value == "high speed") return "high-speed";
+  else if(value == "ultra fast") return "ultra-fast";
+  else return value;
 }
 
 function setSettings(settings) {
   // console.log(settings);
   setAppParameters(settings);
+  // for(let item of FORM.getElementsByTagName("input")) {
+    // if(item.name) {
+    //   if(item.type == "checkbox") {
+    //     item.checked = settings.has(item.name);
+    //   } else if(settings.has(item.name)) {
+    //     item.value = settings.get(item.name);
+    //   }
+    // }
+  // }
+  // for(let item of FORM.getElementsByTagName("select")) {
+  //   if(item.name && settings.has(item.name)) item.value = settings.get(item.name);
+  // }
+  // for(let item of FORM.getElementsByTagName("ul")) {
+  //   if(settings.has(item.name)) utils.addBrowsedFiles(item, settings.get(item.name));
+  // }
   for(let item of FORM.getElementsByTagName("input")) {
     if(item.name) {
+      var name = getOldJobCompatibleName(item.name);
       if(item.type == "checkbox") {
-        item.checked = settings.has(item.name);
-      } else if(settings.has(item.name)) {
-        item.value = settings.get(item.name);
+        item.checked = settings.has(name) && settings.get(name);
+      } else if(settings.has(name)) {
+        item.value = settings.get(name);
       }
     }
   }
   for(let item of FORM.getElementsByTagName("select")) {
-    if(item.name && settings.has(item.name)) item.value = settings.get(item.name);
+    var name = getOldJobCompatibleName(item.name);
+    if(name && settings.has(name)) item.value = getOldJobCompatibleValue(settings.get(name));
   }
+  for(let item of FORM.getElementsByTagName("ul")) {
+    var name = getOldJobCompatibleName(item.name);
+    if(settings.has(name)) utils.addBrowsedFiles(item, settings.get(name));
+  }
+
 }
 
 export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, refreshJob, startJob, setAppParameters };

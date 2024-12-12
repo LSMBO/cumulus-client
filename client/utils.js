@@ -47,21 +47,33 @@ const UNC_PATHS = new Map();
 const LOADER = document.getElementById("loading");
 const UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
 
-class App {
-    constructor(id, name, version, initialize, getSharedFiles, getLocalFiles, checkSettings, setSettings) {
-        this.id = id;
-        this.name = name;
-        this.version = version;
-        this.initialize = initialize;
-        this.getSharedFiles = getSharedFiles;
-        this.getLocalFiles = getLocalFiles;
-        this.checkSettings = checkSettings;
-        this.setSettings = setSettings;
-    }
-    toString() {
-        return `${this.name} ${this.version}`;
-    }
-}
+// class XmlApp {
+//     constructor(id, file_path, name, version, description) {
+//         this.id = id;
+//         this.file_path = file_path;
+//         this.name = name;
+//         this.version = version;
+//         this.description = description;
+//     }
+//     toString() {
+//         return `${this.name} ${this.version}`;
+//     }
+// }
+// class App {
+//     constructor(id, name, version, initialize, getSharedFiles, getLocalFiles, checkSettings, setSettings) {
+//         this.id = id;
+//         this.name = name;
+//         this.version = version;
+//         this.initialize = initialize;
+//         this.getSharedFiles = getSharedFiles;
+//         this.getLocalFiles = getLocalFiles;
+//         this.checkSettings = checkSettings;
+//         this.setSettings = setSettings;
+//     }
+//     toString() {
+//         return `${this.name} ${this.version}`;
+//     }
+// }
 
 function toggleClass(element, className) {
     // console.log(element);
@@ -126,15 +138,29 @@ function fixFilePath(file) {
     return fixedPath.substring(1, fixedPath.length - 1);
 }
 
-function addBrowsedFile(filePath) {
-    const items = filePath.split(filePath.includes("/") ? "/" : "\\");
-    const name = items.pop();
-    return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}</li>`;
-}
+// function addBrowsedFile(filePath) {
+//     const items = filePath.split(filePath.includes("/") ? "/" : "\\");
+//     const name = items.pop();
+//     return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}</li>`;
+// }
 
 function addBrowsedFiles(target, files) {
-    target.classList.add("raw-file");
-    target.innerHTML += files.map(addBrowsedFile).join("");
+    // target.classList.add("raw-file");
+    // target.innerHTML += files.map(addBrowsedFile).join("");
+
+    target.innerHTML = "";
+    // console.log(files);
+    for(let file of files) {
+        const li = document.createElement("li");
+        const span = document.createElement("span");
+        span.textContent = "×";
+        span.addEventListener("click", (event) => event.target.parentElement.remove());
+        li.appendChild(span);
+        const label = document.createElement("label");
+        label.textContent = fixFilePath(file);
+        li.appendChild(label);
+        target.appendChild(li);
+    }
 }
 
 function getBrowsedFiles(target) {
@@ -153,8 +179,9 @@ async function browse(type, title, filter, properties, targetName) {
     // browse the server
     const output = await window.electronAPI.browseServer(type, title, defaultPath, filter, properties);
     if(output != "") {
-        if(target.tagName == "INPUT" && target.type == "text") target.value = output[0];
-        else if(target.tagName == "TEXTAREA") target.textContent = output.join("\n");
+        // if(target.tagName == "INPUT" && target.type == "text") target.value = output[0];
+        if(target.tagName == "INPUT" && target.type == "text") target.value = fixFilePath(output[0]);
+        else if(target.tagName == "TEXTAREA") target.textContent = output.join("\n"); // TODO is it still used?
         else if(target.tagName == "UL") {
             addBrowsedFiles(target, output);
         }
@@ -341,4 +368,5 @@ function addCheckboxList(parent, label, items, tooltiptext) {
     tooltip(parent.getElementsByTagName("label")[0], tooltiptext);
 }
 
-export { addBrowsedFiles, addCheckboxList, App, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
+// export { addBrowsedFiles, addCheckboxList, App, XmlApp, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
+export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
