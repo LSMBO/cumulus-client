@@ -18,11 +18,19 @@
     "url": "git+https://github.com/LSMBO/cumulus-client.git"
   },
   "license": "ISC",
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "./img/icon.png"
+      }
+    }
+  },
   "bugs": {
     "url": "https://github.com/LSMBO/cumulus-client/issues"
   },
   "homepage": "https://github.com/LSMBO/cumulus-client#readme",
   "dependencies": {
+    "electron-log": "^5.2.4",
     "form-data": "^4.0.0",
     "xsd-schema-validator": "^0.10.0"
   }

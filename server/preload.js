@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron')
+const { contextBridge, ipcRenderer, webUtils } = require('electron')
 
 contextBridge.exposeInMainWorld('electronAPI', {
     checkRsyncAgent: () => ipcRenderer.invoke('check-rsync'),
@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getDebugMode: () => ipcRenderer.invoke('get-debug-mode'),
     getLastJobs: (job_id, number) => ipcRenderer.invoke('get-last-jobs', job_id, number),
     searchJobs: (current_job_id, owner, app, file, desc, statuses, date, from, to, number) => ipcRenderer.invoke('search-jobs', current_job_id, owner, app, file, desc, statuses, date, from, to, number),
-    checkXsdValidity: (xmlFilePath) => ipcRenderer.invoke('xsd-validator', xmlFilePath),
+    // checkXsdValidity: (xmlFilePath) => ipcRenderer.invoke('xsd-validator', xmlFilePath),
     // getJobDetails: (id) => ipcRenderer.invoke('get-job-details', id),
     // getJobStatus: (id) => ipcRenderer.invoke('get-job-status', id),
     getTransferProgress: (owner, id) => ipcRenderer.invoke('get-transfer-progress', owner, id),
@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     cancelJob: (owner, id) => ipcRenderer.invoke('cancel-job', owner, id),
     deleteJob: (owner, id) => ipcRenderer.invoke('delete-job', owner, id),
     exitApp: () => ipcRenderer.invoke('close-app'),
+    showFilePath: (file) => { return webUtils.getPathForFile(file); },
 })
 
 window.addEventListener('DOMContentLoaded', () => {

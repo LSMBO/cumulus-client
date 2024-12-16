@@ -33,20 +33,21 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 // Modules to control application life and create native browser window
+// import log from 'electron-log/main';
+const log = require('electron-log/main');
 const { app, BrowserWindow, dialog, ipcMain } = require('electron')
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path')
 const config = require('./config.js');
-const rest = require('./rest.js');
 const srv = require('./server.js');
-// const xsdv = require('xsd-validator');
-const xsdv = require('xsd-schema-validator');
+
+log.initialize();
+// log.info('Log from the main process');
 
 var mainWindow = null;
 const DEBUG_MODE = true; // when true, allows some code to be executed or some extra logs to be displayed
-// const XSD = "client/apps/app.xsd";
-const XSD = "server/apps.xsd";
+if(DEBUG_MODE) log.info("DEBUG MODE is activated");
 
 function getUncPaths() {
   const paths = new Map();
@@ -62,6 +63,7 @@ function getUncPaths() {
 }
 
 function getUserName() {
+  log.info(`Current user is ${process.env.USERNAME}`);
   return process.env.USERNAME;
 }
 
@@ -70,7 +72,6 @@ function getDebugMode() {
 }
 
 async function browse(_, type, title, currentPath, filter, properties) {
-  // console.log(`Type: '${type}' ; title: '${title}' ; path: '${currentPath}' ; filter: '${filter}' ; properties: '${properties}'`);
   var defaultPath = "";
   if(currentPath != "") defaultPath = path.dirname(currentPath);
   else if(type == "FASTA") defaultPath = config.get("fasta.path");
@@ -90,24 +91,13 @@ function countExistingFiles(_, currentPath, files) {
   return nbExistingFiles;
 }
 
-async function checkXsdValidity(_, xmlFilePath) {
-    try {
-      // console.log(`Checking '${xmlFilePath}' against '${XSD}'`);
-      const result = await xsdv.validateXML({file: xmlFilePath}, XSD);
-      return result.valid;
-    } catch(err) {
-      return err;
-    }
-}
-
 function createWindow () {
   // Create the browser window.
-  // const mainWindow = new BrowserWindow({
   mainWindow = new BrowserWindow({
     width: DEBUG_MODE ? 1800 : 1280,
     height: 800,
     autoHideMenuBar: true,
-    icon: path.join(__dirname, 'img/favicon.png'),
+    icon: './img/icon.png',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
@@ -141,11 +131,7 @@ app.whenReady().then(() => {
   ipcMain.handle('get-debug-mode', getDebugMode);
   ipcMain.handle('get-last-jobs', srv.getLastJobs);
   ipcMain.handle('search-jobs', srv.searchJobs);
-  // ipcMain.handle('get-job-details', srv.jobDetails);
-  // ipcMain.handle('get-job-status', srv.jobStatus);
   ipcMain.handle('get-transfer-progress', srv.transferProgress);
-  // ipcMain.handle('get-file-list', srv.listJobFiles);
-  // ipcMain.handle('check-version', srv.checkVersion);
   ipcMain.handle('list-apps', srv.listApps);
   ipcMain.handle('list-hosts', srv.listHosts);
   ipcMain.handle('list-storage', srv.listStorage);
@@ -156,7 +142,6 @@ app.whenReady().then(() => {
   ipcMain.handle('start-job', srv.createJob);
   ipcMain.handle('cancel-job', srv.cancelJob);
   ipcMain.handle('delete-job', srv.deleteJob);
-  ipcMain.handle('xsd-validator', checkXsdValidity);
   ipcMain.handle('close-app', exitApp);
 
   createWindow()

@@ -42,7 +42,7 @@ import * as search from "./search.js";
 import * as settings from "./settings.js";
 import * as storage from "./storage.js";
 import * as utils from "./utils.js";
-import * as apps from "./apps/applist.js";
+import * as apps from "./applist.js";
 
 var DEBUG_MODE = false;
 
@@ -156,6 +156,7 @@ async function keyupEvent(event) {
     // utils.toggleLoadingScreen();
     // console.log(utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
     // console.log(utils.fixFilePath(document.getElementById("diann191_txtFasta").value));
+    __electronLog.info("TEST KEY!");
     jobs.pauseRefresh();
     // apps.loadXmlFile();
   } else if(DEBUG_MODE && event.ctrlKey && event.key === 'K') {

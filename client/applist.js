@@ -32,7 +32,7 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-import { browse, fixFilePath, getBrowsedFiles, tooltip } from "../utils.js";
+import { addBrowsedFiles, browse, fixFilePath, getBrowsedFiles, tooltip } from "./utils.js";
 
 const XML_APP_LIST = new Map();
 const SHARED_FILES_IDS = new Array();
@@ -155,18 +155,18 @@ function createButton(id, label, event) {
     return button;
 }
 
-function addHoverEvent() {
-    if(arguments.length >= 2) {
-        const source = arguments[0];
-        for(let i = 1; i < arguments.length; i++) {
-            source.addEventListener("mouseover", () => arguments[i].classList.add("hover"));
-            source.addEventListener("mouseout", () => arguments[i].classList.remove("hover"));
-        }
-    }
-}
+// function addHoverEvent() {
+//     if(arguments.length >= 2) {
+//         const source = arguments[0];
+//         for(let i = 1; i < arguments.length; i++) {
+//             source.addEventListener("mouseover", () => arguments[i].classList.add("hover"));
+//             source.addEventListener("mouseout", () => arguments[i].classList.remove("hover"));
+//         }
+//     }
+// }
 
 function createSelect(id, param) {
-    const parent = createDiv("", "param-row param-select");
+    const parent = createDiv("", "param-row param-select w3-hover-light-grey");
     const input_id = `${id}-${param.getAttribute("name")}`;
     parent.appendChild(createLabel(param, input_id));
     const input = document.createElement("select");
@@ -183,14 +183,47 @@ function createSelect(id, param) {
         }
     }
     parent.appendChild(input);
-    addHoverEvent(parent.children[0], parent.children[1]);
+    // addHoverEvent(parent.children[0], parent.children[1]);
     if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
     return parent;
 }
 
+function checkExtensions(fileName, allowedExtensions) {
+    // console.log(`Check if '${fileName}' ends with any of '${allowedExtensions}'`);
+    if(allowedExtensions.length == 0) return true;
+    for(let ext of allowedExtensions) {
+        if((ext.startsWith(".") && fileName.endsWith(ext)) || (!ext.startsWith(".") && fileName.endsWith(`.${ext}`))) return true;
+    }
+    return false;
+}
+function dropHandler(event, useFolder, multiple, allowedExtensions = []) {
+    event.preventDefault();
+    // console.log(`dropHandler(event, ${useFolder}, ${multiple}, ${allowedExtensions})`);
+    const files = [];
+    for(let f of event.dataTransfer.files) {
+        if(((!useFolder && f.size != 4096) || (useFolder && f.size == 4096)) && checkExtensions(f.name, allowedExtensions)) {
+            const path = electronAPI.showFilePath(f);
+            if(multiple) files.push(path);
+            else {
+                event.target.value = path;
+                break; // only use the first file or folder that matches all criteria
+            }
+        }
+    }
+    if(multiple) addBrowsedFiles(event.target, files);
+    // console.log(files);
+    return false;
+}
+function addFileDragAndDropEvents(item, useFolder, multiple, allowedExtensions = []) {
+    item.addEventListener("dragover", (e) => e.preventDefault());
+    item.addEventListener("dragleave", (e) => e.preventDefault());
+    item.addEventListener("dragend", (e) => e.preventDefault());
+    item.addEventListener("drop", (event) => dropHandler(event, useFolder, multiple, allowedExtensions));
+}
+
 function createFileList(id, param, useFolder) {
     const input_id = `${id}-${param.getAttribute("name")}`;
-    const parent = createDiv("", "param-row param-file-list");
+    const parent = createDiv("", "param-row param-file-list w3-hover-light-grey");
     const header = createDiv("", "param-row");
     const ext = param.getAttribute("format");
     const type = param.getAttribute("is_raw_input") == "true" ? "RAW" : "FASTA";
@@ -205,21 +238,23 @@ function createFileList(id, param, useFolder) {
     }));
     parent.appendChild(header);
     const list = createDiv("", "param-row");
+
     const ul = document.createElement("ul");
     ul.id = input_id;
     ul.name = param.getAttribute("name");
-    ul.className = "w3-ul w3-border w3-hoverable";
+    ul.className = "w3-ul w3-border";
+    addFileDragAndDropEvents(ul, useFolder, true, [ext]);
     if(type == "RAW") SHARED_FILES_IDS.push(input_id);
     else LOCAL_FILES_IDS.push(input_id);
     list.appendChild(ul);
     parent.appendChild(list);
-    addHoverEvent(header.children[0], parent.children[1]);
+    // addHoverEvent(header.children[0], parent.children[1]);
     return parent;
 }
 
 function createFileInput(id, param, useFolder) {
     const input_id = `${id}-${param.getAttribute("name")}`;
-    const parent = createDiv("", "param-row param-file");
+    const parent = createDiv("", "param-row param-file w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
     const input = document.createElement("input");
     const ext = param.getAttribute("format");
@@ -230,6 +265,8 @@ function createFileInput(id, param, useFolder) {
     if(param.hasAttribute("value")) input.value = param.getAttribute("value");
     input.className = "w3-input w3-border";
     input.placeholder = `Select a ${ext.toUpperCase()} file`;
+    // allow drag & drop of file
+    addFileDragAndDropEvents(input, useFolder, false, [ext]);
     parent.appendChild(createButton(input_id+"-btn", "…", (event) => {
         event.preventDefault();
         browse(type, param.getAttribute("label"), [ { name: useFolder ? `.${ext} folder` : `.${ext} file`, extensions: [ext] }], [useFolder ? 'openDirectory' : 'openFile'], input_id);
@@ -237,13 +274,13 @@ function createFileInput(id, param, useFolder) {
     if(type == "RAW") SHARED_FILES_IDS.push(input_id);
     else LOCAL_FILES_IDS.push(input_id);
     parent.appendChild(input); // add this later because both button and input will be float:right
-    addHoverEvent(parent.children[0], parent.children[2]);
+    // addHoverEvent(parent.children[0], parent.children[2]);
     return parent;
 }
 
 function createCheckbox(id, param) {
     const input_id = `${id}-${param.getAttribute("name")}`;
-    const parent = createDiv("", "param-row param-checkbox");
+    const parent = createDiv("", "param-row param-checkbox w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
     const input = document.createElement("input");
     input.type = "checkbox";
@@ -251,36 +288,48 @@ function createCheckbox(id, param) {
     input.name = param.getAttribute("name");
     input.checked = param.getAttribute("value") == "true";
     input.className = "w3-check";
-    parent.appendChild(input);
-    addHoverEvent(parent.children[0], input);
+    // parent.appendChild(input);
+    // create an elaborated parent for custom checkbox
+    const div = document.createElement("div");
+    div.className = "cumulus-checkbox";
+    const label = document.createElement("label");
+    label.className = "switch";
+    label.setAttribute("for", input_id);
+    label.appendChild(input);
+    const slider = document.createElement("div");
+    slider.classList.add("slider", "round");
+    label.appendChild(slider);
+    div.appendChild(label);
+    parent.appendChild(div);
+    // addHoverEvent(parent.children[0], input);
     if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
     return parent;
 }
 
 function createNumber(id, param) {
     const input_id = `${id}-${param.getAttribute("name")}`;
-    const parent = createDiv("", "param-row param-number");
+    const parent = createDiv("", "param-row param-number w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
     parent.appendChild(createInputNumber(input_id, param, param.hasAttribute("value") ? param.getAttribute("value") : "", param.hasAttribute("placeholder") ? param.getAttribute("placeholder") : ""));
-    addHoverEvent(parent.children[0], parent.children[1]);
+    // addHoverEvent(parent.children[0], parent.children[1]);
     if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
     return parent;
 }
 
 function createRange(id, param) {
     const input_id = `${id}-${param.getAttribute("name")}`;
-    const parent = createDiv("", "param-row param-range");
+    const parent = createDiv("", "param-row param-range w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
     parent.appendChild(createInputNumber(input_id+"-2", param, param.hasAttribute("value2") ? param.getAttribute("value2") : "", param.hasAttribute("placeholder2") ? param.getAttribute("placeholder2") : "", param.getAttribute("name")+"-max")); // add this one first, because both inputs will be float:right
     parent.appendChild(createInputNumber(input_id, param, param.hasAttribute("value") ? param.getAttribute("value") : "", param.hasAttribute("placeholder") ? param.getAttribute("placeholder") : "", param.getAttribute("name")+"-min"));
-    addHoverEvent(parent.children[0], parent.children[1], parent.children[2]);
+    // addHoverEvent(parent.children[0], parent.children[1], parent.children[2]);
     if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
     return parent;
 }
 
 function createTextfield(id, param) {
     const input_id = `${id}-${param.getAttribute("name")}`;
-    const parent = createDiv("", "param-row param-text");
+    const parent = createDiv("", "param-row param-text w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
     
     const input = document.createElement("input");
@@ -291,7 +340,7 @@ function createTextfield(id, param) {
     if(param.hasAttribute("value")) input.value = param.getAttribute("value");
     input.className = "w3-input w3-border";
     parent.appendChild(input);
-    addHoverEvent(parent.children[0], parent.children[1]);
+    // addHoverEvent(parent.children[0], parent.children[1]);
     if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
     return parent;
 }

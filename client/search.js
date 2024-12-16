@@ -36,7 +36,7 @@ import * as tabs from "./tabs.js";
 import * as jobs from "./joblist.js";
 import * as settings from "./settings.js";
 import * as utils from "./utils.js";
-import * as apps from "./apps/applist.js";
+import * as apps from "./applist.js";
 
 const LAST_SEARCH_SETTINGS = new Map();
 const mainSearchStatus = document.getElementById("divSearchStatusElement");

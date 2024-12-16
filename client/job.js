@@ -37,7 +37,7 @@ import * as dialog from "./dialog.js";
 import * as tabs from "./tabs.js";
 import * as jobs from "./joblist.js";
 import * as output from "./output.js";
-import * as apps from "./apps/applist.js";
+import * as apps from "./applist.js";
 import * as settings from "./settings.js";
 
 const FORM = document.getElementById("formParameters");
@@ -143,7 +143,7 @@ function refreshJob(job) {
     document.getElementById("btnOutput").disabled = (job.status != "DONE" && job.status != "ARCHIVED_DONE");
     // highlight the job in the list on the left
     jobs.highlightJobButton();
-  } else console.log("Failed to load the job");
+  } else __electronLog.error("Failed to load the job");
 }
 
 function cleanJob() {
@@ -224,36 +224,16 @@ async function startJob() {
   const appName = document.getElementById("cmbAppName").value;
   const strategy = document.getElementById("cmbStrategy").value;
   const description = document.getElementById("txtJobDescription").value;
-  // const app = apps.get(appName); // TODO use the app id instead
-  // const settingsErrors = app.checkSettings();
-  // if(settingsErrors.length == 0) {
-    const settings = JSON.stringify(Object.fromEntries(getSettings()));
-    // const sharedFiles = JSON.stringify(app.getSharedFiles());
-    // const localFiles = JSON.stringify(app.getLocalFiles());
-    const sharedFiles = JSON.stringify(apps.getSharedFiles());
-    const localFiles = JSON.stringify(apps.getLocalFiles());
-    const job_id = await window.electronAPI.startJob(utils.getUserName(), appName, strategy, description, settings, sharedFiles, localFiles);
-    // reload the job list
-    utils.setCurrentJobId(job_id);
-    jobs.reloadJobList();
-    document.getElementById("btnLogs").disabled = false;
-    tabs.openTab("tabLogs");
-  // } else {
-  //   // display a dialog box with the list of errors
-  //   dialog.createDialogWarning("Incorrect settings", "- " + settingsErrors.join("<br/>- "));
-  // }
+  const settings = JSON.stringify(Object.fromEntries(getSettings()));
+  const sharedFiles = JSON.stringify(apps.getSharedFiles()); // TODO something is not correct here, maybe next line too
+  const localFiles = JSON.stringify(apps.getLocalFiles());
+  const job_id = await window.electronAPI.startJob(utils.getUserName(), appName, strategy, description, settings, sharedFiles, localFiles);
+  // reload the job list
+  utils.setCurrentJobId(job_id);
+  jobs.reloadJobList();
+  document.getElementById("btnLogs").disabled = false;
+  tabs.openTab("tabLogs");
 }
-
-// async function cancelJob() {
-//   // console.log("cancelJob()");
-//   utils.toggleLoadingScreen();
-//   const [response, error] = await window.electronAPI.cancelJob(utils.getUserName(), utils.getCurrentJobId());
-//   // TODO rethink the error management
-//   if(error != "") dialog.createDialogWarning("The job could not be canceled", error);
-//   // console.log(response);
-//   jobs.reloadJobList();
-//   utils.toggleLoadingScreen();
-// }
 
 function cancelJob() {
   const owner = document.getElementById("txtJobOwner").value;

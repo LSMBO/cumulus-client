@@ -39,7 +39,7 @@ import * as tabs from "./tabs.js";
 import * as search from "./search.js";
 import * as settings from "./settings.js";
 import * as utils from "./utils.js";
-import * as apps from "./apps/applist.js";
+import * as apps from "./applist.js";
 
 var INTERVAL; // used to store the variable that updates the list of jobs every n seconds
 var IS_SEARCH = false;
@@ -211,10 +211,10 @@ function resetInterval() {
 
 function pauseRefresh() {
   if(INTERVAL) {
-    console.log("Stop refreshing");
+    __electronLog.debug("Stop refreshing");
     clearInterval(INTERVAL);
   } else {
-    console.log("Start refreshing");
+    __electronLog.debug("Start refreshing");
     resetInterval();
   }
 }
