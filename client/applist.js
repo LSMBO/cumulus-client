@@ -90,25 +90,37 @@ function getFiles(ids) {
     const files = new Array();
     for(let id of ids) {
         const param = document.getElementById(id);
+        if(param == null) console.log(`File item '${id}' is missing!!`);
         if(param.tagName.toUpperCase() == "INPUT") { // a single file
             const path = fixFilePath(param.value);
-            if(!files.includes(path)) files.push(path);
+            if(path != "" && !files.includes(path)) files.push(path);
+            // if(path != "" && !files.includes(path)) {
+            //     console.log(`-> Add INPUT file '${path}'`);
+            //     files.push(path);
+            // }
         } else { // a list of files
             for(let path of getBrowsedFiles(document.getElementById(id))) {
                 if(!files.includes(path)) files.push(path); // these paths are already fixed and cannot be modified by user
+                // if(!files.includes(path)) {
+                //     console.log(`-> Add FILELIST item '${path}'`);
+                //     files.push(path);
+                // }
             }
         }
     }
+    return files;
 }
 function getLocalFiles() {
     // during initialize, store the ids of the elements that will contain local files (any file except raw data)
     // return the unique list of file paths for all these elements
+    // console.log("getLocalFiles()");
     return getFiles(LOCAL_FILES_IDS);
 }
 
 function getSharedFiles() {
     // during initialize, store the ids of the elements that will contain shared files (only raw data)
     // return the unique list of file paths for all these elements
+    // console.log("getSharedFiles()");
     return getFiles(SHARED_FILES_IDS);
 }
 

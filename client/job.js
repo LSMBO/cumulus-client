@@ -64,21 +64,23 @@ async function displayFileTransfers(job) {
   // get the transfer progression from the rsync client
   // console.log(job);
   const [data, error] = await window.electronAPI.getTransferProgress(job.owner, job.id);
-  const map = new Map (Object.entries(data));
+  const map = new Map(Object.entries(data));
+  // console.log(map);
   // get the list of files
-  // const app = apps.get(job.app_name);
-  // const files = app.getLocalFiles().concat(app.getSharedFiles());
   const files = apps.getLocalFiles().concat(apps.getSharedFiles());
+  // console.log(files);
   // display the list of files
   var html = "";
   var nb = 0;
   for(let file of files) {
     // only display the basename
     const name = file.split(file.includes("/") ? "/" : "\\").pop();
+    // console.log(name);
     // add a span with the percentage: 0%, n%, or ✓ (in bold, accent bgcolor and round icon?)
-    const pct = map.has(file) ? `<span>${map.get(file)}%</span>` : "<span class='done'>✓</span>";
+    const pct = map.has(name) ? `<span>${map.get(name)}%</span>` : "<span class='done'>✓</span>";
+    // console.log(pct);
     html += `<li>${name}${pct}</li>`;
-    if(!map.has(file)) nb++;
+    if(!map.has(name)) nb++;
   }
   const ul = document.getElementById("tabLogs").getElementsByTagName("ul")[0];
   ul.innerHTML = html;
@@ -225,7 +227,8 @@ async function startJob() {
   const strategy = document.getElementById("cmbStrategy").value;
   const description = document.getElementById("txtJobDescription").value;
   const settings = JSON.stringify(Object.fromEntries(getSettings()));
-  const sharedFiles = JSON.stringify(apps.getSharedFiles()); // TODO something is not correct here, maybe next line too
+  // console.log(settings);
+  const sharedFiles = JSON.stringify(apps.getSharedFiles());
   const localFiles = JSON.stringify(apps.getLocalFiles());
   const job_id = await window.electronAPI.startJob(utils.getUserName(), appName, strategy, description, settings, sharedFiles, localFiles);
   // reload the job list
@@ -330,24 +333,9 @@ function getOldJobCompatibleValue(value) {
 function setSettings(settings) {
   // console.log(settings);
   setAppParameters(settings);
-  // for(let item of FORM.getElementsByTagName("input")) {
-    // if(item.name) {
-    //   if(item.type == "checkbox") {
-    //     item.checked = settings.has(item.name);
-    //   } else if(settings.has(item.name)) {
-    //     item.value = settings.get(item.name);
-    //   }
-    // }
-  // }
-  // for(let item of FORM.getElementsByTagName("select")) {
-  //   if(item.name && settings.has(item.name)) item.value = settings.get(item.name);
-  // }
-  // for(let item of FORM.getElementsByTagName("ul")) {
-  //   if(settings.has(item.name)) utils.addBrowsedFiles(item, settings.get(item.name));
-  // }
   for(let item of FORM.getElementsByTagName("input")) {
     if(item.name) {
-      var name = getOldJobCompatibleName(item.name);
+      const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
       if(item.type == "checkbox") {
         item.checked = settings.has(name) && settings.get(name);
       } else if(settings.has(name)) {
@@ -356,11 +344,11 @@ function setSettings(settings) {
     }
   }
   for(let item of FORM.getElementsByTagName("select")) {
-    var name = getOldJobCompatibleName(item.name);
+    const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
     if(name && settings.has(name)) item.value = getOldJobCompatibleValue(settings.get(name));
   }
   for(let item of FORM.getElementsByTagName("ul")) {
-    var name = getOldJobCompatibleName(item.name);
+    const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
     if(settings.has(name)) utils.addBrowsedFiles(item, settings.get(name));
   }
 

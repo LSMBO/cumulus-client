@@ -43,11 +43,17 @@ const config = require('./config.js');
 const srv = require('./server.js');
 
 log.initialize();
-// log.info('Log from the main process');
 
 var mainWindow = null;
-const DEBUG_MODE = true; // when true, allows some code to be executed or some extra logs to be displayed
-if(DEBUG_MODE) log.info("DEBUG MODE is activated");
+var DEBUG_MODE = false; // when true, allows some code to be executed or some extra logs to be displayed
+
+for(let arg of process.argv) {
+  if(arg == "-demo") srv.setDemoMode(true);
+  else if(arg == "-debug") {
+    log.info("DEBUG MODE is activated");
+    DEBUG_MODE = true;
+  }
+}
 
 function getUncPaths() {
   const paths = new Map();
@@ -63,7 +69,7 @@ function getUncPaths() {
 }
 
 function getUserName() {
-  log.info(`Current user is ${process.env.USERNAME}`);
+  log.info(`Current user is '${process.env.USERNAME}'`);
   return process.env.USERNAME;
 }
 

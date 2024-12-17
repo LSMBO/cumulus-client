@@ -39,9 +39,15 @@ const config = require('./config.js');
 const rest = require('./rest.js');
 const xsdv = require('xsd-schema-validator');
 
-const DEMO_MODE = true; // when true, the client works offline without any server or rsync agent
-if(DEMO_MODE) log.info("DEMO MODE is activated, the GUI will only work offline");
+// const DEMO_MODE = true; // when true, the client works offline without any server or rsync agent
+// if(DEMO_MODE) log.info("DEMO MODE is activated, the GUI will only work offline");
+var DEMO_MODE = false;
 const XSD = "server/apps.xsd";
+
+function setDemoMode(value) {
+    log.info("DEMO MODE is activated, the GUI will only work offline");
+    DEMO_MODE = value;
+}
 
 async function checkServerVersion() {
     log.info("Checking that client and server have compatible versions");
@@ -108,7 +114,7 @@ async function listApps() {
 }
 
 async function checkRsyncAgent() {
-    log.info("Check that RSync agent is online");
+    // log.info("Check that RSync agent is online"); // this is checked at every refresh of the job list
     if(DEMO_MODE) {
         return "";
     } else {
@@ -260,7 +266,7 @@ async function searchJobs(_, current_job_id, owner, app, file, desc, statuses, d
 
 async function transferProgress(_, owner, job_id) {
     if(DEMO_MODE) {
-        const data = [{"File1": 93}, {"File2": 0}];
+        const data = [{"File1": 93}, {"File2": 0}, {"File3": 0}, {"File4": 0}];
         return [data, ""];
     } else {
         const [data, error] = await rest.sendGetRequest(rest.getUrl("progress-rsync", [owner, job_id], true));
@@ -304,4 +310,4 @@ async function downloadFile(_, owner, job_id, file_name, target) {
     }
 }
 
-module.exports = { cancelJob, checkRsyncAgent, checkServerVersion, createJob, deleteJob, downloadFile, getDiskUsage, getLastJobs, listApps, listHosts, listStorage, searchJobs, transferProgress }
+module.exports = { cancelJob, checkRsyncAgent, checkServerVersion, createJob, deleteJob, downloadFile, getDiskUsage, getLastJobs, listApps, listHosts, listStorage, searchJobs, setDemoMode, transferProgress }

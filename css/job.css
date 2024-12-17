@@ -159,6 +159,11 @@
     margin-right: 10px;
 }
 
+#divJobStart {
+    position: sticky;
+    bottom: 15px;
+}
+
 .cumulus-checkbox .switch {
     display: inline-block;
     /* height: 34px; */

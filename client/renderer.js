@@ -159,6 +159,8 @@ async function keyupEvent(event) {
     __electronLog.info("TEST KEY!");
     jobs.pauseRefresh();
     // apps.loadXmlFile();
+    console.log(apps.getLocalFiles());
+    console.log(apps.getSharedFiles());
   } else if(DEBUG_MODE && event.ctrlKey && event.key === 'K') {
     dialog.createDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
   } else if(DEBUG_MODE && event.ctrlKey && event.key === 'L') {
@@ -182,7 +184,7 @@ async function loadRemoteHosts() {
   content += "<option value=\"best_cpu\">Wait for the host with the most CPU</option>";
   content += "<option value=\"best_ram\">Wait for the host with the most RAM</option>";
   for(let host of hosts) {
-    content += `<option value="best_ram${host["name"]}">Use host '${host["name"]}' (${host["cpu"]} CPU, ${host["ram"]} GB of RAM), wait if it's used</option>`;
+    content += `<option value="host:${host["name"]}">Use host '${host["name"]}' (${host["cpu"]} CPU, ${host["ram"]} GB of RAM), wait if it's used</option>`;
   }
   // fill all the combo that list the hosts
   document.getElementById("cmbSettingsDefaultStrategy").innerHTML = content;

@@ -7,7 +7,10 @@
   "version": "0.3.0",
   "author": "Alexandre BUREL",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "debug": "electron . -debug",
+    "demo": "electron . -demo",
+    "debug+demo": "electron . -debug -demo"
   },
   "devDependencies": {
     "electron": "^33.2.1",

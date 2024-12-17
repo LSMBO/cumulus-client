@@ -133,6 +133,7 @@
         <xs:attribute name="end_tag" type="xs:string" use="required" /> <!-- will be used to check in stdout if the command is finished -->
         <xs:attribute name="command" type="xs:string" use="required" /> <!-- will be used to start the command line, it's possible to set default arguments already there -->
         <xs:attribute name="description" type="xs:string" use="optional" />
+        <xs:attribute name="hidden" type="xs:boolean" use="optional" /> <!-- used to tell if an app is still displayed or not -->
     </xs:complexType>
     <xs:element name="tool" type="toolType" />
 
