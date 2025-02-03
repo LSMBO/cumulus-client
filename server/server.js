@@ -32,17 +32,19 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
+// const app = require('electron');
 const log = require('electron-log/main');
 const FormData = require('form-data');
 const fs = require('fs');
 const config = require('./config.js');
+const path = require('path');
 const rest = require('./rest.js');
 const xsdv = require('xsd-schema-validator');
 
 // const DEMO_MODE = true; // when true, the client works offline without any server or rsync agent
 // if(DEMO_MODE) log.info("DEMO MODE is activated, the GUI will only work offline");
 var DEMO_MODE = false;
-const XSD = "server/apps.xsd";
+const XSD = path.join(__dirname, "apps.xsd");
 
 function setDemoMode(value) {
     log.info("DEMO MODE is activated, the GUI will only work offline");
@@ -59,14 +61,20 @@ async function checkServerVersion() {
         return "";
     } else {
         // get controller config
-        const [data, error1] = await rest.sendGetRequest(rest.getUrl("config"));
+        // const [data, error1] = await rest.sendGetRequest(rest.getUrl("config"));
+        var url = rest.getUrl("config");
+        log.debug(`Check Cumulus server at ${url}`);
+        const [data, error1] = await rest.sendGetRequest(url);
         // console.log(data);
         if(error1 != "") return error1;
         for(let [key, value] of Object.entries(JSON.parse(data))) {
             config.set(key, value);
         }
         // get rsync agent config
-        const [version, error2] = await rest.sendGetRequest(rest.getUrl("/", [], true));
+        // const [version, error2] = await rest.sendGetRequest(rest.getUrl("/", [], true));
+        url = rest.getUrl("/", [], true);
+        log.debug(`Check Cumulus RSync client at ${url}`);
+        const [version, error2] = await rest.sendGetRequest(url);
         if(error2) return error2;
         config.set("rsync.version", version);
         // check that all versions are compatible
@@ -98,6 +106,9 @@ async function listApps() {
         } else {
             const output = Object.entries(JSON.parse(data));
             for(let [id, xml] of output) {
+                // console.log(id);
+                // console.log(xml);
+                log.debug(XSD);
                 try {
                     const result = await xsdv.validateXML(xml, XSD);
                     if(result.valid) {
@@ -134,7 +145,7 @@ async function listStorage() {
         const url = rest.getUrl("storage");
         const [data, error] = await rest.sendGetRequest(url);
         // console.log("storage: "+JSON.parse(data));
-        log.debug("listStorage: "+data);
+        // log.debug("listStorage: "+data);
         const output = new Map(JSON.parse(data));
         if(!error) {
             // also request the rsync agent to get a list of file names
@@ -165,8 +176,9 @@ async function getDiskUsage() {
         map.set("free", 15222135660544);
     } else {
         const url = rest.getUrl("diskusage");
-        const [data, error] = await rest.sendGetRequest(url);
+        const [output, error] = await rest.sendGetRequest(url);
         if(!error)  {
+            const data = JSON.parse(output);
             map.set("total", Number(data[0]));
             map.set("used", Number(data[1]));
             map.set("free", Number(data[2]));

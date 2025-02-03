@@ -33,9 +33,8 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 // Modules to control application life and create native browser window
-// import log from 'electron-log/main';
 const log = require('electron-log/main');
-const { app, BrowserWindow, dialog, ipcMain } = require('electron')
+const { app, BrowserWindow, dialog, ipcMain, nativeImage } = require('electron')
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path')
@@ -98,16 +97,19 @@ function countExistingFiles(_, currentPath, files) {
 }
 
 function createWindow () {
-  // Create the browser window.
+  // Create the browser window
+  // const appIcon = nativeImage.createFromPath("img/icon.png");
+  const appIconPath = path.join(__dirname, "../img/icon.png");
+  const appIcon = nativeImage.createFromPath(appIconPath);
   mainWindow = new BrowserWindow({
     width: DEBUG_MODE ? 1800 : 1280,
     height: 800,
     autoHideMenuBar: true,
-    icon: './img/icon.png',
+    icon: appIcon,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
-  })
+  });
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')

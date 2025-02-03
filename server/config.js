@@ -1,11 +1,12 @@
-const { app } = require('electron')
+const { app } = require('electron');
 const fs = require('fs');
-const path = require('path')
+const log = require('electron-log/main');
+const path = require('path');
 const semver = require('semver');
 
 const CONFIG = new Map();
-const CONFIG_FILE = "application.conf";
-const LICENSE_FILE = "LICENSE.txt";
+const CONFIG_FILE = path.join(__dirname, "../application.conf");
+const LICENSE_FILE = path.join(__dirname, "../LICENSE.txt");
 const USER_CONFIG_FILE = path.join(app.getPath('userData'), "cumulus.conf");
 
 function loadConfigFile(file) {
@@ -24,10 +25,13 @@ function loadConfig() {
   if(CONFIG.size == 0) {
     // get application config
     if(fs.existsSync(CONFIG_FILE)) loadConfigFile(CONFIG_FILE);
+    else log.error(`Could not find ${CONFIG_FILE}`);
     // overwrite with user settings, if there are any
     if(fs.existsSync(USER_CONFIG_FILE)) loadConfigFile(USER_CONFIG_FILE);
+    else log.error(`Could not find ${USER_CONFIG_FILE}`);
     // also add the licence
     if(fs.existsSync(LICENSE_FILE)) CONFIG.set("license", fs.readFileSync(LICENSE_FILE, 'utf-8'));
+    else log.error(`Could not find ${LICENSE_FILE}`);
     // and the version number
     CONFIG.set("cumulus.version", app.getVersion());
   }
