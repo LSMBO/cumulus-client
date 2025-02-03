@@ -127,13 +127,19 @@ function refreshJob(job) {
       document.getElementById("tabLogs").children[1].classList.add("w3-hide");
       // display the progression for each file
       displayFileTransfers(job);
-    } else {
+    } else if(job.status == "RUNNING") {
       document.getElementById("tabLogs").children[0].classList.add("w3-hide");
       document.getElementById("tabLogs").children[1].classList.remove("w3-hide");
       STD_OUT.textContent = job.stdout;
-      STD_OUT.scrollTop = job.status == "RUNNING" ? STD_OUT.scrollHeight : 0;
+      STD_OUT.scrollTop = STD_OUT.scrollHeight;
       STD_ERR.textContent = job.stderr;
-      STD_ERR.scrollTop = job.status == "RUNNING" ? STD_ERR.scrollHeight : 0;
+      STD_ERR.scrollTop = STD_ERR.scrollHeight;
+    } else {
+      // do not reload the logs if the job is finished
+      document.getElementById("tabLogs").children[0].classList.add("w3-hide");
+      document.getElementById("tabLogs").children[1].classList.remove("w3-hide");
+      if(STD_OUT.textContent == "") STD_OUT.textContent = job.stdout;
+      if(STD_ERR.textContent == "") STD_ERR.textContent = job.stderr;
     }
     // output files
     if(job.status == "DONE") output.insertOutputFiles(job.files);
@@ -142,7 +148,8 @@ function refreshJob(job) {
     document.getElementById("btnParameters").disabled = false;
     // document.getElementById("btnLogs").disabled = job.status == "PENDING";
     document.getElementById("btnLogs").disabled = false;
-    document.getElementById("btnOutput").disabled = (job.status != "DONE" && job.status != "ARCHIVED_DONE");
+    // document.getElementById("btnOutput").disabled = (job.status != "DONE" && job.status != "ARCHIVED_DONE");
+    document.getElementById("btnOutput").disabled = job.status.startsWith("ARCHIVED_"); // user can see and download files unless the job is archived and the folder is gone
     // highlight the job in the list on the left
     jobs.highlightJobButton();
   } else __electronLog.error("Failed to load the job");
@@ -250,17 +257,6 @@ function cancelJob() {
   });
 }
 
-// async function deleteJob() {
-//   // console.log("deleteJob()");
-//   utils.toggleLoadingScreen();
-//   const [response, error] = await window.electronAPI.deleteJob(utils.getUserName(), utils.getCurrentJobId());
-//   // TODO rethink the error management
-//   if(error != "") dialog.createDialogWarning("The job could not be deleted", error);
-//   // console.log(response);
-//   jobs.reloadJobList();
-//   utils.toggleLoadingScreen();
-// }
-
 function deleteJob() {
   const owner = document.getElementById("txtJobOwner").value;
   const title = owner == utils.getUserName() ? "Warning" : "Warning - This job does not belong to you!";
@@ -332,7 +328,9 @@ function getOldJobCompatibleValue(value) {
 
 function setSettings(settings) {
   // console.log(settings);
+  // create the html objects corresponding to the current app
   setAppParameters(settings);
+  // set the values to the form
   for(let item of FORM.getElementsByTagName("input")) {
     if(item.name) {
       const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
@@ -351,7 +349,10 @@ function setSettings(settings) {
     const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
     if(settings.has(name)) utils.addBrowsedFiles(item, settings.get(name));
   }
-
+  // call the events if there are any (only the WHEN cases!)
+  for(let item of FORM.getElementsByClassName("cond")) {
+    apps.conditionalEvent(item);
+  }
 }
 
 export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, refreshJob, startJob, setAppParameters };

@@ -144,7 +144,7 @@ function createLabel(param, target="") {
     return label;
 }
 
-function createInputNumber(id, param, value, placeholder="", name="") {
+function createInputNumber(id, param, input_class, value, placeholder="", name="") {
     const input = document.createElement("input");
     input.type = "number";
     input.id = id;
@@ -154,7 +154,7 @@ function createInputNumber(id, param, value, placeholder="", name="") {
     if(param.hasAttribute("step")) input.step = parseFloat(param.getAttribute("step"));
     input.placeholder = placeholder;
     input.value = value;
-    input.className = "w3-input w3-border";
+    input.className = `w3-input w3-border ${input_class}`;
     return input;
 }
 
@@ -177,14 +177,14 @@ function createButton(id, label, event) {
 //     }
 // }
 
-function createSelect(id, param) {
+function createSelect(id, param, input_class) {
     const parent = createDiv("", "param-row param-select w3-hover-light-grey");
     const input_id = `${id}-${param.getAttribute("name")}`;
     parent.appendChild(createLabel(param, input_id));
     const input = document.createElement("select");
     input.id = input_id;
     input.name = param.getAttribute("name");
-    input.className = "w3-select w3-border";
+    input.className = `w3-select w3-border ${input_class}`;
     for(let option of param.children) {
         if(option.hasAttribute("value")) {
             const opt = document.createElement("option");
@@ -233,7 +233,7 @@ function addFileDragAndDropEvents(item, useFolder, multiple, allowedExtensions =
     item.addEventListener("drop", (event) => dropHandler(event, useFolder, multiple, allowedExtensions));
 }
 
-function createFileList(id, param, useFolder) {
+function createFileList(id, param, input_class, useFolder) {
     const input_id = `${id}-${param.getAttribute("name")}`;
     const parent = createDiv("", "param-row param-file-list w3-hover-light-grey");
     const header = createDiv("", "param-row");
@@ -254,7 +254,7 @@ function createFileList(id, param, useFolder) {
     const ul = document.createElement("ul");
     ul.id = input_id;
     ul.name = param.getAttribute("name");
-    ul.className = "w3-ul w3-border";
+    ul.className = `w3-ul w3-border ${input_class}`;
     addFileDragAndDropEvents(ul, useFolder, true, [ext]);
     if(type == "RAW") SHARED_FILES_IDS.push(input_id);
     else LOCAL_FILES_IDS.push(input_id);
@@ -264,7 +264,7 @@ function createFileList(id, param, useFolder) {
     return parent;
 }
 
-function createFileInput(id, param, useFolder) {
+function createFileInput(id, param, input_class, useFolder) {
     const input_id = `${id}-${param.getAttribute("name")}`;
     const parent = createDiv("", "param-row param-file w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
@@ -275,7 +275,7 @@ function createFileInput(id, param, useFolder) {
     input.id = input_id;
     input.name = param.getAttribute("name");
     if(param.hasAttribute("value")) input.value = param.getAttribute("value");
-    input.className = "w3-input w3-border";
+    input.className = `w3-input w3-border ${input_class}`;
     input.placeholder = `Select a ${ext.toUpperCase()} file`;
     // allow drag & drop of file
     addFileDragAndDropEvents(input, useFolder, false, [ext]);
@@ -290,7 +290,7 @@ function createFileInput(id, param, useFolder) {
     return parent;
 }
 
-function createCheckbox(id, param) {
+function createCheckbox(id, param, input_class) {
     const input_id = `${id}-${param.getAttribute("name")}`;
     const parent = createDiv("", "param-row param-checkbox w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
@@ -299,8 +299,7 @@ function createCheckbox(id, param) {
     input.id = input_id;
     input.name = param.getAttribute("name");
     input.checked = param.getAttribute("value") == "true";
-    input.className = "w3-check";
-    // parent.appendChild(input);
+    input.className = `w3-check ${input_class}`;
     // create an elaborated parent for custom checkbox
     const div = document.createElement("div");
     div.className = "cumulus-checkbox";
@@ -318,54 +317,53 @@ function createCheckbox(id, param) {
     return parent;
 }
 
-function createNumber(id, param) {
+function createNumber(id, param, input_class) {
     const input_id = `${id}-${param.getAttribute("name")}`;
     const parent = createDiv("", "param-row param-number w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
-    parent.appendChild(createInputNumber(input_id, param, param.hasAttribute("value") ? param.getAttribute("value") : "", param.hasAttribute("placeholder") ? param.getAttribute("placeholder") : ""));
+    parent.appendChild(createInputNumber(input_id, param, input_class, param.hasAttribute("value") ? param.getAttribute("value") : "", param.hasAttribute("placeholder") ? param.getAttribute("placeholder") : ""));
     // addHoverEvent(parent.children[0], parent.children[1]);
     if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
     return parent;
 }
 
-function createRange(id, param) {
+function createRange(id, param, input_class) {
     const input_id = `${id}-${param.getAttribute("name")}`;
     const parent = createDiv("", "param-row param-range w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
-    parent.appendChild(createInputNumber(input_id+"-2", param, param.hasAttribute("value2") ? param.getAttribute("value2") : "", param.hasAttribute("placeholder2") ? param.getAttribute("placeholder2") : "", param.getAttribute("name")+"-max")); // add this one first, because both inputs will be float:right
-    parent.appendChild(createInputNumber(input_id, param, param.hasAttribute("value") ? param.getAttribute("value") : "", param.hasAttribute("placeholder") ? param.getAttribute("placeholder") : "", param.getAttribute("name")+"-min"));
+    parent.appendChild(createInputNumber(input_id+"-2", param, input_class, param.hasAttribute("value2") ? param.getAttribute("value2") : "", param.hasAttribute("placeholder2") ? param.getAttribute("placeholder2") : "", param.getAttribute("name")+"-max")); // add this one first, because both inputs will be float:right
+    parent.appendChild(createInputNumber(input_id, param, input_class, param.hasAttribute("value") ? param.getAttribute("value") : "", param.hasAttribute("placeholder") ? param.getAttribute("placeholder") : "", param.getAttribute("name")+"-min"));
     // addHoverEvent(parent.children[0], parent.children[1], parent.children[2]);
     if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
     return parent;
 }
 
-function createTextfield(id, param) {
+function createTextfield(id, param, input_class) {
     const input_id = `${id}-${param.getAttribute("name")}`;
     const parent = createDiv("", "param-row param-text w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
-    
     const input = document.createElement("input");
     input.type = "text";
     input.id = input_id;
     input.name = param.getAttribute("name");
     if(param.hasAttribute("placeholder")) input.placeholder = param.getAttribute("placeholder");
     if(param.hasAttribute("value")) input.value = param.getAttribute("value");
-    input.className = "w3-input w3-border";
+    input.className = `w3-input w3-border ${input_class}`;
     parent.appendChild(input);
     // addHoverEvent(parent.children[0], parent.children[1]);
     if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
     return parent;
 }
 
-function createParam(id, param) {
-    if(param.tagName == "select") return createSelect(id, param);
-    else if(param.tagName == "checkbox") return createCheckbox(id, param);
-    else if(param.tagName == "string") return createTextfield(id, param);
-    else if(param.tagName == "number") return createNumber(id, param);
-    else if(param.tagName == "range") return createRange(id, param);
+function createParam(id, param, input_class) {
+    if(param.tagName == "select") return createSelect(id, param, input_class);
+    else if(param.tagName == "checkbox") return createCheckbox(id, param, input_class);
+    else if(param.tagName == "string") return createTextfield(id, param, input_class);
+    else if(param.tagName == "number") return createNumber(id, param, input_class);
+    else if(param.tagName == "range") return createRange(id, param, input_class);
     else if(param.tagName == "filelist") {
-        if(param.getAttribute("multiple") == "true") return createFileList(id, param, param.getAttribute("is_folder") == "true");
-        else return createFileInput(id, param, param.getAttribute("is_folder") == "true");
+        if(param.getAttribute("multiple") == "true") return createFileList(id, param, input_class, param.getAttribute("is_folder") == "true");
+        else return createFileInput(id, param, input_class, param.getAttribute("is_folder") == "true");
     }
 }
 
@@ -381,13 +379,20 @@ function getConditionalEventType(param) {
     else if(param.classList.contains("param-file") || param.classList.contains("param-number")) return "input";
 }
 
-function displayWhen(parent_id, displayed_id) {
-    // hide all whens
-    for(let when of document.getElementById(parent_id).children) {
-        if(when.classList.contains("when")) when.classList.add("w3-hide");
+function conditionalEvent(conditional) {
+    // conditional must have a class "cond"
+    if(conditional.classList.contains("cond")) {
+        const value = conditional.classList.contains("param-checkbox") ? conditional.checked : conditional.value; // the value that will determine which when is displayed
+        // loop through the next items that contain a "when" class
+        var next = conditional.parentElement.nextElementSibling;
+        while(next && next.classList.contains("when")) {
+            // show or hide the when case
+            if(next.id == `${conditional.id}-when-${value}`) next.classList.remove("w3-hide");
+            else next.classList.add("w3-hide");
+            // move to the next element
+            next = next.nextElementSibling;
+        }
     }
-    // display the selected when
-    document.getElementById(displayed_id).classList.remove("w3-hide");
 }
 
 function createConditional(id, cond) {
@@ -397,26 +402,26 @@ function createConditional(id, cond) {
     var i = 0;
     var param = cond.children[i++];
     while(i < cond.childElementCount && param.tagName.toUpperCase() == "WHEN") param = cond.children[i++];
-    const item = createParam(id, param);
+    const item = createParam(id, param, "cond"); // this param can be anything, but it's usually a SELECT or a CHECKBOX
+    const input = item.getElementsByClassName("cond")[0]; // the id of the actual input that will trigger the event
     parent.appendChild(item);
-    const map = new Map(); // used for the event listener
-    var i = 1;
+    // const map = new Map(); // used for the event listener
     for(let when of cond.children) {
         if(when.tagName.toUpperCase() == "WHEN") {
-            const div_id = `${cond_id}-${i}`;
+            const div_id = `${input.id}-when-${when.getAttribute("value")}`;
             const div = createDiv(div_id, "when");
-            if((item.classList.contains("param-checkbox") && !getConditionalParamElement(item).checked) || (!item.classList.contains("param-checkbox") && getConditionalParamElement(item).value != when.getAttribute("value"))) div.classList.add("w3-hide");
-            map.set(when.getAttribute("value"), div_id);
             for(let child of when.children) {
-                if(child.tagName.toUpperCase() != "WHEN") div.appendChild(createParam(id, child));
+                if(child.tagName.toUpperCase() != "WHEN") div.appendChild(createParam(id, child, ""));
             }
-            i++;
+
             parent.appendChild(div);
         }
     }
     // for the event listener, i need the id of the element to target (or the element itself), and the type of event to listen to
     // for now, conditional does not support file-list and range
-    getConditionalParamElement(item).addEventListener(getConditionalEventType(item), (e) => displayWhen(cond_id, map.get(e.target.value)));
+    getConditionalParamElement(item).addEventListener(getConditionalEventType(item), () => conditionalEvent(input));
+    // trigger the event to initialize the values
+    conditionalEvent(input);
     return parent;
 }
 
@@ -446,7 +451,7 @@ function createSection(id, section) {
     const params = createDiv(sectionId, section.getAttribute("expanded") ? "section" : "section w3-hide");
     for(let child of section.children) {
         if(child.tagName.toUpperCase() == "CONDITIONAL") params.appendChild(createConditional(id, child));
-        else params.appendChild(createParam(id, child));
+        else params.appendChild(createParam(id, child, ""));
     }
     parent.appendChild(params);
     if(section.hasAttribute("hidden") && section.getAttribute("hidden")) parent.classList.add("w3-hide");
@@ -467,4 +472,4 @@ function createAppPage(parent) {
 }
 
 // export { get, getFullName, getOptionList, has, list };
-export { getFullName, getLocalFiles, getOptionList, getSharedFiles, initialize, updateAppList };
+export { conditionalEvent, getFullName, getLocalFiles, getOptionList, getSharedFiles, initialize, updateAppList };
