@@ -93,7 +93,7 @@ function getCurrentSearchSettings() {
   const date = document.getElementById("cmbSearchDate").value;
   const from = document.getElementById("txtSearchDate1").value;
   const to = document.getElementById("txtSearchDate2").value;
-  const number = document.getElementById("txtSearchNbJobs").value;
+  const number = document.getElementById("txtSearchNbJobs").value == "" ? settings.CONFIG.get("max.nb.jobs") : document.getElementById("txtSearchNbJobs").value;
   return [owner, app, file, desc, statuses, date, from, to, number];
 }
 
