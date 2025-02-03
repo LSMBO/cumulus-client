@@ -80,6 +80,7 @@
     width: auto;
     min-width: 300px;
     float: right;
+    padding: 9px 0 8px 0;
 }
 
 #formParameters .param-file-list {
@@ -117,8 +118,11 @@
 #formParameters .param-file-list li span {
     cursor: pointer;
     font-size: 16px;
-    position: absolute;
+    /* position: absolute; */
     padding: 0 8px;
+    position: relative;
+    float: left;
+    height: 100%;
 }
 #formParameters .param-file-list li span:hover {
     background-color: var(--accent-color) !important;
@@ -127,7 +131,7 @@
 #formParameters .param-file-list li label {
     display: inline;
     float: none;
-    padding-left: 36px;
+    /* padding-left: 36px; */
 }
 
 #formParameters .param-file input {
