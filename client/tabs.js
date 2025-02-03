@@ -33,6 +33,7 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 import * as utils from "./utils.js";
+import { hideLicense } from "./settings.js";
 
 const TAB_NAMES = ["tabSummary", "tabParameters", "tabLogs", "tabOutput"];
 const TAB_BUTTONS = ["btnSummary", "btnParameters", "btnLogs", "btnOutput"];
@@ -49,6 +50,7 @@ function hideAllTabs() {
     document.getElementById(EXTRA_TAB_NAMES[i]).classList.remove("visible");
     document.getElementById(EXTRA_BUTTONS[i]).classList.replace("color-accent", "color-secondary");
   }
+  hideLicense();
 }
 
 // function getCurrentTabName() {

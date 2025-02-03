@@ -94,18 +94,22 @@ async function resetSettings() {
     jobs.resetInterval();
 }
 
+function showLicense() {
+    document.getElementById("btnSettingsLicense").textContent = "Hide the license";
+    document.getElementById("txtSettingsLicense").parentElement.classList.remove("w3-hide");
+}
+
+function hideLicense() {
+    document.getElementById("btnSettingsLicense").textContent = "Display the license";
+    document.getElementById("txtSettingsLicense").parentElement.classList.add("w3-hide");
+}
+
 function toggleLicense() {
-    const license = document.getElementById("txtSettingsLicense").parentElement;
-    if(license.classList.contains("w3-hide")) {
-        document.getElementById("btnSettingsLicense").textContent = "Hide the license";
-        license.classList.remove("w3-hide");
-    } else {
-        document.getElementById("btnSettingsLicense").textContent = "Display the license";
-        license.classList.add("w3-hide");
-    }
+    if(document.getElementById("txtSettingsLicense").parentElement.classList.contains("w3-hide")) showLicense();
+    else hideLicense();
 }
 
 utils.addCheckboxList(jobLabels, "Job descriptions", {"display.job.id": "Job ID", "display.job.owner": "Job owner", "display.app.name": "Software name", "display.job.start.date": "Start date"}, "Select the information that will be displayed in the job list.");
 utils.updateCheckboxList(jobLabels);
 
-export { CONFIG, loadSettings, openSettings, resetSettings, saveSettings, toggleLicense };
+export { CONFIG, hideLicense, loadSettings, openSettings, resetSettings, saveSettings, toggleLicense };
