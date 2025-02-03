@@ -52,7 +52,7 @@ function createDialog(title, message, icon) {
     const dialog = document.createElement("div");
     dialog.id = `dialog_${ID++}`;
     dialog.className = "w3-modal-content dialog";
-    dialog.innerHTML = `<img src="${icon}"/><header>${title}</header><label>${message}</label>`;
+    dialog.innerHTML = `<img src="${icon}"/><header>${title}</header><label>${message.replace(/\\n/g, "<br/>")}</label>`;
     dialog.style.zIndex = 10 + ID;
     dialog.style.display = "block";
     if(PARENT.childElementCount == 0) PARENT.classList.remove("w3-hide");
@@ -103,7 +103,7 @@ function createDialogWarning(title, message, action = undefined, label = "Close"
     const dialog = createDialog(title, message, ICON_WARNING);
     dialog.innerHTML += `<div class="w3-bar"><button class="w3-bar-item w3-button color-primary-border">${label}</button></div>`
     if(action === undefined) dialog.getElementsByTagName("button")[0].addEventListener("click", () => closeDialog(dialog.id), { once: true });
-    else dialog.getElementsByTagName("button")[0].addEventListener("click", () => { closeDialog(dialog.id); args !== undefined ? action(args) : onNo(); }, { once: true });
+    else dialog.getElementsByTagName("button")[0].addEventListener("click", () => { closeDialog(dialog.id); args !== undefined ? action(args) : action(); }, { once: true });
     PARENT.appendChild(dialog);
 }
 
@@ -113,10 +113,6 @@ function isDialogOpen(icon) {
     }
     return false;
 }
-// function isDialogInfoOpen2() { return isDialogOpen(ICON_INFO); }
-// function isDialogQuestionOpen2() { return isDialogOpen(ICON_QUESTION); }
-// function isDialogWarningOpen2() { return isDialogOpen(ICON_WARNING); }
-// function isDialogSleepOpen2() { return isDialogOpen(ICON_SLEEP); }
 function isDialogOfflineOpen() { return isDialogOpen(ICON_OFFLINE); }
 
 export {createDialogInfo, createDialogQuestion, createDialogSleep, createDialogWarning, createDialogOffline, isDialogOfflineOpen };

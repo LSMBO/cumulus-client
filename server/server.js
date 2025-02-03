@@ -51,6 +51,12 @@ function setDemoMode(value) {
     DEMO_MODE = value;
 }
 
+function explain(error, is_server) {
+    // TODO add more messages
+    if(error.includes("ERR_CONNECTION_REFUSED")) return `The ${is_server ? "server" : "Rsync client"} is not responding.\n${error}`;
+    else return error;
+}
+
 async function checkServerVersion() {
     log.info("Checking that client and server have compatible versions");
     if(DEMO_MODE) {
@@ -66,7 +72,7 @@ async function checkServerVersion() {
         log.debug(`Check Cumulus server at ${url}`);
         const [data, error1] = await rest.sendGetRequest(url);
         // console.log(data);
-        if(error1 != "") return error1;
+        if(error1 != "") return explain(error1, true);
         for(let [key, value] of Object.entries(JSON.parse(data))) {
             config.set(key, value);
         }
@@ -75,7 +81,7 @@ async function checkServerVersion() {
         url = rest.getUrl("/", [], true);
         log.debug(`Check Cumulus RSync client at ${url}`);
         const [version, error2] = await rest.sendGetRequest(url);
-        if(error2) return error2;
+        if(error2) return explain(error2, false);
         config.set("rsync.version", version);
         // check that all versions are compatible
         // return config.checkVersion();
