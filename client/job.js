@@ -142,7 +142,8 @@ function refreshJob(job) {
       if(STD_ERR.textContent == "") STD_ERR.textContent = job.stderr;
     }
     // output files
-    if(job.status == "DONE") output.insertOutputFiles(job.files);
+    // if(job.status == "DONE") output.insertOutputFiles(job.files);
+    if(!job.status.startsWith("ARCHIVED_")) output.insertOutputFiles(job.files);
     // else output.removeOutputFiles();
     // enable or disable tabs depending on the status
     document.getElementById("btnParameters").disabled = false;

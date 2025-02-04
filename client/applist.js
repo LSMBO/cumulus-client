@@ -364,16 +364,28 @@ function createTextfield(id, param, input_class) {
     return parent;
 }
 
+function createTextLabel(id, param, input_class) {
+    const input_id = `${id}-${param.getAttribute("name")}`;
+    const parent = createDiv("", "param-row param-label w3-hover-light-grey");
+    const label = createLabel(param);
+    label.classList.add(param.getAttribute("level"));
+    parent.appendChild(label);
+    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    return parent;
+}
+
 function createParam(id, param, input_class) {
     if(param.tagName == "select") return createSelect(id, param, input_class);
     else if(param.tagName == "checkbox") return createCheckbox(id, param, input_class);
     else if(param.tagName == "string") return createTextfield(id, param, input_class);
     else if(param.tagName == "number") return createNumber(id, param, input_class);
     else if(param.tagName == "range") return createRange(id, param, input_class);
+    else if(param.tagName == "text") return createTextLabel(id, param, input_class);
     else if(param.tagName == "filelist") {
         if(param.getAttribute("multiple") == "true") return createFileList(id, param, input_class, param.getAttribute("is_folder") == "true");
         else return createFileInput(id, param, input_class, param.getAttribute("is_folder") == "true");
     }
+    // the xml has been validated, so there is no chance that none of the above cases are not matched
 }
 
 function getConditionalParamElement(param) {

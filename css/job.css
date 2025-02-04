@@ -83,6 +83,13 @@
     padding: 9px 0 8px 0;
 }
 
+#formParameters .param-label label {
+    width: 100%;
+}
+#formParameters .param-label .warning {
+    font-weight: bold;
+    color: var(--accent-color);
+}
 #formParameters .param-file-list {
     height: auto;
 }

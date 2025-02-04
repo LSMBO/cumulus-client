@@ -76,6 +76,12 @@
         <xs:attributeGroup ref="ParamAttributes" />
     </xs:complexType>
     <xs:element name="filelist" type="ParamFileList" substitutionGroup="param" />
+    
+    <xs:complexType name="ParamText">
+        <xs:attribute name="level" type="xs:string" use="optional" />
+        <xs:attributeGroup ref="ParamAttributes" />
+    </xs:complexType>
+    <xs:element name="text" type="ParamText" substitutionGroup="param" />
 
     <!-- Define the 'when' element -->
     <xs:complexType name="whenType">
