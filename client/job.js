@@ -353,6 +353,10 @@ function setSettings(settings) {
   for(let item of FORM.getElementsByClassName("cond")) {
     apps.conditionalEvent(item);
   }
+  // TODO on file lists, display the number of files that are in the list (search for class "param-file-list")
+  for(let item of FORM.getElementsByClassName("param-file-list")) {
+    apps.updateFileList(item);
+  }
 }
 
 export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, refreshJob, startJob, setAppParameters };

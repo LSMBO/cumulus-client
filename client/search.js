@@ -97,7 +97,7 @@ function getCurrentSearchSettings() {
   return [owner, app, file, desc, statuses, date, from, to, number];
 }
 
-utils.addCheckboxList(mainSearchStatus, "Status", {"pending": "Pending", "running": "Running", "done": "Done", "failed": "Failed", "cancelled": "Cancelled", "archived": "Archived"}, "Restrict the search to specific statuses (if no status is selected then the filter will be disabled).");
+utils.addCheckboxList(mainSearchStatus, "Status", {"pending": "Pending", "running": "Running", "done": "Done", "failed": "Failed", "cancelled": "Cancelled", "archived": "Archived"}, false, "Restrict the search to specific statuses (if no status is selected then the filter will be disabled).");
 
 document.getElementById("btnSearchMe").addEventListener("click", (e) => { e.preventDefault(); document.getElementById("txtSearchOwner").value = utils.getUserName(); });
 document.getElementById("btnSearchOk").addEventListener("click", async (e) => {

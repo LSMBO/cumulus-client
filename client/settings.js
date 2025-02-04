@@ -109,7 +109,7 @@ function toggleLicense() {
     else hideLicense();
 }
 
-utils.addCheckboxList(jobLabels, "Job descriptions", {"display.job.id": "Job ID", "display.job.owner": "Job owner", "display.app.name": "Software name", "display.job.start.date": "Start date"}, "Select the information that will be displayed in the job list.");
+utils.addCheckboxList(jobLabels, "Job descriptions", {"display.job.id": "Job ID", "display.job.owner": "Job owner", "display.app.name": "Software name", "display.job.start.date": "Start date"}, false, "Select the information that will be displayed in the job list.");
 utils.updateCheckboxList(jobLabels);
 
 export { CONFIG, hideLicense, loadSettings, openSettings, resetSettings, saveSettings, toggleLicense };

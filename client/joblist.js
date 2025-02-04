@@ -99,11 +99,21 @@ function getHeadJobButton(nb) {
 
 function setJobListDisplay() {
   const itemsToHide = [];
+  // TODO if everything is false, set the job.id as true and select it in the combo
+  // if(settings.CONFIG.has("display.job.id") && !settings.CONFIG.get("display.job.id")) itemsToHide.push(0);
+
   if(settings.CONFIG.has("display.job.owner") && !settings.CONFIG.get("display.job.owner")) itemsToHide.push(1);
   if(settings.CONFIG.has("display.app.name") && !settings.CONFIG.get("display.app.name")) itemsToHide.push(2);
   if(settings.CONFIG.has("display.job.start.date") && !settings.CONFIG.get("display.job.start.date")) itemsToHide.push(3);
   // do not hide the job number if everything else is removed
   if(settings.CONFIG.has("display.job.id") && !settings.CONFIG.get("display.job.id") && itemsToHide.length < 3) itemsToHide.push(0);
+  // if everything is false, set the job.id as true and select it in the combo
+  // if(itemsToHide.length == 4) {
+  //   itemsToHide.shift(); // remove first item from the list of items to hide
+  //   settings.CONFIG.set("display.job.id", true); // update the settings
+  //   utils.updateCheckboxList(document.getElementById("divSettingsJobLabelElement")); // display the item in the list
+  // }
+
   for(let a of document.getElementById("jobs").getElementsByTagName("a")) {
     const labels = a.getElementsByTagName("i");
     if(labels.length > 0) {

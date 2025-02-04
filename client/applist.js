@@ -158,11 +158,12 @@ function createInputNumber(id, param, input_class, value, placeholder="", name="
     return input;
 }
 
-function createButton(id, label, event) {
+function createButton(id, label, event, tooltiptext = "") {
     const button = document.createElement("button");
     button.id = id;
     button.className = "w3-button color-opposite";
     button.textContent = label;
+    if(tooltiptext != "") tooltip(button, tooltiptext);
     button.addEventListener("click", event);
     return button;
 }
@@ -233,6 +234,13 @@ function addFileDragAndDropEvents(item, useFolder, multiple, allowedExtensions =
     item.addEventListener("drop", (event) => dropHandler(event, useFolder, multiple, allowedExtensions));
 }
 
+function updateFileList(target) {
+    const label = target.children[0].getElementsByTagName("label")[0];
+    const nb = target.children[1].getElementsByTagName("li").length;
+    label.textContent = label.textContent.replace(/ \(\d+ items selected\)$/, ""); // remove previous indication
+    if(nb > 0) label.textContent += ` (${nb} items selected)`;
+}
+
 function createFileList(id, param, input_class, useFolder) {
     const input_id = `${id}-${param.getAttribute("name")}`;
     const parent = createDiv("", "param-row param-file-list w3-hover-light-grey");
@@ -243,7 +251,8 @@ function createFileList(id, param, input_class, useFolder) {
     header.appendChild(createButton(input_id+"-clear", "╳", (event) => {
         event.preventDefault();
         document.getElementById(input_id).innerHTML = "";
-    })); // add the cancel button first, because both buttons will be float:right
+        updateFileList(parent);
+    }, "Clear the list")); // add the cancel button first, because both buttons will be float:right
     header.appendChild(createButton(input_id+"-browse", "Browse...", (event) => {
         event.preventDefault();
         browse(type, param.getAttribute("label"), [ { name: useFolder ? `.${ext} folders` : `.${ext} files`, extensions: [ext] }], [useFolder ? 'openDirectory' : 'openFile', 'multiSelections'], input_id);
@@ -472,4 +481,4 @@ function createAppPage(parent) {
 }
 
 // export { get, getFullName, getOptionList, has, list };
-export { conditionalEvent, getFullName, getLocalFiles, getOptionList, getSharedFiles, initialize, updateAppList };
+export { conditionalEvent, getFullName, getLocalFiles, getOptionList, getSharedFiles, initialize, updateAppList, updateFileList };

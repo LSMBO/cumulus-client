@@ -32,6 +32,7 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
+import * as apps from "./applist.js";
 import * as dialog from "./dialog.js";
 
 var CURRENT_JOB_ID = 0;
@@ -138,28 +139,30 @@ function fixFilePath(file) {
     return fixedPath.substring(1, fixedPath.length - 1);
 }
 
-// function addBrowsedFile(filePath) {
-//     const items = filePath.split(filePath.includes("/") ? "/" : "\\");
-//     const name = items.pop();
-//     return `<li><span class="color-primary-hover">×</span><label>${items.join("/")}/</label>${name}</li>`;
-// }
+function addBrowsedFiles(target, files, keepPreviousFiles = false) {
+    // eventually remove the previous files
+    if(!keepPreviousFiles) target.innerHTML = "";
 
-function addBrowsedFiles(target, files) {
-    // target.classList.add("raw-file");
-    // target.innerHTML += files.map(addBrowsedFile).join("");
+    // store files to avoid duplicates
+    const fixedFiles = new Map();
+    for(let label of target.getElementsByTagName("label")) {
+        fixedFiles.set(label.textContent, "");
+    }
 
-    target.innerHTML = "";
-    // console.log(files);
     for(let file of files) {
-        const li = document.createElement("li");
-        const span = document.createElement("span");
-        span.textContent = "×";
-        span.addEventListener("click", (event) => event.target.parentElement.remove());
-        li.appendChild(span);
-        const label = document.createElement("label");
-        label.textContent = fixFilePath(file);
-        li.appendChild(label);
-        target.appendChild(li);
+        const path = fixFilePath(file);
+        // do not add files that are already in the list
+        if(!fixedFiles.has(path)) {
+            const li = document.createElement("li");
+            const span = document.createElement("span");
+            span.textContent = "×";
+            span.addEventListener("click", (event) => event.target.parentElement.remove());
+            li.appendChild(span);
+            const label = document.createElement("label");
+            label.textContent = path;
+            li.appendChild(label);
+            target.appendChild(li);
+        }
     }
 }
 
@@ -183,10 +186,11 @@ async function browse(type, title, filter, properties, targetName) {
         if(target.tagName == "INPUT" && target.type == "text") target.value = fixFilePath(output[0]);
         else if(target.tagName == "TEXTAREA") target.textContent = output.join("\n"); // TODO is it still used?
         else if(target.tagName == "UL") {
-            addBrowsedFiles(target, output);
+            addBrowsedFiles(target, output, true);
         }
         else target.value = output.join(", ");
     }
+    apps.updateFileList(target.parentElement.parentElement);
 }
 
 function listBrowsedFiles(targetName) {
@@ -333,7 +337,7 @@ function getCheckboxListSelection(target) {
     return items;
 }
 
-function checkboxListEventListener(target) {
+function checkboxListEventListener(target, allowZeroSelection) {
     // console.log(target);
     if(target.classList.contains("w3-input") && target.parentElement.classList.contains("selector")) {
         // user has clicked on the visible div where labels are displayed, show the div with the checkboxes
@@ -344,8 +348,11 @@ function checkboxListEventListener(target) {
         target.parentElement.parentElement.getElementsByTagName("div")[1].classList.remove("w3-hide");
         target.parentElement.parentElement.getElementsByTagName("div")[2].classList.remove("w3-hide");
     } else if(target.tagName == "INPUT" && target.type == "checkbox") {
+        const parent = target.parentElement.parentElement.parentElement;
+        // if it's not allowed to have 0 selected items, reselect the latest item unchecked
+        if(!allowZeroSelection && Object.keys(getCheckboxListSelection(parent)).length == 0) target.checked = !target.checked;
         // user has selected/unselected a checkbox, update the visible div
-        updateCheckboxList(target.parentElement.parentElement.parentElement);
+        updateCheckboxList(parent);
     } else if(target.classList.contains("selector-outside")) {
         // user has clicked outside of the div with the checkboxes, hide the list of results
         toggleClass(target.previousElementSibling, "w3-hide");
@@ -353,7 +360,7 @@ function checkboxListEventListener(target) {
     }
 }
 
-function addCheckboxList(parent, label, items, tooltiptext) {
+function addCheckboxList(parent, label, items, allowZeroSelection, tooltiptext) {
     parent.classList.add("w3-row", "w3-section", "selector");
     var html = `<label for="txt_${parent.id}" class="w3-col">${label}</label>
     <div id="txt_${parent.id}" class="w3-input w3-border w3-rest"></div>
@@ -364,9 +371,8 @@ function addCheckboxList(parent, label, items, tooltiptext) {
     }
     html += "</div><div class='selector-outside w3-hide'></div></div>";
     parent.innerHTML = html;
-    parent.addEventListener("click", (e) => checkboxListEventListener(e.target));
+    parent.addEventListener("click", (e) => checkboxListEventListener(e.target, allowZeroSelection));
     tooltip(parent.getElementsByTagName("label")[0], tooltiptext);
 }
 
-// export { addBrowsedFiles, addCheckboxList, App, XmlApp, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
 export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
