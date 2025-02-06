@@ -104,7 +104,10 @@ function setJobListDisplay() {
 
   if(settings.CONFIG.has("display.job.owner") && !settings.CONFIG.get("display.job.owner")) itemsToHide.push(1);
   if(settings.CONFIG.has("display.app.name") && !settings.CONFIG.get("display.app.name")) itemsToHide.push(2);
-  if(settings.CONFIG.has("display.job.start.date") && !settings.CONFIG.get("display.job.start.date")) itemsToHide.push(3);
+  // if(settings.CONFIG.has("display.job.start.date") && !settings.CONFIG.get("display.job.start.date")) itemsToHide.push(3);
+  if(settings.CONFIG.has("display.host.name") && !settings.CONFIG.get("display.host.name")) itemsToHide.push(3);
+  if(settings.CONFIG.has("display.job.creation.date") && !settings.CONFIG.get("display.job.creation.date")) itemsToHide.push(4);
+  if(settings.CONFIG.has("display.job.end.date") && !settings.CONFIG.get("display.job.end.date")) itemsToHide.push(5);
   // do not hide the job number if everything else is removed
   if(settings.CONFIG.has("display.job.id") && !settings.CONFIG.get("display.job.id") && itemsToHide.length < 3) itemsToHide.push(0);
   // if everything is false, set the job.id as true and select it in the combo
@@ -127,8 +130,22 @@ function setJobListDisplay() {
 function getJobAsHtml(job) {
   const image = "./img/" + job.status.replace("ARCHIVED_", "").toLowerCase() + ".png";
   const archived = job.status.startsWith("ARCHIVED_") ? "archived" : "";
-  const items = [`Job ${job.id}`, job.owner, apps.getFullName(job.app_name), utils.formatDate(job.creation_date)];
-  return `<a id="job_${job.id}" href="#" class="w3-button"><span><img src="${image}" /></span><label class="${archived}"><i>${items.join("</i><i>")}</i></label></a>`;
+  // const items = [`Job ${job.id}`, job.owner, apps.getFullName(job.app_name), utils.formatDate(job.creation_date)];
+  // const items = [`Job ID: ${job.id}`, `Owner: ${job.owner}`, apps.getFullName(job.app_name), job.host == "" ? "No host selected" : `Host: ${job.host}`, "&#9873;&nbsp;" + utils.formatDate(job.creation_date), job.end_date == "" ? "" : "&#9872;&nbsp;" + utils.formatDate(job.end_date)];
+  // console.log(job);
+  // const items = [`Job ID: ${job.id}`, `<img src='img/owner.png'/>${job.owner}`, "<img src='img/cmd-app.png'/>"+apps.getFullName(job.app_name), job.host == "" ? "<img src='img/host.png'/>No host selected" : `<img src='img/host.png'/>${job.host}`, "<img src='img/hg-create.png'/>" + utils.formatDate(job.creation_date), job.end_date ? "" : "<img src='img/hg-end.png'/>" + utils.formatDate(job.end_date)];
+  // return `<a id="job_${job.id}" href="#" class="w3-button"><span><img src="${image}" /></span><label class="${archived}"><i>${items.join("</i><i>")}</i></label></a>`;
+  var html = `<a id="job_${job.id}" href="#" class="w3-button"><span><img src="${image}" /></span>`;
+  html += job.status.startsWith("ARCHIVED_") ? `<label class="archived">` : "<label>";
+  html += `<i>Job ID: ${job.id}</i>`;
+  html += `<i><img src='img/owner.png'/>${job.owner}</i>`;
+  html += "<i><img src='img/cmd-app.png'/>"+apps.getFullName(job.app_name)+"</i>";
+  html += job.host == "" ? "<i><img src='img/host.png'/>No host selected</i>" : `<i><img src='img/host.png'/>${job.host}</i>`;
+  html += "<i><img src='img/hg-create.png'/>" + utils.formatDate(job.creation_date)+"</i>";
+  // if(job.end_date) html += "<i><img src='img/hg-end.png'/>" + utils.formatDate(job.end_date)+"</i>";
+  html += job.end_date ? "<i><img src='img/hg-end.png'/>" + utils.formatDate(job.end_date)+"</i>" : "<i></i>";
+  html += "</label></a>";
+  return html;
 }
 
 function addJobsToJobList(jobs) {

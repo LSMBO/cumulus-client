@@ -65,24 +65,29 @@
             <textarea id="txtJobDescription" class="w3-input w3-border w3-rest" rows="5" placeholder="Optional text to give some context to the job, to prevent users from confusing jobs."></textarea>
           </div>
           <div id="divDates" class="w3-row-padding"></div>
-          <div class="w3-center">
-            <div id="divButtonsNext" class="w3-bar">
-                <button id="btnNext" class="w3-button color-opposite" disabled>Set parameters</button>
+          <!-- <div class="w3-center"> -->
+            <div id="divButtonsNext" class="w3-center">
+                <button id="btnNext" class="w3-button w3-block color-opposite" disabled>Set parameters</button>
             </div>
-          </div>
-          <div class="w3-center">
-            <div id="divButtonsSummary" class="w3-bar">
-                <button id="btnClone" class="w3-button color-opposite">Clone</button>
-                <button id="btnCancel" class="w3-button color-secondary">Cancel job</button>
-                <button id="btnDelete" class="w3-button color-secondary">Delete job</button>
-              </div>
-          </div>
+          <!-- </div>
+          <div class="w3-center"> -->
+            <div id="divButtonsSummary" class="w3-row w3-center">
+              <button id="btnClone" class="w3-button w3-half color-opposite">Clone</button>
+              <button id="btnCancel" class="w3-button w3-half color-secondary">Cancel job</button>
+              <button id="btnDelete" class="w3-button w3-half color-secondary">Delete job</button>
+            </div>
+          <!-- </div> -->
         </div>
         <!-- Tab 2: specific parameters for the selected app name -->
         <div id="tabParameters" class="tab">
           <form id="formParameters"></form>
           <div id="divJobStart" class="w3-center">
             <button id="btnStart" class="w3-button w3-block w3-margin-top color-opposite">Start the job</button>
+          </div>
+          <div id="divButtonsSummary2" class="w3-row w3-center">
+            <button id="btnClone2" class="w3-button w3-half color-opposite">Clone</button>
+            <button id="btnCancel2" class="w3-button w3-half color-secondary">Cancel job</button>
+            <button id="btnDelete2" class="w3-button w3-half color-secondary">Delete job</button>
           </div>
         </div>
         <!-- Tab 3: show the content of stdout and stderr, add clipboard buttons -->
@@ -157,14 +162,15 @@
             <label for="txtSettingsRsyncPort" class="w3-col">RSync agent port (do not change this value unless you are certain!)</label>
             <input id="txtSettingsRsyncPort" type="text" class="w3-input w3-border w3-rest" value="" placeholder="Port of the RSync agent, do not change this value unless you are certain!" />
           </div>
-          <div class="w3-center">
+          <!-- <div class="w3-center"> -->
             <!-- <div id="divButtonsSummary" class="w3-bar"> -->
-            <div class="w3-bar"></div>
-              <button id="btnSettingsOk" class="w3-button color-opposite">Save settings</button>
-              <button id="btnSettingsReset" class="w3-button color-secondary">Reset settings</button>
-              <button id="btnSettingsLicense" class="w3-button color-primary-border">Display the license</button>
+            <!-- <div class="w3-bar"> -->
+            <div id="divButtonsSettings" class="w3-row w3-center">
+              <button id="btnSettingsOk" class="w3-button w3-third color-opposite">Save settings</button>
+              <button id="btnSettingsReset" class="w3-button w3-third color-secondary">Reset settings</button>
+              <button id="btnSettingsLicense" class="w3-button w3-third color-primary color-primary-border">Display the license</button>
             </div>
-          </div>
+          <!-- </div> -->
           <div class="w3-row w3-section w3-hide"><textarea id="txtSettingsLicense" class="w3-input w3-border" readonly rows="25"></textarea></div>
         </div>
         <div id="tabStorage">

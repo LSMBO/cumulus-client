@@ -66,12 +66,15 @@ document.getElementById("aUnselect").addEventListener("click", () => output.unse
 document.getElementById("aExpand").addEventListener("click", () => output.expandAllFolders());
 document.getElementById("aCollapse").addEventListener("click", () => output.collapseAllFolders());
 document.getElementById("btnClone").addEventListener("click", () => job.cloneJob());
+document.getElementById("btnClone2").addEventListener("click", () => job.cloneJob());
 document.getElementById("btnNext").addEventListener("click", () => tabs.openTab("tabParameters"));
 document.getElementById("btnStart").addEventListener("click", () => job.startJob());
 // document.getElementById("btnCancel").addEventListener("click", () => dialog.createDialogQuestion("Warning", "Are you sure you want to cancel this job?", job.cancelJob));
 // document.getElementById("btnDelete").addEventListener("click", () => dialog.createDialogQuestion("Warning", "Are you sure you want to delete this job?", job.deleteJob));
 document.getElementById("btnCancel").addEventListener("click", job.cancelJob);
 document.getElementById("btnDelete").addEventListener("click", job.deleteJob);
+document.getElementById("btnCancel2").addEventListener("click", job.cancelJob);
+document.getElementById("btnDelete2").addEventListener("click", job.deleteJob);
 document.getElementById("copyStdout").addEventListener("click", async () => await tabs.copyToClipboard("copyStdout", document.getElementById("stdout")));
 document.getElementById("copyStderr").addEventListener("click", async () => await tabs.copyToClipboard("copyStderr", document.getElementById("stderr")));
 document.getElementById("btnOutputDownload").addEventListener("click", async() => await output.downloadOutput());
@@ -159,8 +162,8 @@ async function keyupEvent(event) {
     __electronLog.info("TEST KEY!");
     jobs.pauseRefresh();
     // apps.loadXmlFile();
-    console.log(apps.getLocalFiles());
-    console.log(apps.getSharedFiles());
+    // console.log(apps.getLocalFiles());
+    // console.log(apps.getSharedFiles());
   } else if(DEBUG_MODE && event.ctrlKey && event.key === 'K') {
     dialog.createDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
   } else if(DEBUG_MODE && event.ctrlKey && event.key === 'L') {

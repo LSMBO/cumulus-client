@@ -45,6 +45,7 @@ const xsdv = require('xsd-schema-validator');
 // if(DEMO_MODE) log.info("DEMO MODE is activated, the GUI will only work offline");
 var DEMO_MODE = false;
 const XSD = path.join(__dirname, "apps.xsd");
+var LAST_PING_RSYNC = 0;
 
 function setDemoMode(value) {
     log.info("DEMO MODE is activated, the GUI will only work offline");
@@ -130,15 +131,27 @@ async function listApps() {
     }
 }
 
+function isRsyncAgentCheckRequired() {
+    const time = parseInt(config.get("refresh.rate")) * 1000 + 100; // set this time in seconds, increase it a bit to avoid close calls
+    const now = Date.now();
+    // log.debug(`${now} - ${LAST_PING_RSYNC} > ${time} ? ${now - LAST_PING_RSYNC > time}`);
+    return now - LAST_PING_RSYNC > time;
+}
+
 async function checkRsyncAgent() {
     // log.info("Check that RSync agent is online"); // this is checked at every refresh of the job list
     if(DEMO_MODE) {
         return "";
     } else {
-        const [response, error] = await rest.sendGetRequest(rest.getUrl("/", [], true));
-        if(error) return error;
-        // else if(response != "OK") return "The RSync agent was reached but the expected code was incorrect.";
-        else return "";
+        // do not check if it was already checked before (during transfer progress monitoring)
+        if(isRsyncAgentCheckRequired()) {
+            // const [response, error] = await rest.sendGetRequest(rest.getUrl("/", [], true));
+            const [_, error] = await rest.sendGetRequest(rest.getUrl("/", [], true));
+            LAST_PING_RSYNC = Date.now();
+            if(error) return error;
+            // else if(response != "OK") return "The RSync agent was reached but the expected code was incorrect.";
+            else return "";
+        } else return "";
     }
 }
 
@@ -290,6 +303,7 @@ async function transferProgress(_, owner, job_id) {
         const [data, error] = await rest.sendGetRequest(rest.getUrl("progress-rsync", [owner, job_id], true));
         // const [data, error] = await rest.sendGetRequest(rest.getUrl("test", [], true));
         // console.log("transferProgress: "+JSON.parse(data));
+        LAST_PING_RSYNC = Date.now(); // store the current timestamp to dismiss a checkRsyncAgent useless call
         return [JSON.parse(data), error];
     }
 }

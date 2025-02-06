@@ -1,3 +1,7 @@
+html {
+    height: 100%;
+}
+
 body {
     height: 100%;
     font-size: 12px;
@@ -66,6 +70,10 @@ h4 {
     font-style: normal;
     display: block;
 }
+#jobs label img {
+    width: 12px;
+    margin-right: 5px;
+}
 
 #new_job, #clear_search {
     line-height: 45px;
@@ -89,11 +97,13 @@ h4 {
     margin-left: 250px;
     border-width: 0px 0 0 0;
     border-style: solid;
+    height: 100%;
 }
 
 #detail header {
     border-width: 0 0 0px 0;
     border-style: solid;
+    height: 42px;
 }
 
 #detail header button {
@@ -102,6 +112,19 @@ h4 {
     border-color: inherit;
     width: 135px;
     line-height: 2em;
+}
+
+#divDates label {
+    position: relative;
+    bottom: -2px;
+}
+#divDates img {
+    width: 20px;
+    margin-right: 5px;
+}
+
+#tabs {
+    height: calc(100% - 42px);
 }
 
 #btnStorage, #btnSettings, #btnSearch {
@@ -126,6 +149,7 @@ h4 {
 .tab, #tabSettings, #tabStorage, #tabSearch {
     display: none;
     padding: 16px;
+    height: 100%;
 }
 
 .tab.visible, #tabSettings.visible, #tabStorage.visible, #tabSearch.visible {

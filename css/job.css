@@ -170,9 +170,11 @@
     margin-right: 10px;
 }
 
-#divJobStart {
+/* #divJobStart { */
+#divJobStart, #divButtonsNext, #divButtonsSummary, #divButtonsSummary2, #divButtonsSettings {
     position: sticky;
     bottom: 15px;
+    margin-top: 30px;
 }
 
 .cumulus-checkbox .switch {

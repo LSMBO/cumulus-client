@@ -88,6 +88,13 @@ async function displayFileTransfers(job) {
   ul.previousElementSibling.previousElementSibling.textContent = `File transfer ${nb}/${files.length}`;
 }
 
+function describeJobDates(job) {
+  var html = `<div class='w3-third'><img src='img/hg-create-alt.png'/><label>Created at ${utils.formatDate(job.creation_date)}</label></div>`;
+  if(job.start_date) html += `<div class="w3-third"><img src='img/hg-begin-alt.png'/><label>Started at ${utils.formatDate(job.start_date)}</label></div>`;
+  if(job.end_date) html += `<div class="w3-third"><img src='img/hg-end-alt.png'/><label>Ended at ${utils.formatDate(job.end_date)}</label></div>`;
+  return html;
+}
+
 function refreshJob(job) {
   // console.log(job);
   // sometimes the job or its settings can be null, it can happen when the refreshing of the job list is not done yet
@@ -107,17 +114,24 @@ function refreshJob(job) {
     document.getElementById("txtJobDescription").value = job.description;
     document.getElementById("txtJobDescription").disabled = true;
     document.getElementById("divDates").style.display = "block";
-    document.getElementById("divDates").innerHTML = `<div class="w3-third"><label>Creation date: ${utils.formatDate(job.creation_date)}</label></div><div class="w3-third"><label>Started date: ${utils.formatDate(job.start_date)}</label></div><div class="w3-third"><label>Ended date: ${utils.formatDate(job.end_date)}</label></div>`;
+    // document.getElementById("divDates").innerHTML = `<div class="w3-third"><label>Creation date: ${utils.formatDate(job.creation_date)}</label></div><div class="w3-third"><label>Started date: ${utils.formatDate(job.start_date)}</label></div><div class="w3-third"><label>Ended date: ${utils.formatDate(job.end_date)}</label></div>`;
+    document.getElementById("divDates").innerHTML = describeJobDates(job);
     document.getElementById("divButtonsNext").style.display = "none";
     document.getElementById("divButtonsSummary").style.display = "block";
+    document.getElementById("divButtonsSummary2").style.display = "block";
     document.getElementById("btnStart").parentNode.style.display = "none";
+    document.getElementById("btnClone2").style.display = "inline-block";
     // if job is ended, remove the Cancel button and show the delete button
     // TODO maybe leave btnDelete all the time, and onclick it cancels and deletes?
     document.getElementById("btnCancel").style.display = "inline-block";
     document.getElementById("btnDelete").style.display = "none";
+    document.getElementById("btnCancel2").style.display = "inline-block";
+    document.getElementById("btnDelete2").style.display = "none";
     if(job.status != "PENDING" && job.status != "RUNNING") {
       document.getElementById("btnCancel").style.display = "none";
       document.getElementById("btnDelete").style.display = "inline-block";
+      document.getElementById("btnCancel2").style.display = "none";
+      document.getElementById("btnDelete2").style.display = "inline-block";
     }
     // settings
     setSettings(new Map(Object.entries(job.settings)));
@@ -171,7 +185,11 @@ function cleanJob() {
   document.getElementById("divDates").style.display = "none";
   document.getElementById("divButtonsNext").style.display = "block";
   document.getElementById("divButtonsSummary").style.display = "none";
+  document.getElementById("divButtonsSummary2").style.display = "none";
   document.getElementById("btnStart").parentNode.style.display = "block";
+  document.getElementById("btnClone2").parentNode.style.display = "none";
+  document.getElementById("btnCancel2").parentNode.style.display = "none";
+  document.getElementById("btnDelete2").parentNode.style.display = "none";
   // clear the parameters fields
   FORM.innerHTML = "";
   // clear the log fields
@@ -218,7 +236,11 @@ function cloneJob() {
   document.getElementById("divButtonsNext").style.display = "block";
   document.getElementById("btnNext").disabled = false;
   document.getElementById("divButtonsSummary").style.display = "none";
+  document.getElementById("divButtonsSummary2").style.display = "none";
   document.getElementById("btnStart").parentNode.style.display = "block";
+  document.getElementById("btnClone2").parentNode.style.display = "none";
+  document.getElementById("btnCancel2").parentNode.style.display = "none";
+  document.getElementById("btnDelete2").parentNode.style.display = "none";
   STD_OUT.textContent = "";
   STD_ERR.textContent = "";
   document.getElementById("outputSummary").textContent = "Nothing yet...";
