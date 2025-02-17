@@ -101,7 +101,7 @@ function createDialogQuestion(title, message, onYes, onYesLabel = "Yes", onYesAr
     PARENT.appendChild(dialog);
 }
 function createDialogOffline(errorServer, errorRsync, onRetry) {
-    errorMessage = errorServer ? errorServer : errorRsync;
+    const errorMessage = errorServer ? errorServer : errorRsync;
     createDialogQuestion("Cumulus is disconnected!", `Cumulus has lost the connection with the ${errorServer ? "server" : "RSync agent"} with the following error:<br/>${errorMessage}<br/><br/>Please contact your administrator.`, onRetry, "Retry", undefined, async () => await window.electronAPI.exitApp(), "Quit", undefined, ICON_OFFLINE);
 }
 
@@ -115,7 +115,7 @@ function createDialogWarning(title, message, action = undefined, label = "Close"
 
 function isDialogOpen(icon) {
     for(let dialog of PARENT.childNodes) {
-        if(dialog.getElementsByTagName("img").src.endsWith(icon)) return true;
+        if(dialog.getElementsByTagName("img")[0].src.endsWith(icon)) return true;
     }
     return false;
 }
