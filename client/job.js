@@ -105,10 +105,16 @@ function refreshJob(job) {
     document.getElementById("txtJobStatus").value = job.status;
     document.getElementById("txtJobStatus").disabled = true;
     document.getElementById("txtJobStatus").parentNode.style.display = "block";
-    document.getElementById("cmbAppName").value = job.app_name;
-    document.getElementById("cmbAppName").disabled = true;
-    document.getElementById("cmbStrategy").value = job.strategy;
-    document.getElementById("cmbStrategy").disabled = true;
+    document.getElementById("cmbAppName").value = job.app_name; // may not work if the app is not in the list
+    document.getElementById("cmbAppName").classList.add("w3-hide");
+    document.getElementById("txtAppName").value = job.app_name;
+    document.getElementById("txtAppName").classList.remove("w3-hide");
+    // document.getElementById("cmbAppName").disabled = true;
+    document.getElementById("cmbStrategy").value = job.strategy; // may not work if the strategy is not in the list
+    // document.getElementById("cmbStrategy").disabled = true;
+    document.getElementById("cmbStrategy").classList.add("w3-hide");
+    document.getElementById("txtJobStrategy").value = job.strategy;
+    document.getElementById("txtJobStrategy").classList.remove("w3-hide");
     document.getElementById("txtSelectedHost").value = job.host;
     document.getElementById("txtSelectedHost").parentNode.style.display = "block";
     document.getElementById("txtJobDescription").value = job.description;
@@ -177,8 +183,12 @@ function cleanJob() {
   document.getElementById("txtJobStatus").parentNode.style.display = "none";
   document.getElementById("cmbAppName").selectedIndex = 0;
   document.getElementById("cmbAppName").disabled = false;
+  document.getElementById("cmbAppName").classList.remove("w3-hide");
+  document.getElementById("txtAppName").classList.add("w3-hide");
   document.getElementById("cmbStrategy").selectedIndex = 0;
   document.getElementById("cmbStrategy").disabled = false;
+  document.getElementById("cmbStrategy").classList.remove("w3-hide");
+  document.getElementById("txtJobStrategy").classList.add("w3-hide");
   document.getElementById("txtSelectedHost").parentNode.style.display = "none";
   document.getElementById("txtJobDescription").value = "";
   document.getElementById("txtJobDescription").disabled = false;
@@ -229,7 +239,11 @@ function cloneJob() {
   document.getElementById("txtJobStatus").value = "";
   document.getElementById("txtJobStatus").parentNode.style.display = "none";
   document.getElementById("cmbAppName").disabled = false;
+  document.getElementById("cmbAppName").classList.remove("w3-hide");
+  document.getElementById("txtAppName").classList.add("w3-hide");
   document.getElementById("cmbStrategy").disabled = false;
+  document.getElementById("cmbStrategy").classList.remove("w3-hide");
+  document.getElementById("txtJobStrategy").classList.add("w3-hide");
   document.getElementById("txtSelectedHost").parentNode.style.display = "none";
   document.getElementById("txtJobDescription").disabled = false;
   document.getElementById("divDates").style.display = "none";
