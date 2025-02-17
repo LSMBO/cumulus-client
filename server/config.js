@@ -51,7 +51,7 @@ function saveConfig(_, config) {
     // if(key != "license" && key != "cumulus.version") store = false;
     if(key == "license" || key == "cumulus.version") store = false;
     // do not store the server config
-    if(key == "output.folder" || key == "data.max.age.in.days" || key == "controller.version" || key == "client.min.version") store = false;
+    if(key == "output.folder" || key == "temp.folder" || key == "data.max.age.in.days" || key == "controller.version" || key == "client.min.version") store = false;
     if(store) content += `${key} = ${value}\n`;
   }
   try {

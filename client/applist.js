@@ -32,11 +32,29 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
+import { getSettings, setSettings } from "./job.js";
+import { CONFIG } from "./settings.js";
 import { addBrowsedFiles, browse, fixFilePath, getBrowsedFiles, tooltip } from "./utils.js";
 
 const XML_APP_LIST = new Map();
 const SHARED_FILES_IDS = new Array();
 const LOCAL_FILES_IDS = new Array();
+
+function isAppHidden(xml) {
+    const parser = new DOMParser();
+    const tool = parser.parseFromString(xml, "text/xml").getElementsByTagName("tool")[0];
+    return tool.hasAttribute("hidden") && tool.getAttribute("hidden");
+}
+
+function getAppCategory(xml) {
+    const parser = new DOMParser();
+    const tool = parser.parseFromString(xml, "text/xml").getElementsByTagName("tool")[0];
+    return tool.hasAttribute("category") ? tool.getAttribute("category") : "";
+}
+
+function isAppWorkInProgress(xml) {
+    return getAppCategory(xml) == "__work_in_progress__";
+}
 
 function getAppMainInformations(app_id) {
     const xml = XML_APP_LIST.get(app_id);
@@ -44,14 +62,30 @@ function getAppMainInformations(app_id) {
     const parser = new DOMParser();
     const tool = parser.parseFromString(xml, "text/xml").getElementsByTagName("tool")[0];
     const desc = tool.hasAttribute("description") ? tool.getAttribute("description") : "";
-    return [tool.getAttribute("name"), tool.getAttribute("version"), desc];
+    const category = tool.hasAttribute("category") ? tool.getAttribute("category") : "";
+    const hidden = isAppHidden(xml);
+    return [tool.getAttribute("name"), tool.getAttribute("version"), desc, category, hidden];
 }
 
 function getFullName(app_id) {
     if(XML_APP_LIST.has(app_id)) {
-        const [name, version, _] = getAppMainInformations(app_id);
-        return `${name} ${version}`;
+        const [name, version, _, category, hidden] = getAppMainInformations(app_id);
+        // console.log(`${name}: ${category}, ${hidden}`);
+        if(hidden) return `${name} ${version} [Hidden]`;
+        else if(category == "__work_in_progress__") return `${name} ${version} [Work in Progress]`;
+        else return `${name} ${version}`;
     } else return app_id;
+}
+
+function isAppVisible(xml) {
+    // some apps are hidden but can be displayed if the user allowed it in the config file
+    if(CONFIG.has("display.hidden.apps") && CONFIG.get("display.hidden.apps")) return true;
+    // apps can be considered as hidden, its meant for older apps that should not be called anymore
+    if(isAppHidden(xml)) return false;
+    // some categories can also prevent apps to be displayed
+    if(isAppWorkInProgress(xml)) return false;
+    // default is to display the app
+    return true;
 }
 
 async function updateAppList() {
@@ -61,11 +95,14 @@ async function updateAppList() {
         XML_APP_LIST.set(id, xml);
     }
 }
+
 function getOptionList(selectedItem = "") {
     var html = "";
     for(let id of XML_APP_LIST.keys()) {
-        var sel = selectedItem == id ? "selected='true'" : "";
-        html += `<option value="${id}" ${sel}>${getFullName(id)}</option>`;
+        if(isAppVisible(XML_APP_LIST.get(id))) {
+            var sel = selectedItem == id ? "selected='true'" : "";
+            html += `<option value="${id}" ${sel}>${getFullName(id)}</option>`;
+        }
     }
     return html;
 }
@@ -90,21 +127,16 @@ function getFiles(ids) {
     const files = new Array();
     for(let id of ids) {
         const param = document.getElementById(id);
-        if(param == null) console.log(`File item '${id}' is missing!!`);
+        if(param == null) {
+            console.log(`File item '${id}' is missing!!`); // it happened once, how is it possible?
+            return null;
+        }
         if(param.tagName.toUpperCase() == "INPUT") { // a single file
             const path = fixFilePath(param.value);
             if(path != "" && !files.includes(path)) files.push(path);
-            // if(path != "" && !files.includes(path)) {
-            //     console.log(`-> Add INPUT file '${path}'`);
-            //     files.push(path);
-            // }
         } else { // a list of files
             for(let path of getBrowsedFiles(document.getElementById(id))) {
                 if(!files.includes(path)) files.push(path); // these paths are already fixed and cannot be modified by user
-                // if(!files.includes(path)) {
-                //     console.log(`-> Add FILELIST item '${path}'`);
-                //     files.push(path);
-                // }
             }
         }
     }
@@ -136,6 +168,7 @@ function createDiv(id, classname) {
     if(classname != "") div.className = classname;
     return div;
 }
+
 function createLabel(param, target="") {
     const label = document.createElement("label");
     label.textContent = param.getAttribute("label");
@@ -479,12 +512,63 @@ function createSection(id, section) {
     return parent;
 }
 
+async function saveParameters(event) {
+    event.preventDefault();
+    // ask user where to save the file
+    const output = await window.electronAPI.saveDialog("Save the parameters", "parameters.txt", []);
+    if(output != "") {
+        // call job.getSettings() to get the parameters
+        const json = getSettings();
+        // add the app id to the json object
+        json.set("app_id", document.getElementById("cmbAppName").value);
+        // convert the json object to a string, using pretty print
+        const settings = JSON.stringify(Object.fromEntries(json), null, 2);
+        // ask the server to save the file
+        await window.electronAPI.saveFile(output, settings);
+    }
+}
+
+async function loadParameters(event) {
+    event.preventDefault();
+    // ask user to select a file
+    const app_id = document.getElementById("cmbAppName").value;
+    const output = await window.electronAPI.browseServer("", "Load the parameters", `Cumulus-${app_id}.txt`, [{name: `.txt files`, extensions: ["txt"]}], ['openFile']);
+    if(output != "") {
+        // read the file
+        const content = await window.electronAPI.loadFile(output[0]);
+        const json = JSON.parse(content);
+        // check that the file content is for the current app
+        if(json.app_id == app_id) {
+            // remove the app_id from the map
+            delete(json.app_id);
+            // set the parameters
+            setSettings(new Map(Object.entries(json)));
+        }
+    }
+}
+
+// function that creates a header line with a h3 title, a button to save the parameters, and a button to load the parameters
+function createHeader(id, title) {
+    const header = createDiv("", "app_header");
+    const h3 = document.createElement("h3");
+    h3.textContent = title;
+    header.appendChild(h3);
+    header.appendChild(createButton(`${id}-save`, "Save", saveParameters, "Save the parameters as a text file"));
+    header.appendChild(createButton(`${id}-load`, "Load", loadParameters, "Load the parameters"));
+    return header;
+}
+
 function createAppPage(parent) {
+    // reset the file lists
+    SHARED_FILES_IDS.length = 0;
+    LOCAL_FILES_IDS.length = 0;
+    // create the main div
     const id = parent.getAttribute("id");
     const div = createDiv(`${id}-main`, "app_settings")
-    const title = document.createElement("h3");
-    title.textContent = `${parent.getAttribute("name")} ${parent.getAttribute("version")} parameters`;
-    div.appendChild(title)
+    // const title = document.createElement("h3");
+    // title.textContent = `${parent.getAttribute("name")} ${parent.getAttribute("version")} parameters`;
+    // div.appendChild(title);
+    div.appendChild(createHeader(id, `${parent.getAttribute("name")} ${parent.getAttribute("version")} parameters`));
     // for(let section of parent.getElementsByTagName("section")) {
     for(let section of parent.children) {
         div.appendChild(createSection(id, section));

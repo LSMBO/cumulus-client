@@ -34,6 +34,7 @@ knowledge of the CeCILL license and that you accept its terms.
 
 import * as apps from "./applist.js";
 import * as dialog from "./dialog.js";
+import * as settings from "./settings.js";
 
 var CURRENT_JOB_ID = 0;
 var USERNAME = "";
@@ -42,39 +43,11 @@ var IS_OFFLINE = false;
 var IS_FOCUS = true;
 var LAST_ACTIVITY = new Date();
 var NB_SKIPS_BEFORE_REFRESH = 0;
-const TIME_BEFORE_SLEEP_IN_SECONDS = 300;
+const TIME_BEFORE_SLEEP_IN_SECONDS = 300; // 5 minutes
 const TOOLTIPTEXT = document.getElementById("tooltiptext");
 const UNC_PATHS = new Map();
 const LOADER = document.getElementById("loading");
 const UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
-
-// class XmlApp {
-//     constructor(id, file_path, name, version, description) {
-//         this.id = id;
-//         this.file_path = file_path;
-//         this.name = name;
-//         this.version = version;
-//         this.description = description;
-//     }
-//     toString() {
-//         return `${this.name} ${this.version}`;
-//     }
-// }
-// class App {
-//     constructor(id, name, version, initialize, getSharedFiles, getLocalFiles, checkSettings, setSettings) {
-//         this.id = id;
-//         this.name = name;
-//         this.version = version;
-//         this.initialize = initialize;
-//         this.getSharedFiles = getSharedFiles;
-//         this.getLocalFiles = getLocalFiles;
-//         this.checkSettings = checkSettings;
-//         this.setSettings = setSettings;
-//     }
-//     toString() {
-//         return `${this.name} ${this.version}`;
-//     }
-// }
 
 function toggleClass(element, className) {
     // console.log(element);
@@ -257,16 +230,19 @@ function isFocus() {
 }
 
 function updateSkipsBetweenRefreshs(reset = false) {
+    // the default time between calls to the server is 5 seconds
+    // but when the app is out of focus, we skip 2 calls, so there would be 15 seconds between 2 calls
+    // when the app is in sleep mode, we skip 11 calls to wait 60 seconds between 2 calls
     if(reset) {
         NB_SKIPS_BEFORE_REFRESH = 0;
     } else if(NB_SKIPS_BEFORE_REFRESH <= 0) {
         // update every minute if asleep
-        if(!isActive() ||IS_OFFLINE) NB_SKIPS_BEFORE_REFRESH = 11;
+        if(!isActive() || IS_OFFLINE) NB_SKIPS_BEFORE_REFRESH = parseInt(600 / settings.CONFIG.get("refresh.rate")) - 1; // 11;
         // update every 15 seconds if just blur
         else if(!isFocus()) NB_SKIPS_BEFORE_REFRESH = 2;
         // update every 5 seconds otherwise
         else NB_SKIPS_BEFORE_REFRESH = 0;
-    } else NB_SKIPS_BEFORE_REFRESH -= 1;
+    } else NB_SKIPS_BEFORE_REFRESH -= 1; // decreasing the number of calls to skip, when we reach 0 we make the call again
     // console.log(`Number of skips before refreshing jobs: ${NB_SKIPS_BEFORE_REFRESH}`);
 }
 
@@ -274,7 +250,7 @@ function checkSleepMode() {
     const timeSinceLastActivity = Math.floor((new Date() - getLastActivity()) / 1000);
     // console.log(`Seconds since last activity: ${timeSinceLastActivity} (isActive=${isActive()})`);
     // sleep mode is on if the time since last activity exceeds the threshold
-    if(isActive() && timeSinceLastActivity > TIME_BEFORE_SLEEP_IN_SECONDS) {
+    if(timeSinceLastActivity > TIME_BEFORE_SLEEP_IN_SECONDS) {
         // console.log("App appears to be inactive");
         // set the app as inactive
         setActive(false);

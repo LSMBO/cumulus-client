@@ -97,22 +97,24 @@ function getCurrentSearchSettings() {
   return [owner, app, file, desc, statuses, date, from, to, number];
 }
 
-utils.addCheckboxList(mainSearchStatus, "Status", {"pending": "Pending", "running": "Running", "done": "Done", "failed": "Failed", "cancelled": "Cancelled", "archived": "Archived"}, false, "Restrict the search to specific statuses (if no status is selected then the filter will be disabled).");
+function initialize() {
+  utils.addCheckboxList(mainSearchStatus, "Status", {"pending": "Pending", "running": "Running", "done": "Done", "failed": "Failed", "cancelled": "Cancelled", "archived": "Archived"}, false, "Restrict the search to specific statuses (if no status is selected then the filter will be disabled).");
 
-document.getElementById("btnSearchMe").addEventListener("click", (e) => { e.preventDefault(); document.getElementById("txtSearchOwner").value = utils.getUserName(); });
-document.getElementById("btnSearchOk").addEventListener("click", async (e) => {
-    e.preventDefault();
-    jobs.setSearchMode(true);
-    jobs.reloadJobList(false);
-});
-document.getElementById("btnSearchReset").addEventListener("click", (e) => {
-    e.preventDefault();
-    setDefaultValues();
-    jobs.setSearchMode(false);
-    jobs.reloadJobList();
-});
+  document.getElementById("btnSearchMe").addEventListener("click", (e) => { e.preventDefault(); document.getElementById("txtSearchOwner").value = utils.getUserName(); });
+  document.getElementById("btnSearchOk").addEventListener("click", async (e) => {
+      e.preventDefault();
+      jobs.setSearchMode(true);
+      jobs.reloadJobList(false);
+  });
+  document.getElementById("btnSearchReset").addEventListener("click", (e) => {
+      e.preventDefault();
+      setDefaultValues();
+      jobs.setSearchMode(false);
+      jobs.reloadJobList();
+  });
 
-// initialize on first opening
-txtSearchAppName.innerHTML = "<option value='all' selected></option>" + apps.getOptionList();
+  // initialize on first opening
+  txtSearchAppName.innerHTML = "<option value='all' selected></option>" + apps.getOptionList();
+}
 
-export { getCurrentSearchSettings, getPreviousSearchSettings, openSearch, setDefaultValues, storeSearchSettings };
+export { getCurrentSearchSettings, getPreviousSearchSettings, initialize, openSearch, setDefaultValues, storeSearchSettings };

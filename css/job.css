@@ -1,3 +1,12 @@
+#formParameters .app_header h3 {
+    display: inline;
+}
+
+#formParameters .app_header button {
+    float: right;
+    margin-left: 10px;
+}
+
 #formParameters .section-parent {
     margin-top: 25px;
     margin-bottom: 25px;

@@ -76,6 +76,22 @@ function getDebugMode() {
   return DEBUG_MODE;
 }
 
+function saveFile(_, filePath, content) {
+  try {
+    fs.writeFileSync(filePath, content);
+  } catch(err) {
+    log.error(err);
+  }
+}
+
+function loadFile(_, filePath) {
+  try {
+    return fs.readFileSync(filePath, 'utf-8');
+  } catch(err) {
+    log.error(err);
+  }
+}
+
 async function browse(_, type, title, currentPath, filter, properties) {
   var defaultPath = "";
   if(currentPath != "") defaultPath = path.dirname(currentPath);
@@ -84,6 +100,11 @@ async function browse(_, type, title, currentPath, filter, properties) {
   // console.log(`Browse here: "${defaultPath}"`);
   const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, { title: title, defaultPath: defaultPath, filters: filter, properties: properties });
   return canceled ? "" : filePaths;
+}
+
+async function saveDialog(_, title, currentPath, filter) {
+  const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, { title: title, defaultPath: currentPath, filters: filter });
+  return canceled ? "" : filePath;
 }
 
 function countExistingFiles(_, currentPath, files) {
@@ -145,6 +166,9 @@ app.whenReady().then(() => {
   ipcMain.handle('list-storage', srv.listStorage);
   ipcMain.handle('get-disk-usage', srv.getDiskUsage);
   ipcMain.handle('browse', browse);
+  ipcMain.handle('save-dialog', saveDialog);
+  ipcMain.handle('save-file', saveFile);
+  ipcMain.handle('load-file', loadFile);
   ipcMain.handle('count-existing-files', countExistingFiles);
   ipcMain.handle('download', srv.downloadFile);
   ipcMain.handle('start-job', srv.createJob);

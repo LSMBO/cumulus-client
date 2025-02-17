@@ -31,6 +31,7 @@
     
     <xs:complexType name="ParamCheckbox">
         <xs:attribute name="value" type="xs:boolean" use="required" />
+        <xs:attribute name="command_if_unchecked" type="xs:string" use="optional" />
         <xs:attributeGroup ref="ParamAttributes" />
     </xs:complexType>
     <xs:element name="checkbox" type="ParamCheckbox" substitutionGroup="param" />
@@ -139,6 +140,7 @@
         <xs:attribute name="end_tag" type="xs:string" use="required" /> <!-- will be used to check in stdout if the command is finished -->
         <xs:attribute name="command" type="xs:string" use="required" /> <!-- will be used to start the command line, it's possible to set default arguments already there -->
         <xs:attribute name="description" type="xs:string" use="optional" />
+        <xs:attribute name="category" type="xs:string" use="optional" /> <!-- not used for now, may help if there are many apps in the future; first category should be for apps currently in development -->
         <xs:attribute name="hidden" type="xs:boolean" use="optional" /> <!-- used to tell if an app is still displayed or not -->
     </xs:complexType>
     <xs:element name="tool" type="toolType" />

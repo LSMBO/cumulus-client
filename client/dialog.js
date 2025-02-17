@@ -32,6 +32,8 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
+import * as utils from "./utils.js";
+
 const PARENT = document.getElementById("dialogs");
 var ID = 0;
 const ICON_INFO = "img/info.png";
@@ -62,7 +64,10 @@ function createDialog(title, message, icon) {
 function createDialogInfo(title, message) {
     PARENT.appendChild(createDialog(title, message, ICON_INFO));
 }
+
 function createDialogSleep() {
+    // do not create the dialog if a sleep dialog is already open
+    if(isDialogOpen(ICON_SLEEP)) return;
     PARENT.appendChild(createDialog("Sleep mode", "Cumulus is in sleep mode and will be refreshed less often, but do not worry your jobs are still running!", ICON_SLEEP));
 }
 
@@ -70,6 +75,7 @@ function closeDialog(id) {
     PARENT.removeChild(document.getElementById(id));
     // remove the visibility of the cover
     if(PARENT.childElementCount == 0) PARENT.classList.add("w3-hide");
+    utils.setActive(true);
 }
 
 function closeLastDialogIf(icons) {

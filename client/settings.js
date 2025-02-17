@@ -80,13 +80,12 @@ async function saveSettings() {
     CONFIG.set("raw.file.path", document.getElementById("txtSettingsDefaultRawFilesPath").value);
     CONFIG.set("fasta.path", document.getElementById("txtSettingsDefaultFastaFilesPath").value);
     const selectedOptions = Object.entries(utils.getCheckboxListSelection(jobLabels)).map(kv => kv[0]);
-    // for(let option of ["display.job.id", "display.job.owner", "display.app.name", "display.job.start.date"]) {
     for(let option of ["display.job.id", "display.job.owner", "display.app.name", "display.host.name", "display.job.creation.date", "display.job.end.date"]) {
         CONFIG.set(option, selectedOptions.includes(option));
     }
     await window.electronAPI.setConfig(CONFIG);
-    jobs.setJobListDisplay();
     jobs.resetInterval();
+    jobs.setJobListDisplay();
 }
 
 async function resetSettings() {

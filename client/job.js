@@ -84,7 +84,7 @@ async function displayFileTransfers(job) {
   }
   const ul = document.getElementById("tabLogs").getElementsByTagName("ul")[0];
   ul.innerHTML = html;
-  ul.previousElementSibling.textContent = error ? error : "Your job will begin once all the files listed below will be completely transferred.";
+  ul.previousElementSibling.textContent = error ? error : "Your job will begin once all the files listed below are completely transferred.";
   ul.previousElementSibling.previousElementSibling.textContent = `File transfer ${nb}/${files.length}`;
 }
 
@@ -96,9 +96,9 @@ function describeJobDates(job) {
 }
 
 function refreshJob(job) {
-  // console.log(job);
   // sometimes the job or its settings can be null, it can happen when the refreshing of the job list is not done yet
   if(job != null && job.settings != null) {
+    // console.log(`refreshJob(${job.id})`);
     // summary
     document.getElementById("txtJobOwner").value = job.owner;
     document.getElementById("txtJobOwner").disabled = true;
@@ -382,4 +382,4 @@ function setSettings(settings) {
   }
 }
 
-export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, refreshJob, startJob, setAppParameters };
+export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, getSettings, refreshJob, startJob, setAppParameters, setSettings };

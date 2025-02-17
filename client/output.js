@@ -167,6 +167,7 @@ function getOutputFileItem(level, name, size) {
     if(size != -1) {
       const span = document.createElement("span");
       span.textContent = `(${utils.toHumanReadable(size)})`;
+      span.title = `Exact size: ${size}`;
       item.appendChild(span);
     }
     return item;
@@ -177,36 +178,74 @@ function removeOutputFiles() {
   TREE_VIEW.innerHTML = "";
 }
 
+// function that will sort a list of file paths to get the paths with the most "/" first, then sort them alphabetically
+function sortOutputFiles(files) {
+  return files.sort((a, b) => {
+    const aItems = a[0].split("/").length;
+    const bItems = b[0].split("/").length;
+    if(aItems == bItems) return a[0].localeCompare(b[0]);
+    else return bItems - aItems;
+  });
+}
+
+// function that compares two lists of [file path, size] and tell if they are different
+function areSameOutputFiles(files1, files2) {
+  if(files1.length != files2.length) return false;
+  for(let i = 0; i < files1.length; i++) {
+    if(files1[i][0] != files2[i][0] || files1[i][1].toString() != files2[i][1].toString()) return false;
+  }
+  return true;
+}
+
+// function that generates a list of file paths and their size from the treeview
+function getOutputFiles() {
+  const files = [];
+  for(let child of TREE_VIEW.children) {
+    if(child.getElementsByTagName("i")[0].textContent == "") {
+      const path = getTreePath(child);
+      const size = child.getElementsByTagName("span")[0].title.replaceAll(/.*: /gi, "");
+      files.push([path, size]);
+    }
+  }
+  return files;
+}
+
 function insertOutputFiles(files) {
-  if(TREE_VIEW.innerHTML == "") {
-    const directories = new Map();
-    var totalSize = 0;
-    const children = new Array();
-    for(let [file, size] of files) {
-      const items = file.split("/");
-      for(let i = 0; i < items.length - 1; i++) {
-        // get the path of each directory, to only create it once
-        var path = ".";
-        for(let j = 0; j <= i; j++) { path += "/" + items[j]; }
-        if(!directories.has(path)) {
-          children.push(getOutputFileItem(i, items[i], -1));
-          directories.set(path, "");
-        }
+  // sort the files to have the most nested folders first
+  const sortedFiles = sortOutputFiles(files)
+  // check that the current list of files is not the same as the new one
+  const currentFiles = getOutputFiles();
+  if(areSameOutputFiles(sortOutputFiles(currentFiles), sortedFiles)) return;
+  // create the treeview
+  const directories = new Map();
+  var totalSize = 0;
+  const children = new Array();
+  for(let [file, size] of sortedFiles) {
+    const items = file.split("/");
+    for(let i = 0; i < items.length - 1; i++) {
+      // get the path of each directory, to only create it once
+      var path = ".";
+      for(let j = 0; j <= i; j++) { path += "/" + items[j]; }
+      if(!directories.has(path)) {
+        children.push(getOutputFileItem(i, items[i], -1));
+        directories.set(path, "");
       }
-      // now add the file
-      children.push(getOutputFileItem(items.length - 1, items.pop(), size));
-      totalSize += size
     }
-    // add all the items to the treeview
-    TREE_VIEW.innerHTML = "";
-    for(let child of children) { TREE_VIEW.appendChild(child); }
-    document.getElementById("outputSummary").textContent = `${directories.size} directories, ${files.length} files, ${utils.toHumanReadable(totalSize)} in total`;
-    document.getElementById("tabOutput").getElementsByTagName("button")[0].disabled = false;
-    // an "output" folder is created on server-side, it should be checked by default (but may not work for all apps?)
-    for(let child of TREE_VIEW.childNodes) {
-      // if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == "output") child.getElementsByTagName("input")[0].click();
-      if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("output.folder")) child.getElementsByTagName("input")[0].click();
-    }
+    // now add the file
+    children.push(getOutputFileItem(items.length - 1, items.pop(), size));
+    totalSize += size
+  }
+  // add all the items to the treeview
+  TREE_VIEW.innerHTML = "";
+  for(let child of children) { TREE_VIEW.appendChild(child); }
+  document.getElementById("outputSummary").textContent = `${directories.size} directories, ${files.length} files, ${utils.toHumanReadable(totalSize)} in total`;
+  document.getElementById("tabOutput").getElementsByTagName("button")[0].disabled = false;
+  // trigger some specific events
+  for(let child of TREE_VIEW.childNodes) {
+    // an "output" folder is created on server-side, it should be checked by default
+    if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("output.folder")) child.getElementsByTagName("input")[0].click();
+    // a "temp" folder is created on server-side, it should be closed by default
+    if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("temp.folder")) child.getElementsByTagName("i")[0].click();
   }
 }
 

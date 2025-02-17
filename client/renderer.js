@@ -198,7 +198,7 @@ function addTooltips() {
   // TODO probably should move these in each module?
   // Note: the tooltips for the job parameters must be added directly in the apps/*.js files
   // menu buttons
-  utils.tooltip(document.getElementById("btnSearch"), "Advanced job search");
+  utils.tooltip(document.getElementById("btnSearch"), "Job search");
   utils.tooltip(document.getElementById("btnStorage"), "Remote storage viewer");
   utils.tooltip(document.getElementById("btnSettings"), "Cumulus configuration");
   // job summary
@@ -243,6 +243,7 @@ async function initialize() {
     await apps.updateAppList();
     loadAppList();
     // set default settings to the search tab
+    search.initialize();
     search.setDefaultValues();
     // add the tooltip texts
     addTooltips();

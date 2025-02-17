@@ -14,6 +14,18 @@
     "package": "electron-forge package",
     "make": "electron-forge make"
   },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "./img/icon.png"
+      },
+      "maker": [
+        {
+          "name": "@electron-forge/maker-zip"
+        }
+      ]
+    }
+  },
   "devDependencies": {
     "@electron-forge/cli": "^7.6.1",
     "@electron-forge/maker-zip": "^7.6.1",
@@ -28,28 +40,14 @@
     "url": "git+https://github.com/LSMBO/cumulus-client.git"
   },
   "license": "CeCILL",
-  "config": {
-    "forge": {
-      "makers": [
-        {
-          "name": "@electron-forge/maker-zip"
-        }
-      ],
-      "publishers": [],
-      "packagerConfig": {
-        "icon": "./img/cumulus"
-      }
-    }
-  },
   "bugs": {
     "url": "https://github.com/LSMBO/cumulus-client/issues"
   },
   "homepage": "https://github.com/LSMBO/cumulus-client#readme",
   "dependencies": {
     "electron-log": "^5.2.4",
-    "electron-squirrel-startup": "^1.0.1",
     "form-data": "^4.0.0",
-    "xsd-schema-validator": "^0.10.0",
-    "semver": "^7.6.3"
+    "semver": "^7.6.3",
+    "xsd-schema-validator": "^0.10.0"
   }
 }
