@@ -222,7 +222,7 @@ function addTooltips() {
   utils.tooltip(document.getElementById("txtSearchOwner").previousElementSibling, "Display the jobs for which the owner contains the given tag (case insensitive).");
   utils.tooltip(document.getElementById("txtSearchAppName").previousElementSibling, "Restrict the search to a specific software.");
   utils.tooltip(document.getElementById("txtSearchFile").previousElementSibling, "Display the jobs for which at least one input file contains the given tag (case insensitive).");
-  utils.tooltip(document.getElementById("txtSearchTag").previousElementSibling, "Search a tag in the description of a job (case insensitive).");
+  utils.tooltip(document.getElementById("txtSearchTag").previousElementSibling, "Search jobs containing a given tag in their description (case insensitive).");
 }
 
 async function initialize() {
