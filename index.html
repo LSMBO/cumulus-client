@@ -37,7 +37,7 @@
         <button id="btnStorage" class="w3-bar-item w3-right w3-button color-secondary color-primary-border"><img src="img/storage.png" /><img class="w3-hide" src="img/storage-alt.png" /></button>
         <button id="btnSearch" class="w3-bar-item w3-right w3-button color-secondary color-primary-border"><img src="img/search.png" /><img class="w3-hide" src="img/search-alt.png" /></button>
       </header>
-      <div id="splash" class="color-primary"><img src="img/cumulus.png" /></div>
+      <div id="splash" class="color-primary"><img src="img/loading.png" /></div>
       <div id="tabs" class="w3-row">
         <div id="tabSummary" class="tab">
           <div class="w3-row w3-section">
@@ -51,10 +51,12 @@
           <div class="w3-row w3-section">
             <label for="cmbAppName" class="w3-col">Software</label>
             <select id="cmbAppName" class="w3-select w3-border w3-rest"></select>
+            <input id="txtAppName" type="text" disabled class="w3-input w3-border w3-rest w3-hide" />
           </div>
           <div class="w3-row w3-section">
             <label for="cmbStrategy" class="w3-col">Strategy</label>
             <select id="cmbStrategy" class="w3-select w3-border w3-rest"></select>
+            <input id="txtJobStrategy" type="text" disabled class="w3-input w3-border w3-rest w3-hide" />
           </div>
           <div class="w3-row w3-section">
             <label for="txtSelectedHost" class="w3-col">Selected host</label>
@@ -208,12 +210,12 @@
               <select id="txtSearchAppName" name="app" class="w3-select w3-border w3-rest"></select>
             </div>
             <div class="w3-row w3-section">
-              <label for="txtSearchFile" class="w3-col">Input file or parameter</label>
+              <label for="txtSearchFile" class="w3-col">Input file</label>
               <input id="txtSearchFile" name="file" type="text" class="w3-input w3-border w3-rest" value="" placeholder="Search for file name used on this job" />
             </div>
             <div class="w3-row w3-section">
-              <label for="txtSearchTag" class="w3-col">Description or settings</label>
-              <input id="txtSearchTag" name="description" type="text" class="w3-input w3-border w3-rest" value="" placeholder="Search for a given tag in the description" />
+              <label for="txtSearchTag" class="w3-col">Description</label>
+              <input id="txtSearchTag" name="description" type="text" class="w3-input w3-border w3-rest" value="" placeholder="Search jobs containing a given tag in their description" />
             </div>
             <div class="w3-row w3-section">
               <label for="txtSearchDate1" class="w3-col">Search by date</label>
