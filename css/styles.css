@@ -17,6 +17,13 @@ h4 {
     font-size: 18px;
 }
 
+button {
+    font-family: roboto;
+    font-variant: all-small-caps;
+    font-weight: 500 !important;
+    letter-spacing: 1px !important;
+}
+
 #jobs {
     width:250px;
     border-width: 0 1px 0 0;
@@ -31,7 +38,6 @@ h4 {
 #jobs a {
     border-width: 0 0 1px 0;
     border-style: solid;
-    /* border-color: inherit; */
     border-color: var(--primary-color-dark) !important;
     display: flex;
     text-align: left;
@@ -45,7 +51,6 @@ h4 {
     position: relative;
     width: 25px;
     border-right: 1px solid var(--primary-color-dark);
-    /* border-left: 1px solid var(--primary-color-dark); */
 }
 
 #jobs span img {
@@ -56,14 +61,20 @@ h4 {
     transform: translateY(-50%);
 }
 
+#jobs a:first-of-type label {
+    font-size: 14px !important;
+    letter-spacing: 1px;
+    font-variant: all-small-caps;
+    font-weight: 500;
+}
+
 #jobs label {
-    /* display: inline-flex; */
-    font-size: small;
     padding-left: 5px;
     cursor: pointer;
     min-height: 30px;
-    align-items: center;
     width: calc(100% - 25px);
+    font-family: roboto;
+    font-size: 1.1em !important;
 }
 #jobs label.archived {
     color: var(--primary-color-dark);
@@ -109,11 +120,13 @@ h4 {
 }
 
 #detail header button {
-    border-width: 0 1px 0 0;
-    border-style: solid;
-    border-color: inherit;
     width: 135px;
     line-height: 2em;
+    font-size: 14px;
+}
+
+#detail header button:hover {
+    border-width: 0 !important;
 }
 
 #divDates label {
@@ -239,33 +252,7 @@ h4 {
     padding-left: 5px;
 }
 
-/* APPS */
-/* #diann181_main .w3-dropdown-content, #diann191_main .w3-dropdown-content {
-    float: right !important;
-    right: 8px;
-}
-
-#diann181_main .w3-dropdown-content div, #diann191_main .w3-dropdown-content div {
-    padding: 10px 15px;
-    border-bottom-width: 1px;
-    border-bottom-style: solid;
-    border-bottom-color: inherit;
-    width: 260px;
-}
-
-#diann181_main .w3-dropdown-content div:last-of-type, #diann191_main .w3-dropdown-content div:last-of-type {
-    border-bottom-width: 0;
-}
-
-#diann181_main .w3-dropdown-content label, #diann191_main .w3-dropdown-content label {
-    display: inline-block;
-    width: 200px;
-}
-
-#diann181_main td.w3-half:last-of-type tr td:last-of-type, #diann191_main td.w3-half:last-of-type tr td:last-of-type {
-    width: 195px;
-} */
-#diann181_main td.w3-half tr, #diann191_main td.w3-half tr {
+/* #diann181_main td.w3-half tr, #diann191_main td.w3-half tr {
     display: flex;
 }
 
@@ -296,7 +283,7 @@ h4 {
 #diann181_main td.w3-half td input[type="checkbox"], #diann191_main td.w3-half td input[type="checkbox"] {
     float: left;
     margin-right: 8px;
-}
+} */
 
 #tooltiptext {
     display: none;
@@ -350,13 +337,12 @@ h4 {
 #tabStorage #btnStorageRefresh {
     float: right;
     width: 175px;
-
     position: absolute;
     top: 5px;
     right: 0;
     margin: 16px;
     height: 60px;
-    font-weight: bold;
+    letter-spacing: 4px;
 }
 
 #tabStorage #txtStorageSearch {
