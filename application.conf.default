@@ -3,11 +3,11 @@ raw.file.path = /path/to/raw/data/folder
 
 cumulus.controller = 127.0.0.1
 cumulus.port = 8800
-cumulus.controller.min.version = 0.5.0
+cumulus.controller.min.version = 0.6.0
 
 rsync.agent = localhost
 rsync.port = 80
-rsync.min.version = 0.5.0
+rsync.min.version = 0.6.0
 
 max.nb.jobs = 100
 refresh.rate = 5
