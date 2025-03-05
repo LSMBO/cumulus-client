@@ -64,7 +64,9 @@ async function displayFileTransfers(job) {
   // get the transfer progression from the rsync client
   // console.log(job);
   const [data, error] = await window.electronAPI.getTransferProgress(job.owner, job.id);
-  const map = new Map(Object.entries(data));
+  // TODO handle the error, it's likely a connexion error to the rsync agent, display a popup?
+  // const map = new Map(Object.entries(data));
+  const map = error ? new Map() : new Map(Object.entries(data));
   // console.log(map);
   // get the list of files
   const files = apps.getLocalFiles().concat(apps.getSharedFiles());
@@ -90,8 +92,22 @@ async function displayFileTransfers(job) {
 
 function describeJobDates(job) {
   var html = `<div class='w3-third'><img src='img/hg-create-alt.png'/><label>Created at ${utils.formatDate(job.creation_date)}</label></div>`;
-  if(job.start_date) html += `<div class="w3-third"><img src='img/hg-begin-alt.png'/><label>Started at ${utils.formatDate(job.start_date)}</label></div>`;
-  if(job.end_date) html += `<div class="w3-third"><img src='img/hg-end-alt.png'/><label>Ended at ${utils.formatDate(job.end_date)}</label></div>`;
+  // if(job.start_date) html += `<div class="w3-third"><img src='img/hg-begin-alt.png'/><label>Started at ${utils.formatDate(job.start_date)}</label></div>`;
+  html += job.start_date ? `<div class="w3-third"><img src='img/hg-begin-alt.png'/><label>Started at ${utils.formatDate(job.start_date)}</label></div>` : "<div class='w3-third'>&nbsp;</div>";
+  // if(job.end_date) html += `<div class="w3-third"><img src='img/hg-end-alt.png'/><label>Ended at ${utils.formatDate(job.end_date)}</label></div>`;
+  html += job.end_date ? `<div class="w3-third"><img src='img/hg-end-alt.png'/><label>Ended at ${utils.formatDate(job.end_date)}</label></div>` : "<div class='w3-third'>&nbsp;</div>";
+  // if job is not alive (ie. running or pending), indicate the days remaining before archiving
+  if(job.status != "RUNNING" && job.status != "PENDING") {
+    // const max = settings.CONFIG.get("data.max.age.in.days");
+    // const tod = new Date()
+    // const cre = job.creation_date * 1000;
+    // const dif = tod - new Date(cre);
+    // console.log(max, cre, dif);
+    // 1000 * 60 * 60 * 24 = 86400000
+    const days = settings.CONFIG.get("data.max.age.in.days") - Math.floor((new Date() - new Date(job.creation_date * 1000)) / 86400000);
+    html += `<br/><span>This job will be archived in ${days} day${days > 1 ? "s" : ""}. You will still have access to the parameters and to the logs, but the output files will be deleted.</span>`;
+  }
+
   return html;
 }
 
@@ -99,6 +115,7 @@ function refreshJob(job) {
   // sometimes the job or its settings can be null, it can happen when the refreshing of the job list is not done yet
   if(job != null && job.settings != null) {
     // console.log(`refreshJob(${job.id})`);
+    // console.log(job);
     // summary
     document.getElementById("txtJobOwner").value = job.owner;
     document.getElementById("txtJobOwner").disabled = true;
@@ -267,19 +284,30 @@ function cloneJob() {
 
 async function startJob() {
   // console.log(`startJob()`);
+  // gather all parameters
   const appName = document.getElementById("cmbAppName").value;
   const strategy = document.getElementById("cmbStrategy").value;
   const description = document.getElementById("txtJobDescription").value;
   const settings = JSON.stringify(Object.fromEntries(getSettings()));
-  // console.log(settings);
+  // also get the files, make sure that UNC paths are replaced by the network path
   const sharedFiles = JSON.stringify(apps.getSharedFiles());
   const localFiles = JSON.stringify(apps.getLocalFiles());
+  // display the loading screen
+  utils.toggleLoadingScreen();
+  // send the job to the server
   const job_id = await window.electronAPI.startJob(utils.getUserName(), appName, strategy, description, settings, sharedFiles, localFiles);
-  // reload the job list
-  utils.setCurrentJobId(job_id);
-  jobs.reloadJobList();
-  document.getElementById("btnLogs").disabled = false;
-  tabs.openTab("tabLogs");
+  // if the job_id is not numeric, it's an error message
+  if(isNaN(job_id) || job_id === "") {
+    utils.toggleLoadingScreen();
+    dialog.createDialogWarning("Job creation failure", `The creation of the job failed with the following error:<br/>${job_id}`);
+  } else {
+    utils.toggleLoadingScreen();
+    // reload the job list
+    utils.setCurrentJobId(job_id);
+    jobs.reloadJobList();
+    document.getElementById("btnLogs").disabled = false;
+    tabs.openTab("tabLogs");
+  }
 }
 
 function cancelJob() {

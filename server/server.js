@@ -68,7 +68,6 @@ async function checkServerVersion() {
         return "";
     } else {
         // get controller config
-        // const [data, error1] = await rest.sendGetRequest(rest.getUrl("config"));
         var url = rest.getUrl("config");
         log.debug(`Check Cumulus server at ${url}`);
         const [data, error1] = await rest.sendGetRequest(url);
@@ -78,7 +77,6 @@ async function checkServerVersion() {
             config.set(key, value);
         }
         // get rsync agent config
-        // const [version, error2] = await rest.sendGetRequest(rest.getUrl("/", [], true));
         url = rest.getUrl("/", [], true);
         log.debug(`Check Cumulus RSync client at ${url}`);
         const [version, error2] = await rest.sendGetRequest(url);
@@ -145,7 +143,6 @@ async function checkRsyncAgent() {
     } else {
         // do not check if it was already checked before (during transfer progress monitoring)
         if(isRsyncAgentCheckRequired()) {
-            // const [response, error] = await rest.sendGetRequest(rest.getUrl("/", [], true));
             const [_, error] = await rest.sendGetRequest(rest.getUrl("/", [], true));
             LAST_PING_RSYNC = Date.now();
             if(error) return error;
@@ -226,6 +223,9 @@ async function createJob(_, owner, app, strategy, description, settings, rawfile
         // {"fasta-file":"//ANALYST-PC/sequence/08Jan2024_Only14Defensin_DCp_BAR_20240402/current/08Jan2024_Only14Defensin_DCp_BAR_20240402.fasta","contaminants":true,"mc":"1","met-excision":true,"peptide-length-max":"30","peptide-length-min":"7","precursor-charge-max":"4","precursor-charge-min":"2","precursor-mz-max":"1800","precursor-mz-min":"300","fragment-mz-max":"1800","fragment-mz-min":"200","speclib-path":"","matrices":true,"prosit":true,"fdr":"1.0","loglevel":"1","max-var-mod":"2","ptm-carba":true,"ptm-ox":true,"ptm-ac":true,"ms1-acc":"10.0","ms2-acc":"10.0","scan-window":"10","mbr":true,"no-shared-spectra":true,"raw-type":"dia-pasef","format":"fasta","protease":"K*,R*","protein-inference":"protein","machine-learning":"single","quantification-strategy":"quantums-precision","cross-run-norm":"rt","library-generation":"rt-profiling","speed-ram":"low-ram","dia-pasef-list":["//SERV-NAS-II/RawDataTemporaire/BUREL Alexandre/DIA/TP4808CMO_Slot2-1_1_4820.d","//SERV-NAS-II/RawDataTemporaire/BUREL Alexandre/DIA/TP4823CMO_Slot2-17_1_4835.d","//SERV-NAS-II/RawDataTemporaire/BUREL Alexandre/DIA/TU013690CK_Slot2-2_1_2031.d","//SERV-NAS-II/RawDataTemporaire/BUREL Alexandre/DIA/TU013766CK_Slot1-02_1_2095.d"],"slice-pasef-list":[],"thermo-raw-list":[],"mzml-list":[]}
         return 10000;
     } else {
+        // test that the rsync client is available, do not create a job if it is not
+        const rsync_error = await checkRsyncAgent();
+        if(rsync_error != "") return rsync_error;
         // prepare the parameters
         const form = new FormData({ maxDataSize: 20971520 });
         form.append("username", owner);
@@ -236,6 +236,7 @@ async function createJob(_, owner, app, strategy, description, settings, rawfile
         // send the request
         const url = rest.getUrl("start");
         const [data, error] = await rest.sendPostRequest(url, form);
+        if(error) return error;
         // console.log("start: "+data);
         const [job_id, job_dir] = JSON.parse(data)
         // console.log(data);
@@ -263,7 +264,7 @@ async function getLastJobs(_, job_id, number) {
         // console.log(`getLastJobs(_, ${job_id}, ${number})`);
         const url = rest.getUrl("joblist", [job_id, number]);
         const [data, error] = await rest.sendGetRequest(url);
-        // if(!error) console.log("getLastJobs: "+data);
+        // if(!error) console.log(data);
         return [error ? data : JSON.parse(data), error];
     }
 }
@@ -288,7 +289,6 @@ async function searchJobs(_, current_job_id, owner, app, file, desc, statuses, d
         }
         form.append("number", number);
         // send the request
-        // const data = await rest.sendPostRequest(rest.getUrl("search"), form);
         const [data, error] = await rest.sendPostRequest(rest.getUrl("search"), form);
         // if(!error) console.log("searchJobs: "+data);
         return [error ? data : JSON.parse(data), error];
@@ -301,10 +301,9 @@ async function transferProgress(_, owner, job_id) {
         return [data, ""];
     } else {
         const [data, error] = await rest.sendGetRequest(rest.getUrl("progress-rsync", [owner, job_id], true));
-        // const [data, error] = await rest.sendGetRequest(rest.getUrl("test", [], true));
         // console.log("transferProgress: "+JSON.parse(data));
-        LAST_PING_RSYNC = Date.now(); // store the current timestamp to dismiss a checkRsyncAgent useless call
-        return [JSON.parse(data), error];
+        if(!error) LAST_PING_RSYNC = Date.now(); // store the current timestamp to dismiss a checkRsyncAgent useless call
+        return [error ? data : JSON.parse(data), error];
     }
 }
 

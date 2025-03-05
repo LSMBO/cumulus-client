@@ -32,6 +32,7 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
+// import { on } from "form-data";
 import * as utils from "./utils.js";
 
 const PARENT = document.getElementById("dialogs");
@@ -100,9 +101,15 @@ function createDialogQuestion(title, message, onYes, onYesLabel = "Yes", onYesAr
     else buttons[1].addEventListener("click", () => { closeDialog(dialog.id); onYesArgs !== undefined ? onYes(onYesArgs) : onYes(); }, { once: true });
     PARENT.appendChild(dialog);
 }
-function createDialogOffline(errorServer, errorRsync, onRetry) {
-    const errorMessage = errorServer ? errorServer : errorRsync;
-    createDialogQuestion("Cumulus is disconnected!", `Cumulus has lost the connection with the ${errorServer ? "server" : "RSync agent"} with the following error:<br/>${errorMessage}<br/><br/>Please contact your administrator.`, onRetry, "Retry", undefined, async () => await window.electronAPI.exitApp(), "Quit", undefined, ICON_OFFLINE);
+// function createDialogOffline(errorServer, errorRsync, onRetry) {
+function createDialogOffline(title, message, onRetry = undefined) {
+    // const errorMessage = errorServer ? errorServer : errorRsync;
+    // createDialogQuestion("Cumulus is disconnected!", `Cumulus has lost the connection with the ${errorServer ? "server" : "RSync agent"} with the following error:<br/>${errorMessage}<br/><br/>Please contact your administrator.`, onRetry, "Retry", undefined, async () => await window.electronAPI.exitApp(), "Quit", undefined, ICON_OFFLINE);
+    if(onRetry != undefined) {
+        createDialogQuestion(title, message, onRetry, "Retry", undefined, async () => await window.electronAPI.exitApp(), "Quit", undefined, ICON_OFFLINE);
+    } else {
+        createDialogWarning(title, message);
+    }
 }
 
 function createDialogWarning(title, message, action = undefined, label = "Close", args = undefined) {

@@ -192,13 +192,15 @@ async function reloadJobList(reloadPreviousSettings = true) {
   // refresh the list of jobs
   // console.log("reloadJobList()");
   const [jobs, error] = IS_SEARCH ? await searchJobs(reloadPreviousSettings) : await getLastJobs();
-  const errorMessage = error ? error : await window.electronAPI.checkRsyncAgent();
-  if(errorMessage) {
+  // const errorMessage = error ? error : await window.electronAPI.checkRsyncAgent();
+  // if(errorMessage) {
+  if(error) {
     // do not reopen the dialog if it's already open
     if(!dialog.isDialogOfflineOpen()) {
       utils.setOffline(true);
       const title = "Cumulus is disconnected!";
-      const message = `Cumulus has lost the connection with the ${error ? "server" : "RSync agent"} with the following error:<br/>${errorMessage}<br/><br/>Please contact your administrator.`;
+      // const message = `Cumulus has lost the connection with the ${error ? "server" : "RSync agent"} with the following error:<br/>${errorMessage}<br/><br/>Please contact your administrator.`;
+      const message = `Cumulus has lost the connection with the server with the following error:<br/>${error}<br/><br/>Please contact your administrator.`;
       dialog.createDialogOffline(title, message, retryReloadJobList);
     }
   } else addJobsToJobList(jobs);
