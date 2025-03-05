@@ -111,12 +111,16 @@ button {
     border-width: 0px 0 0 0;
     border-style: solid;
     height: 100%;
+    overflow: auto;
 }
 
 #detail header {
     border-width: 0 0 0px 0;
     border-style: solid;
     height: 42px;
+    position: sticky;
+    top: 0px;
+    z-index: 1000;
 }
 
 #detail header button {
@@ -136,6 +140,12 @@ button {
 #divDates img {
     width: 20px;
     margin-right: 5px;
+}
+#divDates span {
+    display: block;
+    font-weight: bold;
+    margin-top: 25px;
+    color: var(--accent-color);
 }
 
 #tabs {
