@@ -45,7 +45,7 @@ var LAST_ACTIVITY = new Date();
 var NB_SKIPS_BEFORE_REFRESH = 0;
 const TIME_BEFORE_SLEEP_IN_SECONDS = 300; // 5 minutes
 const TOOLTIPTEXT = document.getElementById("tooltiptext");
-const UNC_PATHS = new Map();
+// const UNC_PATHS = new Map();
 const LOADER = document.getElementById("loading");
 const UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
 
@@ -71,18 +71,18 @@ function formatDate(timestamp) {
     return formattedDate;
 }
 
-async function convertToUncPath(file) {
-    if(UNC_PATHS.size == 0) {
-        const paths = await window.electronAPI.getUncPaths();
-        for(let [letter, path] of paths) {
-            UNC_PATHS.set(letter, path);
-        }
-        // add a blank entry, just in case there is no mapping on the computer (then, no need to run this again)
-        UNC_PATHS.set("", "");
-    }
-    const letter = file.replace(/^([a-zA-Z]:).*/, "$1");
-    return UNC_PATHS.has(letter) ? file.replace(letter, UNC_PATHS.get(letter)) : file;
-}
+// async function convertToUncPath(file) {
+//     if(UNC_PATHS.size == 0) {
+//         const paths = await window.electronAPI.getUncPaths();
+//         for(let [letter, path] of paths) {
+//             UNC_PATHS.set(letter, path);
+//         }
+//         // add a blank entry, just in case there is no mapping on the computer (then, no need to run this again)
+//         UNC_PATHS.set("", "");
+//     }
+//     const letter = file.replace(/^([a-zA-Z]:).*/, "$1");
+//     return UNC_PATHS.has(letter) ? file.replace(letter, UNC_PATHS.get(letter)) : file;
+// }
 
 function tooltip(element, text) {
     element.addEventListener("mouseover", () => {
@@ -166,15 +166,15 @@ async function browse(type, title, filter, properties, targetName) {
     apps.updateFileList(target.parentElement.parentElement);
 }
 
-function listBrowsedFiles(targetName) {
-    // this function returns the list of files that where added by the browse() function above
-    const files = [];
-    const target = document.getElementById(targetName);
-    for(let li of target.childNodes()) {
-        files.push(convertToUncPath(li.textContent));
-    }
-    return files;
-}
+// function listBrowsedFiles(targetName) {
+//     // this function returns the list of files that where added by the browse() function above
+//     const files = [];
+//     const target = document.getElementById(targetName);
+//     for(let li of target.childNodes()) {
+//         files.push(convertToUncPath(li.textContent));
+//     }
+//     return files;
+// }
 
 function toggleLoadingScreen() {
     if(LOADER.style.display != "block") {
@@ -351,4 +351,5 @@ function addCheckboxList(parent, label, items, allowZeroSelection, tooltiptext) 
     tooltip(parent.getElementsByTagName("label")[0], tooltiptext);
 }
 
-export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
+// export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
+export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
