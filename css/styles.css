@@ -120,7 +120,7 @@ button {
     height: 42px;
     position: sticky;
     top: 0px;
-    z-index: 1000;
+    z-index: 10;
 }
 
 #detail header button {
@@ -213,11 +213,18 @@ button {
     right: 0;
 }
 
-#tabLogs li span.done {
+#tabLogs li span.done, #tabLogs li span.fail {
     color: white;
     border-radius: 50%;
-    background-color: var(--accent-color);
     padding: 1px 7px;
+}
+
+#tabLogs li span.done {
+    background-color: var(--accent-color);
+}
+
+#tabLogs li span.fail {
+    background-color: var(--opposite-color);
 }
 
 #tabLogs textarea {
