@@ -1,5 +1,5 @@
 #dialogs {
-    z-index: 10;
+    z-index: 100;
     padding-top: 100px;
     position: fixed;
     top: 0;
