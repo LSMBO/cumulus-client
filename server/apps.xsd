@@ -5,8 +5,10 @@
         <xs:attribute name="name" type="xs:string" use="required" />
         <xs:attribute name="label" type="xs:string" use="required" />
         <xs:attribute name="help" type="xs:string" use="optional" />
-        <xs:attribute name="hidden" type="xs:boolean" use="optional" />
+        <xs:attribute name="hidden" type="xs:boolean" use="optional" /> <!-- deprecated, use 'visibility' instead -->
         <xs:attribute name="command" type="xs:string" use="optional" />
+        <xs:attribute name="config_path" type="xs:string" use="optional" /> <!-- if 'convert_config_to', this value will be the path to the current parameter (use '.' to indicate multiple levels) -->
+        <xs:attribute name="visibility" type="xs:string" use="optional" /> <!-- if 'advanced', the parameter will be hidden in the gui, and a button will turn them visible, if 'hidden' it will be there but not be displayed -->
     </xs:attributeGroup>
 
     <xs:element name="param" abstract="true" />
@@ -28,6 +30,53 @@
         <xs:attributeGroup ref="ParamAttributes" />
     </xs:complexType>
     <xs:element name="select" type="ParamSelect" substitutionGroup="param" />
+
+		<!-- similar to a 'select', but used to display a list of checkboxes -->
+    <xs:complexType name="ParamChecklist">
+        <xs:sequence minOccurs="0">
+            <xs:element maxOccurs="unbounded" name="option">
+                <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+                            <xs:attribute name="value" type="xs:string" use="required" />
+														<xs:attribute name="selected" type="xs:boolean" use="optional" />
+                            <xs:attribute name="command" type="xs:string" use="optional" />
+                        </xs:extension>
+                    </xs:simpleContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="ParamAttributes" />
+    </xs:complexType>
+    <xs:element name="checklist" type="ParamChecklist" substitutionGroup="param" />
+
+		<!-- similar to a 'select', but used to display a list of rows with each two textboxes (one for the key, one for the value)
+			new lines can be added by the user
+			each option can have only one value, but if is_list is true the options with same keys will be merged into arrays (user do not know that)
+		-->
+    <xs:complexType name="ParamKeyvalues">
+        <xs:sequence minOccurs="0">
+            <xs:element maxOccurs="unbounded" name="option">
+                <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+							<xs:attribute name="key" type="xs:string" use="required" />
+                            <xs:attribute name="value" type="xs:string" use="required" />
+                            <xs:attribute name="command" type="xs:string" use="optional" />
+                        </xs:extension>
+                    </xs:simpleContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="label_key" type="xs:string" use="required" />
+        <xs:attribute name="label_value" type="xs:string" use="required" />
+        <xs:attribute name="placeholder_key" type="xs:string" use="optional" />
+        <xs:attribute name="placeholder_value" type="xs:string" use="optional" />
+        <xs:attribute name="type_of" type="xs:string" use="optional" /> <!-- default is string, can be one of [integer,float,string] -->
+        <xs:attribute name="is_list" type="xs:boolean" use="optional" />
+        <xs:attributeGroup ref="ParamAttributes" />
+    </xs:complexType>
+    <xs:element name="keyvalues" type="ParamKeyvalues" substitutionGroup="param" />
     
     <xs:complexType name="ParamCheckbox">
         <xs:attribute name="value" type="xs:boolean" use="required" />
@@ -68,10 +117,10 @@
     <xs:complexType name="ParamFileList">
         <xs:attribute name="multiple" type="xs:boolean" use="required" />
         <xs:attribute name="is_folder" type="xs:boolean" use="required" />
-        <xs:attribute name="is_raw_input" type="xs:boolean" use="required" />
+        <xs:attribute name="is_raw_input" type="xs:boolean" use="required" /> <!-- TODO rename to is_shared -->
         <xs:attribute name="convert_to_mzml" type="xs:boolean" use="optional" />
         <xs:attribute name="value" type="xs:string" use="optional" />
-        <xs:attribute name="format" type="xs:string" use="optional" />
+        <xs:attribute name="format" type="xs:string" use="optional" /> <!-- multiple formats can be given, separated by ";", only put the extensions, for instance 'fasta;txt' -->
         <xs:attribute name="placeholder" type="xs:string" use="optional" />
         <xs:attribute name="repeated_command" type="xs:string" use="optional" />
         <xs:attributeGroup ref="ParamAttributes" />
@@ -112,16 +161,19 @@
     <!-- Define the 'section' element -->
     <xs:complexType name="sectionType">
         <xs:annotation>
-            <xs:documentation xml:lang="en">A section contains a list of params, the title will be displayed on top</xs:documentation>
+            <xs:documentation xml:lang="en">A section contains a list of params or conditionals, the title will be displayed on top</xs:documentation>
         </xs:annotation>
-        <xs:choice>
-            <xs:element ref="param" minOccurs="0" maxOccurs="unbounded" />
-            <xs:element name="conditional" type="conditionalType" minOccurs="0" maxOccurs="unbounded" />
-        </xs:choice>
+        <xs:sequence>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element ref="param" />
+                <xs:element name="conditional" type="conditionalType" />
+            </xs:choice>
+        </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required" />
         <xs:attribute name="title" type="xs:string" use="required" />
         <xs:attribute name="expanded" type="xs:boolean" use="optional" />
-        <xs:attribute name="hidden" type="xs:boolean" use="optional" />
+        <xs:attribute name="hidden" type="xs:boolean" use="optional" /> <!-- deprecated, use 'visibility' instead -->
+        <xs:attribute name="visibility" type="xs:string" use="optional" /> <!-- if 'advanced', the parameter will be hidden in the gui, and a button will turn them visible, if 'hidden' it will be there but not be displayed -->
         <xs:attribute name="help" type="xs:string" use="optional" />
     </xs:complexType>
     <xs:element name="section" type="sectionType" />
@@ -139,6 +191,7 @@
         <xs:attribute name="version" type="xs:string" use="required" />
         <xs:attribute name="end_tag" type="xs:string" use="required" /> <!-- will be used to check in stdout if the command is finished -->
         <xs:attribute name="command" type="xs:string" use="required" /> <!-- will be used to start the command line, it's possible to set default arguments already there -->
+        <xs:attribute name="convert_config_to" type="xs:string" use="optional" /> <!-- creates a file with the given format (yaml/json) in the job folder. Must be added in the 'command' with the variable %config-file% -->
         <xs:attribute name="description" type="xs:string" use="optional" />
         <xs:attribute name="category" type="xs:string" use="optional" /> <!-- not used for now, may help if there are many apps in the future; first category should be for apps currently in development -->
         <xs:attribute name="hidden" type="xs:boolean" use="optional" /> <!-- used to tell if an app is still displayed or not -->

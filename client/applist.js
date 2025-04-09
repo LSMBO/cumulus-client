@@ -34,7 +34,7 @@ knowledge of the CeCILL license and that you accept its terms.
 
 import { getSettings, setSettings } from "./job.js";
 import { CONFIG } from "./settings.js";
-import { addBrowsedFiles, browse, fixFilePath, getBrowsedFiles, tooltip } from "./utils.js";
+import { addBrowsedFiles, browse, fixFilePath, getBrowsedFiles, getCurrentJobId, tooltip } from "./utils.js";
 
 const XML_APP_LIST = new Map();
 const SHARED_FILES_IDS = new Array();
@@ -118,6 +118,8 @@ function initialize(app_id, parent_id, button_id) {
         const div = createAppPage(main);
         document.getElementById(parent_id).appendChild(div);
         document.getElementById(button_id).disabled = false;
+        // hide the advanced button if there is no advanced parameters
+        if(document.getElementsByClassName("advanced-off").length == 0) document.getElementById(`${main.getAttribute("id")}-advanced`).disabled = true;
     } else {
         document.getElementById(button_id).disabled = true;
     }
@@ -162,6 +164,16 @@ function getSharedFiles() {
 //     // veriffications may just be included in the xml file...
 // }
 
+function createElement(tagName, options) {
+    const element = document.createElement(tagName);
+    // options is a map of attributes to set on the element
+    for(let [key, value] of options) {
+        if(key == "textContent") element.textContent = value;
+        else element.setAttribute(key, value);
+    }
+    return element;
+}
+
 function createDiv(id, classname) {
     const div = document.createElement("div");
     if(id != "") div.id = id;
@@ -177,6 +189,17 @@ function createLabel(param, target="") {
     return label;
 }
 
+function createInputText(id, param, input_class, value, placeholder="", name="") {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.id = id;
+    input.name = name == "" ? param.getAttribute("name") : name;
+    input.placeholder = placeholder;
+    input.value = value;
+    input.className = `w3-input w3-border ${input_class}`;
+    return input;
+}
+
 function createInputNumber(id, param, input_class, value, placeholder="", name="") {
     const input = document.createElement("input");
     input.type = "number";
@@ -185,6 +208,7 @@ function createInputNumber(id, param, input_class, value, placeholder="", name="
     if(param.hasAttribute("min")) input.min = param.getAttribute("min");
     if(param.hasAttribute("max")) input.max = param.getAttribute("max");
     if(param.hasAttribute("step")) input.step = parseFloat(param.getAttribute("step"));
+    if(param.hasAttribute("type_of") && param.getAttribute("type_of") == "float") input.step = "0.01";
     input.placeholder = placeholder;
     input.value = value;
     input.className = `w3-input w3-border ${input_class}`;
@@ -211,26 +235,155 @@ function createButton(id, label, event, tooltiptext = "") {
 //     }
 // }
 
+function setSettingVisibility(item, param) {
+    if(param.hasAttribute("visibility")) {
+        if(param.getAttribute("visibility") == "hidden") item.classList.add("w3-hide");
+        if(param.getAttribute("visibility") == "advanced") item.classList.add("advanced-off");
+    }
+}
+
 function createSelect(id, param, input_class) {
     const parent = createDiv("", "param-row param-select w3-hover-light-grey");
     const input_id = `${id}-${param.getAttribute("name")}`;
     parent.appendChild(createLabel(param, input_id));
-    const input = document.createElement("select");
-    input.id = input_id;
-    input.name = param.getAttribute("name");
-    input.className = `w3-select w3-border ${input_class}`;
+    const input = createElement("select", new Map([["id", input_id], ["name", param.getAttribute("name")], ["class", `w3-select w3-border ${input_class}`]]));
     for(let option of param.children) {
         if(option.hasAttribute("value")) {
-            const opt = document.createElement("option");
-            opt.value = option.getAttribute("value");
+            const opt = createElement("option", new Map([["value", option.getAttribute("value")], ["textContent", option.textContent]]));
             if(option.hasAttribute("selected") && option.getAttribute("selected")) opt.selected = true;
-            opt.textContent = option.textContent;
             input.appendChild(opt);
         }
     }
     parent.appendChild(input);
-    // addHoverEvent(parent.children[0], parent.children[1]);
-    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    setSettingVisibility(parent, param);
+    return parent;
+}
+
+// function to update the label of the checklist when the user selects an option
+function updateChecklistLabel(input) {
+    const label = input.getElementsByTagName("label")[0];
+    const dropdown = input.getElementsByTagName("div")[0];
+    const checkboxes = dropdown.getElementsByTagName("input");
+    var nbSelected = 0;
+    for(let checkbox of checkboxes) {
+        if(checkbox.checked) nbSelected++;
+    }
+    if(nbSelected == 0) label.textContent = "Select options";
+    else label.textContent = `${nbSelected} selected`;
+}
+
+function createChecklist(id, param, input_class) {
+    // similar to a <select>, but used to display a list of checkboxes
+    const parent = createDiv("", "param-row param-checklist w3-hover-light-grey");
+    const input_id = `${id}-${param.getAttribute("name")}`;
+    parent.appendChild(createLabel(param, input_id));
+    const input = createElement("div", new Map([["id", input_id], ["name", param.getAttribute("name")], ["class", `w3-select w3-border ${input_class}`]]));
+    const span = document.createElement("span");
+    const label = document.createElement("label");
+    const i = createElement("i", new Map([["class", "checklist-down"]]));
+    span.appendChild(i);
+    span.appendChild(label);
+    input.appendChild(span);
+    const dropdown = document.createElement("div");
+    dropdown.classList.add("w3-hide");
+    for(let option of param.children) {
+        const opt = createElement("input", new Map([["type", "checkbox"], ["id", `${input_id}_${option.getAttribute("value")}`], ["name", param.getAttribute("name")], ["class", `w3-check ${input_class}`]]));
+        if(option.hasAttribute("selected") && option.getAttribute("selected")) opt.checked = true;
+        opt.addEventListener("change", () => updateChecklistLabel(input));
+        // create a label for this checkbox
+        const label = createElement("label", new Map([["for", opt.id], ["textContent", option.textContent]]));
+        label.appendChild(opt);
+        // insert the label with the checkbox in the input div
+        dropdown.appendChild(label);
+    }
+    input.appendChild(dropdown);
+    parent.appendChild(input);
+    updateChecklistLabel(input);
+    // add an event to display the dropdown when the label is clicked
+    input.addEventListener("click", (event) => {
+        if(!dropdown.contains(event.target)) {
+            if(dropdown.classList.contains("w3-hide")) {
+                dropdown.classList.remove("w3-hide");
+                i.classList.replace("checklist-down", "checklist-up");
+            } else {
+                dropdown.classList.add("w3-hide");
+                i.classList.replace("checklist-up", "checklist-down");
+            }
+        }
+    });
+    // also add an event to hide the dropdown when clicking outside of it
+    document.addEventListener("click", (event) => {
+        if(!input.contains(event.target)) {
+            dropdown.classList.add("w3-hide");
+            i.classList.replace("checklist-up", "checklist-down");
+        }
+    });
+    // set param visibility
+    setSettingVisibility(parent, param);
+    return parent;
+}
+
+function createKeyValueRow(param, option = null, is_header = false) {
+    const row = document.createElement("tr");
+    if(is_header) {
+        row.appendChild(createElement("th", new Map([["textContent", param.getAttribute("label_key")]])));
+        row.appendChild(createElement("th", new Map([["textContent", param.getAttribute("label_value")]])));
+        const th = document.createElement("th");
+        const button = createElement("button", new Map([["textContent", "🗙"]]));
+        button.addEventListener("click", (e) => {
+            e.preventDefault();
+            const table = e.target.parentElement.parentElement.parentElement;
+            table.appendChild(createKeyValueRow(param));
+        });
+        tooltip(button, "Add a new element");
+        th.appendChild(button);
+        row.appendChild(th);
+    } else {
+        const placeholder_key = param.hasAttribute("placeholder_key") ? param.getAttribute("placeholder_key") : "Key";
+        const placeholder_value = param.hasAttribute("placeholder_value") ? param.getAttribute("placeholder_value") : "Value";
+        const cell1 = document.createElement("td");
+        cell1.appendChild(createElement("input", new Map([["type", "text"], ["class", "w3-input w3-border"], ["textContent", option ? option.getAttribute("key") : ""], ["placeholder", placeholder_key]])));
+        row.appendChild(cell1);
+        const cell2 = document.createElement("td");
+        if(param.hasAttribute("type_of") && param.getAttribute("type_of") == "integer") {
+            cell2.appendChild(createElement("input", new Map([["type", "number"], ["class", "w3-input w3-border"], ["textContent", option ? option.getAttribute("value") : ""], ["placeholder", placeholder_value]])));
+        } else if(param.hasAttribute("type_of") && param.getAttribute("type_of") == "float") {
+            cell2.appendChild(createElement("input", new Map([["type", "number"], ["step", 0.01], ["class", "w3-input w3-border"], ["textContent", option ? option.getAttribute("value") : ""], ["placeholder", placeholder_value]])));
+        } else {
+            cell2.appendChild(createElement("input", new Map([["type", "text"], ["class", "w3-input w3-border"], ["textContent", option ? option.getAttribute("value") : ""], ["placeholder", placeholder_value]])));
+        }
+        row.appendChild(cell2);
+        const td = document.createElement("td");
+        const button = createElement("button", new Map([["textContent", "🗙"]]));
+        button.addEventListener("click", (e) => {
+            e.preventDefault();
+            const row = e.target.parentElement.parentElement;
+            const table = row.parentElement;
+            row.remove();
+            if(table.rows.length == 1) table.appendChild(createKeyValueRow(param));
+        });
+        tooltip(button, "Remove this element");
+        td.appendChild(button);
+        row.appendChild(td);
+    }
+    return row;
+}
+
+function createKeyValueList(id, param, input_class) {
+    // list of key-value pairs, one per line with two text fields and a button to remove the current line
+    // there is also a header line with the label and a button to add a new line
+    const parent = createDiv("", "param-row param-keyvalue w3-hover-light-grey");
+    const input_id = `${id}-${param.getAttribute("name")}`;
+    parent.appendChild(createLabel(param, input_id));
+    // create an element with a first line containing the headers and the '+' button
+    const table = createElement("table", new Map([["id", input_id], ["name", param.getAttribute("name")], ["class", "w3-ul"]]));
+    table.appendChild(createKeyValueRow(param, null, true));
+    for(let option of param.children) {
+        table.appendChild(createKeyValueRow(param, option));
+    }
+    // make sure to display at least one row
+    if(table.rows.length == 1) table.appendChild(createKeyValueRow(param));
+    parent.appendChild(table);
     return parent;
 }
 
@@ -269,19 +422,26 @@ function addFileDragAndDropEvents(item, useFolder, multiple, allowedExtensions =
 
 function updateFileList(target) {
     const label = target.children[0].getElementsByTagName("label")[0];
-    const nb = target.children[1].getElementsByTagName("li").length;
+    const list = target.children[1];
+    const nb = list.getElementsByTagName("li").length;
     label.textContent = label.textContent.replace(/ \(\d+ items selected\)$/, ""); // remove previous indication
-    if(nb > 0) label.textContent += ` (${nb} items selected)`;
+    if(nb > 0) {
+        label.textContent += ` (${nb} items selected)`;
+        list.classList.remove("w3-hide");
+    } else {
+        list.classList.add("w3-hide");
+    }
 }
 
 function createFileList(id, param, input_class, useFolder) {
+    // TODO when the list is empty, hide the list (second param-row)
     const input_id = `${id}-${param.getAttribute("name")}`;
     const parent = createDiv("", "param-row param-file-list w3-hover-light-grey");
     const header = createDiv("", "param-row");
     const ext = param.getAttribute("format");
     const type = param.getAttribute("is_raw_input") == "true" ? "RAW" : "FASTA";
     header.appendChild(createLabel(param));
-    header.appendChild(createButton(input_id+"-clear", "╳", (event) => {
+    header.appendChild(createButton(input_id+"-clear", "🗙", (event) => {
         event.preventDefault();
         document.getElementById(input_id).innerHTML = "";
         updateFileList(parent);
@@ -291,18 +451,15 @@ function createFileList(id, param, input_class, useFolder) {
         browse(type, param.getAttribute("label"), [ { name: useFolder ? `.${ext} folders` : `.${ext} files`, extensions: [ext] }], [useFolder ? 'openDirectory' : 'openFile', 'multiSelections'], input_id);
     }));
     parent.appendChild(header);
-    const list = createDiv("", "param-row");
+    const list = createDiv("", "param-row, w3-hide");
 
-    const ul = document.createElement("ul");
-    ul.id = input_id;
-    ul.name = param.getAttribute("name");
-    ul.className = `w3-ul w3-border ${input_class}`;
+    const ul = createElement("ul", new Map([["id", input_id], ["class", `w3-ul w3-border ${input_class}`]]));
     addFileDragAndDropEvents(ul, useFolder, true, [ext]);
     if(type == "RAW") SHARED_FILES_IDS.push(input_id);
     else LOCAL_FILES_IDS.push(input_id);
     list.appendChild(ul);
     parent.appendChild(list);
-    // addHoverEvent(header.children[0], parent.children[1]);
+    setSettingVisibility(parent, param);
     return parent;
 }
 
@@ -310,25 +467,19 @@ function createFileInput(id, param, input_class, useFolder) {
     const input_id = `${id}-${param.getAttribute("name")}`;
     const parent = createDiv("", "param-row param-file w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
-    const input = document.createElement("input");
-    const ext = param.getAttribute("format");
-    const type = param.getAttribute("is_raw_input") == "true" ? "RAW" : "FASTA";
-    input.type = "text";
-    input.id = input_id;
-    input.name = param.getAttribute("name");
+    const input = createElement("input", new Map([["type", "text"], ["id", input_id], ["name", param.getAttribute("name")], ["class", `w3-input w3-border ${input_class}`]]));
+    const ext = param.getAttribute("format").toUpperCase().split(";"); // allow multiple extensions
+    const type = param.getAttribute("is_raw_input") == "true" ? "RAW" : "FASTA"; // TODO rename RAW and FASTA to SHARED and LOCAL
     if(param.hasAttribute("value")) input.value = param.getAttribute("value");
-    input.className = `w3-input w3-border ${input_class}`;
-    input.placeholder = `Select a ${ext.toUpperCase()} file`;
-    // allow drag & drop of file
-    addFileDragAndDropEvents(input, useFolder, false, [ext]);
+    addFileDragAndDropEvents(input, useFolder, false, ext);
     parent.appendChild(createButton(input_id+"-btn", "…", (event) => {
         event.preventDefault();
-        browse(type, param.getAttribute("label"), [ { name: useFolder ? `.${ext} folder` : `.${ext} file`, extensions: [ext] }], [useFolder ? 'openDirectory' : 'openFile'], input_id);
+        browse(type, param.getAttribute("label"), [ { name: param.getAttribute("label"), extensions: ext }], [useFolder ? 'openDirectory' : 'openFile'], input_id);
     }));
     if(type == "RAW") SHARED_FILES_IDS.push(input_id);
     else LOCAL_FILES_IDS.push(input_id);
     parent.appendChild(input); // add this later because both button and input will be float:right
-    // addHoverEvent(parent.children[0], parent.children[2]);
+    setSettingVisibility(parent, param);
     return parent;
 }
 
@@ -336,26 +487,16 @@ function createCheckbox(id, param, input_class) {
     const input_id = `${id}-${param.getAttribute("name")}`;
     const parent = createDiv("", "param-row param-checkbox w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.id = input_id;
-    input.name = param.getAttribute("name");
+    const input = createElement("input", new Map([["type", "checkbox"], ["id", input_id], ["name", param.getAttribute("name")], ["class", `w3-check ${input_class}`]]));
     input.checked = param.getAttribute("value") == "true";
-    input.className = `w3-check ${input_class}`;
-    // create an elaborated parent for custom checkbox
-    const div = document.createElement("div");
-    div.className = "cumulus-checkbox";
-    const label = document.createElement("label");
-    label.className = "switch";
-    label.setAttribute("for", input_id);
+    const div = createElement("div", new Map([["class", "cumulus-checkbox"]]));
+    const label = createElement("label", new Map([["class", "switch"], ["for", input_id]]));
     label.appendChild(input);
-    const slider = document.createElement("div");
-    slider.classList.add("slider", "round");
+    const slider = createElement("div", new Map([["class", "slider round"]]));
     label.appendChild(slider);
     div.appendChild(label);
     parent.appendChild(div);
-    // addHoverEvent(parent.children[0], input);
-    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    setSettingVisibility(parent, param);
     return parent;
 }
 
@@ -364,8 +505,7 @@ function createNumber(id, param, input_class) {
     const parent = createDiv("", "param-row param-number w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
     parent.appendChild(createInputNumber(input_id, param, input_class, param.hasAttribute("value") ? param.getAttribute("value") : "", param.hasAttribute("placeholder") ? param.getAttribute("placeholder") : ""));
-    // addHoverEvent(parent.children[0], parent.children[1]);
-    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    setSettingVisibility(parent, param);
     return parent;
 }
 
@@ -375,8 +515,7 @@ function createRange(id, param, input_class) {
     parent.appendChild(createLabel(param, input_id));
     parent.appendChild(createInputNumber(input_id+"-2", param, input_class, param.hasAttribute("value2") ? param.getAttribute("value2") : "", param.hasAttribute("placeholder2") ? param.getAttribute("placeholder2") : "", param.getAttribute("name")+"-max")); // add this one first, because both inputs will be float:right
     parent.appendChild(createInputNumber(input_id, param, input_class, param.hasAttribute("value") ? param.getAttribute("value") : "", param.hasAttribute("placeholder") ? param.getAttribute("placeholder") : "", param.getAttribute("name")+"-min"));
-    // addHoverEvent(parent.children[0], parent.children[1], parent.children[2]);
-    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    setSettingVisibility(parent, param);
     return parent;
 }
 
@@ -384,16 +523,11 @@ function createTextfield(id, param, input_class) {
     const input_id = `${id}-${param.getAttribute("name")}`;
     const parent = createDiv("", "param-row param-text w3-hover-light-grey");
     parent.appendChild(createLabel(param, input_id));
-    const input = document.createElement("input");
-    input.type = "text";
-    input.id = input_id;
-    input.name = param.getAttribute("name");
+    const input = createElement("input", new Map([["type", "text"], ["id", input_id], ["name", param.getAttribute("name")], ["class", `w3-input w3-border ${input_class}`]]));
     if(param.hasAttribute("placeholder")) input.placeholder = param.getAttribute("placeholder");
     if(param.hasAttribute("value")) input.value = param.getAttribute("value");
-    input.className = `w3-input w3-border ${input_class}`;
     parent.appendChild(input);
-    // addHoverEvent(parent.children[0], parent.children[1]);
-    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    setSettingVisibility(parent, param);
     return parent;
 }
 
@@ -403,12 +537,14 @@ function createTextLabel(id, param, input_class) {
     const label = createLabel(param);
     label.classList.add(param.getAttribute("level"));
     parent.appendChild(label);
-    if(param.hasAttribute("hidden") && param.getAttribute("hidden")) parent.classList.add("w3-hide");
+    setSettingVisibility(parent, param);
     return parent;
 }
 
 function createParam(id, param, input_class) {
     if(param.tagName == "select") return createSelect(id, param, input_class);
+    else if(param.tagName == "checklist") return createChecklist(id, param, input_class);
+    else if(param.tagName == "keyvalues") return createKeyValueList(id, param, input_class);
     else if(param.tagName == "checkbox") return createCheckbox(id, param, input_class);
     else if(param.tagName == "string") return createTextfield(id, param, input_class);
     else if(param.tagName == "number") return createNumber(id, param, input_class);
@@ -467,7 +603,6 @@ function createConditional(id, cond) {
             for(let child of when.children) {
                 if(child.tagName.toUpperCase() != "WHEN") div.appendChild(createParam(id, child, ""));
             }
-
             parent.appendChild(div);
         }
     }
@@ -508,7 +643,8 @@ function createSection(id, section) {
         else params.appendChild(createParam(id, child, ""));
     }
     parent.appendChild(params);
-    if(section.hasAttribute("hidden") && section.getAttribute("hidden")) parent.classList.add("w3-hide");
+    // if(section.hasAttribute("hidden") && section.getAttribute("hidden")) parent.classList.add("w3-hide");
+    setSettingVisibility(parent, section);
     return parent;
 }
 
@@ -547,6 +683,28 @@ async function loadParameters(event) {
     }
 }
 
+function toggleAdvancedParameters(event) {
+    event.preventDefault();
+    const parent = event.target;
+    if(parent.textContent == "Show advanced parameters") {
+        parent.textContent = "Hide advanced parameters";
+        for(let item of document.getElementsByTagName("div")) {
+            if(item.classList.contains("advanced-off")) {
+                item.classList.remove("advanced-off");
+                item.classList.add("advanced-on");
+            }
+        }
+    } else {
+        parent.textContent = "Show advanced parameters";
+        for(let item of document.getElementsByTagName("div")) {
+            if(item.classList.contains("advanced-on")) {
+                item.classList.remove("advanced-on");
+                item.classList.add("advanced-off");
+            }
+        }
+    }
+}
+
 // function that creates a header line with a h3 title, a button to save the parameters, and a button to load the parameters
 function createHeader(id, title) {
     const header = createDiv("", "app_header");
@@ -555,6 +713,7 @@ function createHeader(id, title) {
     header.appendChild(h3);
     header.appendChild(createButton(`${id}-save`, "Save", saveParameters, "Save the parameters as a text file"));
     header.appendChild(createButton(`${id}-load`, "Load", loadParameters, "Load the parameters"));
+    header.appendChild(createButton(`${id}-advanced`, "Show advanced parameters", toggleAdvancedParameters, "Display advanced parameters"));
     return header;
 }
 
@@ -565,16 +724,11 @@ function createAppPage(parent) {
     // create the main div
     const id = parent.getAttribute("id");
     const div = createDiv(`${id}-main`, "app_settings")
-    // const title = document.createElement("h3");
-    // title.textContent = `${parent.getAttribute("name")} ${parent.getAttribute("version")} parameters`;
-    // div.appendChild(title);
     div.appendChild(createHeader(id, `${parent.getAttribute("name")} ${parent.getAttribute("version")} parameters`));
-    // for(let section of parent.getElementsByTagName("section")) {
     for(let section of parent.children) {
         div.appendChild(createSection(id, section));
     }
     return div;
 }
 
-// export { get, getFullName, getOptionList, has, list };
-export { conditionalEvent, getFullName, getLocalFiles, getOptionList, getSharedFiles, initialize, updateAppList, updateFileList };
+export { conditionalEvent, createElement, getFullName, getLocalFiles, getOptionList, getSharedFiles, initialize, updateAppList, updateFileList };

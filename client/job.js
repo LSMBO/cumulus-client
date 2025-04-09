@@ -79,9 +79,11 @@ async function displayFileTransfers(job) {
     const name = file.split(file.includes("/") ? "/" : "\\").pop();
     // console.log(name);
     // add a span with the percentage: 0%, n%, or ✓ (in bold, accent bgcolor and round icon?)
-    const pct = map.has(name) ? `<span>${map.get(name)}%</span>` : "<span class='done'>✓</span>";
-    // console.log(pct);
-    html += `<li>${name}${pct}</li>`;
+    // const pct = map.has(name) ? `<span>${map.get(name)}%</span>` : "<span class='done'>✓</span>";
+    var span = error ? "<span class='fail'>✗</span>" : "<span class='done'>✓</span>"
+    if(map.has(name)) span = `<span>${map.get(name)}%</span>`;
+    // console.log(span);
+    html += `<li>${name}${span}</li>`;
     if(!map.has(name)) nb++;
   }
   const ul = document.getElementById("tabLogs").getElementsByTagName("ul")[0];
@@ -278,6 +280,12 @@ function cloneJob() {
   document.getElementById("treeview").innerHTML = "";
   document.getElementById("btnLogs").disabled = true;
   document.getElementById("btnOutput").disabled = true;
+  // enable all parameters in the form
+  for(let tagtype of ["input", "select", "button"]) {
+    for(let item of FORM.getElementsByTagName(tagtype)) {
+      item.disabled = false;
+    }
+  }
   // highlight the "New job" button to give the impression that a new job was opened
   jobs.highlightJobButton();
 }
@@ -347,10 +355,15 @@ function getSettings() {
     if(item.name) settings.set(item.name, item.value);
   }
   // settings.set("files", utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
+  const app_id = document.getElementById("cmbAppName").value;
   for(let item of FORM.getElementsByTagName("ul")) {
-    settings.set(item.name, utils.getBrowsedFiles(item));
+    // settings.set(item.name, utils.getBrowsedFiles(item));
+    if(item.childElementCount > 0) {
+      // ul elements do not have a name attribute, extract it from the id (which is formed like '<app_id>-<name>')
+      const name = item.id.replace(`${app_id}-`, "");
+      settings.set(name, utils.getBrowsedFiles(item));
+    }
   }
-  // console.log(settings);
   return settings;
 }
 
@@ -396,6 +409,7 @@ function setSettings(settings) {
   // create the html objects corresponding to the current app
   setAppParameters(settings);
   // set the values to the form
+  const app_id = document.getElementById("cmbAppName").value;
   for(let item of FORM.getElementsByTagName("input")) {
     if(item.name) {
       const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
@@ -411,16 +425,24 @@ function setSettings(settings) {
     if(name && settings.has(name)) item.value = getOldJobCompatibleValue(settings.get(name));
   }
   for(let item of FORM.getElementsByTagName("ul")) {
-    const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
+    // ul elements do not have a name attribute, extract it from the id (which is formed like '<app_id>-<name>')
+    const item_name = item.id.replace(`${app_id}-`, "");
+    const name = settings.has(item_name) ? item_name : getOldJobCompatibleName(item_name);
     if(settings.has(name)) utils.addBrowsedFiles(item, settings.get(name));
   }
   // call the events if there are any (only the WHEN cases!)
   for(let item of FORM.getElementsByClassName("cond")) {
     apps.conditionalEvent(item);
   }
-  // TODO on file lists, display the number of files that are in the list (search for class "param-file-list")
+  // on file lists, display the number of files that are in the list (search for class "param-file-list")
   for(let item of FORM.getElementsByClassName("param-file-list")) {
     apps.updateFileList(item);
+  }
+  // when the job is not new, disable all parameters
+  for(let tagtype of ["input", "select", "button"]) {
+    for(let item of FORM.getElementsByTagName(tagtype)) {
+      item.disabled = true;
+    }
   }
 }
 

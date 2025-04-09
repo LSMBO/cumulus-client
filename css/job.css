@@ -1,3 +1,7 @@
+:root {
+    --param-width: 300px;
+}
+
 #formParameters .app_header h3 {
     display: inline;
 }
@@ -59,7 +63,7 @@
 
 #formParameters .param-row {
     display: block;
-    height: 36px;
+    min-height: 36px;
     margin: 4px 0 !important;
     clear: both;
 }
@@ -69,12 +73,10 @@
 }
 
 #formParameters label:not(.switch) {
-    width: calc(100% - 300px);
+    width: calc(100% - var(--param-width));
     display: block;
     float: left;
     height: inherit;
-    /* padding: 8px 0;
-    padding-left: 5px; */
     padding: 10px 0 6px 5px;
 }
 
@@ -87,9 +89,117 @@
 
 #formParameters .param-select select {
     width: auto;
-    min-width: 300px;
-    float: right;
     padding: 9px 0 8px 0;
+}
+
+#formParameters .param-checklist > div {
+    position: relative;
+    display: block;
+    width: auto;
+    padding: 0;
+}
+
+#formParameters .param-checklist > div > span {
+    position: relative;
+}
+
+#formParameters .param-checklist > div > span > label {
+    width: unset;
+    padding-left: 8px;
+}
+
+#formParameters .param-checklist i {
+    float: right;
+    padding: 8px;
+}
+#formParameters .param-checklist i.checklist-down::before { content: "▼"; }
+#formParameters .param-checklist i.checklist-up::before { content: "▲"; }
+
+#formParameters .param-checklist > div > div {
+    position: absolute;
+    top: 34px;
+    left: -1px;
+    width: calc(100% + 2px);
+    background-color: var(--primary-color) !important;
+    border: 1px solid var(--primary-color-dark) !important;
+    z-index: 1;
+    animation: checklist-grow 100ms ease-in-out forwards;
+    transform-origin: top center;
+}
+@keyframes checklist-grow {
+    0% { transform: scaleY(0) }
+    100% { transform: scaleY(1) }
+}
+
+#formParameters .param-checklist > div > div > label {
+    display: inline-block;
+    float: unset;
+    width: 100%;
+    padding: 5px;
+}
+
+#formParameters .param-checklist > div > div > label:hover {
+    background-color: var(--primary-color-light) !important;
+}
+
+#formParameters .param-checklist > div > div > label > input {
+    margin: 0 10px 0 5px;
+    width: 15px;
+    height: 15px;
+    top: 2px;
+    float: left;
+}
+
+#formParameters .param-keyvalue > div {
+    position: relative;
+    display: block;
+    width: auto;
+    padding: 0;
+    margin-bottom: 4px;
+}
+
+#formParameters .param-keyvalue > div > div > label, #formParameters .param-keyvalue > div > div > input {
+    display: inline-block;
+    width: calc(50% - 25px);
+}
+
+#formParameters .param-keyvalue table {
+    border-collapse: collapse;
+    margin: 0;
+    padding: 0;
+}
+
+#formParameters .param-keyvalue th {
+    text-align: left;
+}
+
+#formParameters .param-keyvalue button {
+    width: 24px;
+    height: 24px;
+    border: 0px;
+    color: var(--primary-color) !important;
+    border-radius: 50%;
+    padding: 0 0 2px 1px;
+    font-size: larger;
+    margin-left: 1px;
+    cursor: pointer;
+}
+
+#formParameters .param-keyvalue th button {
+    background-color: var(--opposite-color) !important;
+    transform: rotate(45deg);
+}
+
+#formParameters .param-keyvalue th button:hover {
+    background-color: var(--opposite-color-dark) !important;
+}
+
+#formParameters .param-keyvalue td button {
+    background-color: var(--secondary-color-light) !important;
+}
+
+#formParameters .param-keyvalue td button:hover {
+    background-color: var(--secondary-color) !important;
 }
 
 #formParameters .param-label label {
@@ -106,10 +216,14 @@
     float: right;
 }
 #formParameters .param-file-list button:first-of-type {
-    width: 50px;
+    /* width: 50px; */
+    width: 36px;
+    padding: 5px 8px;
+    font-size: 16px;
 }
 #formParameters .param-file-list button:last-of-type {
-    width: 245px;
+    /* width: 245px; */
+    width: 259px;
     margin-right: 5px;
 }
 #formParameters .param-file-list .param-row:last-of-type {
@@ -131,16 +245,31 @@
     padding: initial;
     line-height: 3em;
 }
-#formParameters .param-file-list li span {
+/* #formParameters .param-file-list li span {
     cursor: pointer;
-    font-size: 16px;
-    /* position: absolute; */
     padding: 0 8px;
     position: relative;
     float: left;
     height: 100%;
 }
 #formParameters .param-file-list li span:hover {
+    background-color: var(--accent-color) !important;
+    color: var(--primary-color) !important;
+} */
+#formParameters .param-file-list li button {
+    float: unset;
+    width: auto !important;
+    height: 100%;
+    font-size: 16px;
+    border: 0px;
+    background-color: transparent !important;
+    color: var(--primary-color-dark) !important;
+    cursor: pointer;
+}
+#formParameters .param-file-list li button:disabled {
+    cursor: not-allowed;
+}
+#formParameters .param-file-list li button:hover {
     background-color: var(--accent-color) !important;
     color: var(--primary-color) !important;
 }
@@ -152,21 +281,26 @@
 
 #formParameters .param-file input {
     width: auto;
-    min-width: 250px;
+    /* min-width: 250px; */
+    min-width: 259px;
     float: right;
+    margin-right: 5px;
 }
 
 #formParameters .param-file button {
-    width: 50px;
+    /* width: 50px; */
+    width: 36px;
     float: right;
+    font-size: 16px;
+    padding: 5px 8px;
 }
 
 #formParameters .param-checkbox input {
     float: right;
 }
 
-#formParameters .param-number input {
-    width: 300px;
+#formParameters .param-number input, #formParameters .param-text input, #formParameters .param-select select, #formParameters .param-checklist > div, #formParameters .param-keyvalue > div {
+    width: var(--param-width);
     float: right;
 }
 
@@ -179,19 +313,29 @@
     margin-right: 10px;
 }
 
+#formParameters .advanced-off {
+    display: none;
+}
+
+#formParameters .advanced-on {
+    display: block;
+}
+
 /* #divJobStart { */
 #divJobStart, #divButtonsNext, #divButtonsSummary, #divButtonsSummary2, #divButtonsSettings {
     position: sticky;
-    bottom: 15px;
+    bottom: 0;
     margin-top: 30px;
+    padding-bottom: 15px;
+    background-color: var(--primary-color) !important;
 }
 
 .cumulus-checkbox .switch {
     display: inline-block;
-    /* height: 34px; */
     height: 30px;
     position: relative;
     width: 60px;
+    /* width: var(--param-width); */
     top: 3px;
 }
 
@@ -214,17 +358,17 @@
     background-color: #fff;
     bottom: 4px;
     content: "";
-    /* height: 26px; */
     height: 22px;
     left: 4px;
     position: absolute;
     transition: .4s;
-    /* width: 26px; */
     width: 22px;
 }
 
 .cumulus-checkbox input:checked + .slider { background-color: var(--opposite-color); }
-/* .cumulus-checkbox input:checked + .slider:before { transform: translateX(26px); } */
-.cumulus-checkbox input:checked + .slider:before { transform: translateX(30px); }
+.cumulus-checkbox input:checked + .slider:before {
+    transform: translateX(30px);
+    /* transform: translateX(calc(var(--param-width) - 30px)); */
+}
 .cumulus-checkbox .slider.round { border-radius: 34px; }
 .cumulus-checkbox .slider.round:before { border-radius: 50%; }

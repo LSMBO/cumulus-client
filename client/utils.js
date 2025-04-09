@@ -43,7 +43,9 @@ var IS_OFFLINE = false;
 var IS_FOCUS = true;
 var LAST_ACTIVITY = new Date();
 var NB_SKIPS_BEFORE_REFRESH = 0;
+const TIME_BETWEEN_REFRESHS_DURING_SLEEP_IN_SECONDS = 600; // 10 minutes
 const TIME_BEFORE_SLEEP_IN_SECONDS = 300; // 5 minutes
+// const TIME_BEFORE_SLEEP_IN_SECONDS = 30; // 5 minutes
 const TOOLTIPTEXT = document.getElementById("tooltiptext");
 // const UNC_PATHS = new Map();
 const LOADER = document.getElementById("loading");
@@ -127,16 +129,25 @@ function addBrowsedFiles(target, files, keepPreviousFiles = false) {
         // do not add files that are already in the list
         if(!fixedFiles.has(path)) {
             const li = document.createElement("li");
-            const span = document.createElement("span");
-            span.textContent = "×";
-            span.addEventListener("click", (event) => event.target.parentElement.remove());
-            li.appendChild(span);
+            const button = document.createElement("button");
+            button.textContent = "🗙";
+            button.addEventListener("click", (event) => {
+                const ul = event.target.parentElement.parentElement;
+                // remove the current row
+                event.target.parentElement.remove();
+                // hide the list if there are no more rows
+                if(ul.childNodes.length == 0) ul.parentElement.classList.add("w3-hide");
+            });
+            li.appendChild(button);
             const label = document.createElement("label");
             label.textContent = path;
             li.appendChild(label);
             target.appendChild(li);
         }
     }
+
+    // if there are files in the list, remove the hide class to show the list
+    if(files.length > 0) target.parentElement.classList.remove("w3-hide");
 }
 
 function getBrowsedFiles(target) {
@@ -236,8 +247,9 @@ function updateSkipsBetweenRefreshs(reset = false) {
     if(reset) {
         NB_SKIPS_BEFORE_REFRESH = 0;
     } else if(NB_SKIPS_BEFORE_REFRESH <= 0) {
-        // update every minute if asleep
-        if(!isActive() || IS_OFFLINE) NB_SKIPS_BEFORE_REFRESH = parseInt(600 / settings.CONFIG.get("refresh.rate")) - 1; // 11;
+        // update every 10 minute if asleep
+        // if(!isActive() || IS_OFFLINE) NB_SKIPS_BEFORE_REFRESH = parseInt(600 / settings.CONFIG.get("refresh.rate")) - 1; // 11;
+        if(!isActive() || IS_OFFLINE) NB_SKIPS_BEFORE_REFRESH = parseInt(TIME_BETWEEN_REFRESHS_DURING_SLEEP_IN_SECONDS / settings.CONFIG.get("refresh.rate")) - 1; // 11;
         // update every 15 seconds if just blur
         else if(!isFocus()) NB_SKIPS_BEFORE_REFRESH = 2;
         // update every 5 seconds otherwise
@@ -254,10 +266,15 @@ function checkSleepMode() {
         // console.log("App appears to be inactive");
         // set the app as inactive
         setActive(false);
-        dialog.createDialogSleep();
+        dialog.createDialogSleep(TIME_BETWEEN_REFRESHS_DURING_SLEEP_IN_SECONDS);
     }
     // update the counter at every step
     updateSkipsBetweenRefreshs();
+    // if(timeSinceLastActivity > TIME_BEFORE_SLEEP_IN_SECONDS) {
+    //     const nb = (NB_SKIPS_BEFORE_REFRESH + 1) * settings.CONFIG.get("refresh.rate");
+    //     console.log(`ABU Next refresh in ${nb} seconds`);
+    // }
+    dialog.updateDialogSleep((NB_SKIPS_BEFORE_REFRESH + 1) * settings.CONFIG.get("refresh.rate"));
 }
 
 function doRefresh() {
