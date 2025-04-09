@@ -164,6 +164,14 @@ function getSharedFiles() {
 //     // veriffications may just be included in the xml file...
 // }
 
+function getFirstParentWithClass(element, className) {
+    var parent = element.parentElement;
+    while(parent != null && !parent.classList.contains(className)) {
+        parent = parent.parentElement;
+    }
+    return parent;
+}
+
 function createElement(tagName, options) {
     const element = document.createElement(tagName);
     // options is a map of attributes to set on the element
@@ -451,7 +459,7 @@ function createFileList(id, param, input_class, useFolder) {
         browse(type, param.getAttribute("label"), [ { name: useFolder ? `.${ext} folders` : `.${ext} files`, extensions: [ext] }], [useFolder ? 'openDirectory' : 'openFile', 'multiSelections'], input_id);
     }));
     parent.appendChild(header);
-    const list = createDiv("", "param-row, w3-hide");
+    const list = createDiv("", "param-row w3-hide");
 
     const ul = createElement("ul", new Map([["id", input_id], ["class", `w3-ul w3-border ${input_class}`]]));
     addFileDragAndDropEvents(ul, useFolder, true, [ext]);
@@ -572,15 +580,14 @@ function getConditionalEventType(param) {
 function conditionalEvent(conditional) {
     // conditional must have a class "cond"
     if(conditional.classList.contains("cond")) {
-        const value = conditional.classList.contains("param-checkbox") ? conditional.checked : conditional.value; // the value that will determine which when is displayed
+        // if conditional is a checkbox, get the value from the checked property, else get the value from the value property
+        const value = conditional.type == "checkbox" ? conditional.checked : conditional.value; // the value that will determine which when is displayed
         // loop through the next items that contain a "when" class
-        var next = conditional.parentElement.nextElementSibling;
-        while(next && next.classList.contains("when")) {
+        const nextElements = getFirstParentWithClass(conditional, "param-row").parentElement.getElementsByClassName("when");
+        for(let next of nextElements) {
             // show or hide the when case
-            if(next.id == `${conditional.id}-when-${value}`) next.classList.remove("w3-hide");
-            else next.classList.add("w3-hide");
-            // move to the next element
-            next = next.nextElementSibling;
+            if(next.id == `${conditional.id}-when-${value}`) next.classList.add("visible");
+            else next.classList.remove("visible");
         }
     }
 }
@@ -608,7 +615,7 @@ function createConditional(id, cond) {
     }
     // for the event listener, i need the id of the element to target (or the element itself), and the type of event to listen to
     // for now, conditional does not support file-list and range
-    getConditionalParamElement(item).addEventListener(getConditionalEventType(item), () => conditionalEvent(input));
+    getConditionalParamElement(item).addEventListener(getConditionalEventType(item), (e) => conditionalEvent(input));
     // trigger the event to initialize the values
     conditionalEvent(input);
     return parent;
@@ -639,8 +646,8 @@ function createSection(id, section) {
 
     const params = createDiv(sectionId, section.getAttribute("expanded") ? "section" : "section w3-hide");
     for(let child of section.children) {
-        if(child.tagName.toUpperCase() == "CONDITIONAL") params.appendChild(createConditional(id, child));
-        else params.appendChild(createParam(id, child, ""));
+        if(child.tagName.toUpperCase() == "CONDITIONAL") params.appendChild(createConditional(sectionId, child));
+        else params.appendChild(createParam(sectionId, child, ""));
     }
     parent.appendChild(params);
     // if(section.hasAttribute("hidden") && section.getAttribute("hidden")) parent.classList.add("w3-hide");

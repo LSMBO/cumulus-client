@@ -141,7 +141,7 @@
         <xs:sequence>
             <xs:element ref="param" minOccurs="1" maxOccurs="unbounded" />
         </xs:sequence>
-        <xs:attribute name="value" type="xs:string" use="required" />
+        <xs:attribute name="value" type="xs:string" use="required" /> <!-- if the condition is a checkbox, use 'true' and 'false' values -->
     </xs:complexType>
     <xs:element name="when" type="whenType" />
 

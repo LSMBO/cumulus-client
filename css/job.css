@@ -321,6 +321,17 @@
     display: block;
 }
 
+#formParameters .when {
+    overflow: hidden;
+    height: 0;
+    transition: height 0.5s ease;
+}
+
+#formParameters .when.visible {
+    height: calc-size(fit-content, size - 4px);
+    transition: height 0.5s ease;
+}
+
 /* #divJobStart { */
 #divJobStart, #divButtonsNext, #divButtonsSummary, #divButtonsSummary2, #divButtonsSettings {
     position: sticky;

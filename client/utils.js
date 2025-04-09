@@ -174,7 +174,8 @@ async function browse(type, title, filter, properties, targetName) {
         }
         else target.value = output.join(", ");
     }
-    apps.updateFileList(target.parentElement.parentElement);
+    // console.log(target);
+    if(target.tagName == "UL") apps.updateFileList(target.parentElement.parentElement);
 }
 
 // function listBrowsedFiles(targetName) {
