@@ -44,13 +44,14 @@ const srv = require('./server.js');
 log.initialize();
 
 var mainWindow = null;
-var DEBUG_MODE = false; // when true, allows some code to be executed or some extra logs to be displayed
+// var DEBUG_MODE = false; // when true, allows some code to be executed or some extra logs to be displayed
+// srv.DEBUG_MODE = DEBUG_MODE;
 
 for(let arg of process.argv) {
   if(arg == "-demo") srv.setDemoMode(true);
   else if(arg == "-debug") {
     log.info("DEBUG MODE is activated");
-    DEBUG_MODE = true;
+    config.DEBUG_MODE = true;
   }
 }
 
@@ -73,7 +74,7 @@ function getUserName() {
 }
 
 function getDebugMode() {
-  return DEBUG_MODE;
+  return config.DEBUG_MODE;
 }
 
 function saveFile(_, filePath, content) {
@@ -123,7 +124,7 @@ function createWindow () {
   const appIconPath = path.join(__dirname, "../img/icon.png");
   const appIcon = nativeImage.createFromPath(appIconPath);
   mainWindow = new BrowserWindow({
-    width: DEBUG_MODE ? 1800 : 1280,
+    width: config.DEBUG_MODE ? 1800 : 1280,
     height: 800,
     autoHideMenuBar: true,
     icon: appIcon,
@@ -139,7 +140,7 @@ function createWindow () {
   // mainWindow.maximize();
 
   // Open the DevTools.
-  if(DEBUG_MODE) mainWindow.webContents.openDevTools()
+  if(config.DEBUG_MODE) mainWindow.webContents.openDevTools()
 }
 
 function exitApp() {

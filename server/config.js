@@ -9,6 +9,8 @@ const CONFIG_FILE = path.join(__dirname, "../application.conf");
 const LICENSE_FILE = path.join(__dirname, "../LICENSE.txt");
 const USER_CONFIG_FILE = path.join(app.getPath('userData'), "cumulus.conf");
 
+var DEBUG_MODE = false; // when true, allows some code to be executed or some extra logs to be displayed
+
 function loadConfigFile(file) {
   const regex = /^\s*([^=\s]+)\s*=\s*(.*)\s*$/;
   for(let line of fs.readFileSync(file, 'utf-8').split(/\r?\n/)) {
@@ -93,4 +95,4 @@ function checkVersion() {
   else return "";
 }
 
-module.exports = { checkVersion, get, getConfig, resetConfig, saveConfig, set }
+module.exports = { DEBUG_MODE, checkVersion, get, getConfig, resetConfig, saveConfig, set }

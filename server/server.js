@@ -110,19 +110,22 @@ async function listApps() {
             log.error(error);
         } else {
             const output = Object.entries(JSON.parse(data));
+            log.debug(XSD);
             for(let [id, xml] of output) {
                 // console.log(id);
                 // console.log(xml);
-                log.debug(XSD);
-                try {
-                    const result = await xsdv.validateXML(xml, XSD);
-                    if(result.valid) {
-                        log.info(`App '${id}' is valid`);
-                        apps.push([id, xml]);
+                // only validate xml in debug mode, because it is slow
+                if(config.DEBUG_MODE) {
+                    try {
+                        const result = await xsdv.validateXML(xml, XSD);
+                        if(result.valid) {
+                            log.info(`App '${id}' is valid`);
+                            apps.push([id, xml]);
+                        }
+                    } catch(err) {
+                        log.error(err);
                     }
-                } catch(err) {
-                    log.error(err);
-                }
+                } else apps.push([id, xml]);
             }
         }
         return apps;
