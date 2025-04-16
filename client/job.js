@@ -39,25 +39,17 @@ import * as jobs from "./joblist.js";
 import * as output from "./output.js";
 import * as apps from "./applist.js";
 import * as settings from "./settings.js";
+import { getLocalFiles, getSharedFiles } from "./app_elements/elements.js";
+import { updateFileList } from "./app_elements/filelist.js";
 
 const FORM = document.getElementById("formParameters");
 const STD_OUT = document.getElementById("stdout");
 const STD_ERR = document.getElementById("stderr");
 
-function setAppParameters(settings = null) {
+// function setAppParameters(settings = null) {
+function prepareAppParameters() {
   const app = document.getElementById("cmbAppName").value;
-  // if(app != "") {
-  //   apps.get(app).initialize(document.getElementById("formParameters"));
-  //   if(settings != null) apps.get(app).setSettings(settings);
-  //   // enable parameter tab
-  //   document.getElementById("btnParameters").disabled = false;
-  // } else {
-  //   document.getElementById("formParameters").innerHTML = "";
-  //   // disable parameter tab
-  //   document.getElementById("btnParameters").disabled = true;
-  // }
   apps.initialize(app, "formParameters", "btnParameters");
-  // if(settings != null) apps.setSettings(settings);
 }
 
 async function displayFileTransfers(job) {
@@ -69,7 +61,7 @@ async function displayFileTransfers(job) {
   const map = error ? new Map() : new Map(Object.entries(data));
   // console.log(map);
   // get the list of files
-  const files = apps.getLocalFiles().concat(apps.getSharedFiles());
+  const files = getLocalFiles().concat(getSharedFiles());
   // console.log(files);
   // display the list of files
   var html = "";
@@ -296,10 +288,11 @@ async function startJob() {
   const appName = document.getElementById("cmbAppName").value;
   const strategy = document.getElementById("cmbStrategy").value;
   const description = document.getElementById("txtJobDescription").value;
-  const settings = JSON.stringify(Object.fromEntries(getSettings()));
+  // const settings = JSON.stringify(Object.fromEntries(getSettings()));
+  const settings = JSON.stringify(Object.fromEntries(apps.getParamValues()));
   // also get the files, make sure that UNC paths are replaced by the network path
-  const sharedFiles = JSON.stringify(apps.getSharedFiles());
-  const localFiles = JSON.stringify(apps.getLocalFiles());
+  const sharedFiles = JSON.stringify(getSharedFiles());
+  const localFiles = JSON.stringify(getLocalFiles());
   // display the loading screen
   utils.toggleLoadingScreen();
   // send the job to the server
@@ -342,30 +335,30 @@ function deleteJob() {
   });
 }
 
-function getSettings() {
-  const settings = new Map();
-  for(let item of FORM.getElementsByTagName("input")) {
-    if(item.name) {
-      if(item.type == "checkbox") {
-        if(item.checked) settings.set(item.name, true);
-      } else settings.set(item.name, item.value);
-    }
-  }
-  for(let item of FORM.getElementsByTagName("select")) {
-    if(item.name) settings.set(item.name, item.value);
-  }
-  // settings.set("files", utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
-  const app_id = document.getElementById("cmbAppName").value;
-  for(let item of FORM.getElementsByTagName("ul")) {
-    // settings.set(item.name, utils.getBrowsedFiles(item));
-    if(item.childElementCount > 0) {
-      // ul elements do not have a name attribute, extract it from the id (which is formed like '<app_id>-<name>')
-      const name = item.id.replace(`${app_id}-`, "");
-      settings.set(name, utils.getBrowsedFiles(item));
-    }
-  }
-  return settings;
-}
+// function getSettings() {
+//   const settings = new Map();
+//   for(let item of FORM.getElementsByTagName("input")) {
+//     if(item.name) {
+//       if(item.type == "checkbox") {
+//         if(item.checked) settings.set(item.name, true);
+//       } else settings.set(item.name, item.value);
+//     }
+//   }
+//   for(let item of FORM.getElementsByTagName("select")) {
+//     if(item.name) settings.set(item.name, item.value);
+//   }
+//   // settings.set("files", utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
+//   const app_id = document.getElementById("cmbAppName").value;
+//   for(let item of FORM.getElementsByTagName("ul")) {
+//     // settings.set(item.name, utils.getBrowsedFiles(item));
+//     if(item.childElementCount > 0) {
+//       // ul elements do not have a name attribute, extract it from the id (which is formed like '<app_id>-<name>')
+//       const name = item.id.replace(`${app_id}-`, "");
+//       settings.set(name, utils.getBrowsedFiles(item));
+//     }
+//   }
+//   return settings;
+// }
 
 // temp code to keep it compatible with ancient jobs
 function getOldJobCompatibleName(name) {
@@ -407,36 +400,37 @@ function getOldJobCompatibleValue(value) {
 function setSettings(settings) {
   // console.log(settings);
   // create the html objects corresponding to the current app
-  setAppParameters(settings);
+  prepareAppParameters(settings);
   // set the values to the form
-  const app_id = document.getElementById("cmbAppName").value;
-  for(let item of FORM.getElementsByTagName("input")) {
-    if(item.name) {
-      const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
-      if(item.type == "checkbox") {
-        item.checked = settings.has(name) && settings.get(name);
-      } else if(settings.has(name)) {
-        item.value = settings.get(name);
-      }
-    }
-  }
-  for(let item of FORM.getElementsByTagName("select")) {
-    const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
-    if(name && settings.has(name)) item.value = getOldJobCompatibleValue(settings.get(name));
-  }
-  for(let item of FORM.getElementsByTagName("ul")) {
-    // ul elements do not have a name attribute, extract it from the id (which is formed like '<app_id>-<name>')
-    const item_name = item.id.replace(`${app_id}-`, "");
-    const name = settings.has(item_name) ? item_name : getOldJobCompatibleName(item_name);
-    if(settings.has(name)) utils.addBrowsedFiles(item, settings.get(name));
-  }
+  // const app_id = document.getElementById("cmbAppName").value;
+  // for(let item of FORM.getElementsByTagName("input")) {
+  //   if(item.name) {
+  //     const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
+  //     if(item.type == "checkbox") {
+  //       item.checked = settings.has(name) && settings.get(name);
+  //     } else if(settings.has(name)) {
+  //       item.value = settings.get(name);
+  //     }
+  //   }
+  // }
+  // for(let item of FORM.getElementsByTagName("select")) {
+  //   const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
+  //   if(name && settings.has(name)) item.value = getOldJobCompatibleValue(settings.get(name));
+  // }
+  // for(let item of FORM.getElementsByTagName("ul")) {
+  //   // ul elements do not have a name attribute, extract it from the id (which is formed like '<app_id>-<name>')
+  //   const item_name = item.id.replace(`${app_id}-`, "");
+  //   const name = settings.has(item_name) ? item_name : getOldJobCompatibleName(item_name);
+  //   if(settings.has(name)) utils.addBrowsedFiles(item, settings.get(name));
+  // }
+  apps.setParamValues(settings);
   // call the events if there are any (only the WHEN cases!)
   for(let item of FORM.getElementsByClassName("cond")) {
     apps.conditionalEvent(item);
   }
   // on file lists, display the number of files that are in the list (search for class "param-file-list")
   for(let item of FORM.getElementsByClassName("param-file-list")) {
-    apps.updateFileList(item);
+    updateFileList(item);
   }
   // when the job is not new, disable all parameters
   for(let tagtype of ["input", "select", "button"]) {
@@ -446,4 +440,5 @@ function setSettings(settings) {
   }
 }
 
-export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, getSettings, refreshJob, startJob, setAppParameters, setSettings };
+// export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, getSettings, refreshJob, startJob, setAppParameters, setSettings };
+export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, prepareAppParameters, refreshJob, startJob, setSettings };

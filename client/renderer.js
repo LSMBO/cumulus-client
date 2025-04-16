@@ -59,7 +59,8 @@ document.getElementById("btnOutput").addEventListener("click", () => tabs.openTa
 document.getElementById("cmbAppName").addEventListener("change", () => {
   document.getElementById("btnParameters").disabled = false;
   document.getElementById("btnNext").disabled = false;
-  job.setAppParameters();
+  // job.setAppParameters();
+  job.prepareAppParameters();
 });
 document.getElementById("aSelect").addEventListener("click", () => output.selectAllCheckboxes());
 document.getElementById("aUnselect").addEventListener("click", () => output.unselectAllCheckboxes());

@@ -35,6 +35,7 @@ knowledge of the CeCILL license and that you accept its terms.
 import * as apps from "./applist.js";
 import * as dialog from "./dialog.js";
 import * as settings from "./settings.js";
+import { updateFileList } from "./app_elements/filelist.js";
 
 var CURRENT_JOB_ID = 0;
 var USERNAME = "";
@@ -154,7 +155,7 @@ function getBrowsedFiles(target) {
     // this function should return what has been generated in the browse function
     if(target.tagName == "INPUT" && target.type == "text") return [fixFilePath(target.value)];
     else if(target.tagName == "TEXTAREA") return target.value.split("\n").map(fixFilePath);
-    else if(target.tagName == "UL") return Array.from(target.childNodes).map(li => fixFilePath(li.textContent.replace("×", "")));
+    else if(target.tagName == "UL") return Array.from(target.childNodes).map(li => fixFilePath(li.textContent.replace("🗙", "")));
     else return [];
 }
 
@@ -175,7 +176,7 @@ async function browse(type, title, filter, properties, targetName) {
         else target.value = output.join(", ");
     }
     // console.log(target);
-    if(target.tagName == "UL") apps.updateFileList(target.parentElement.parentElement);
+    if(target.tagName == "UL") updateFileList(target.parentElement.parentElement);
 }
 
 // function listBrowsedFiles(targetName) {
