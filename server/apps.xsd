@@ -2,7 +2,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
 
     <xs:attributeGroup name="ParamAttributes">
-        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="name" type="xs:string" use="required" /> <!-- names should be unique, but it won't be checked -->
         <xs:attribute name="label" type="xs:string" use="required" />
         <xs:attribute name="help" type="xs:string" use="optional" />
         <xs:attribute name="hidden" type="xs:boolean" use="optional" /> <!-- deprecated, use 'visibility' instead -->
@@ -31,7 +31,7 @@
     </xs:complexType>
     <xs:element name="select" type="ParamSelect" substitutionGroup="param" />
 
-		<!-- similar to a 'select', but used to display a list of checkboxes -->
+    <!-- similar to a 'select', but used to display a list of checkboxes -->
     <xs:complexType name="ParamChecklist">
         <xs:sequence minOccurs="0">
             <xs:element maxOccurs="unbounded" name="option">
@@ -39,7 +39,7 @@
                     <xs:simpleContent>
                         <xs:extension base="xs:string">
                             <xs:attribute name="value" type="xs:string" use="required" />
-														<xs:attribute name="selected" type="xs:boolean" use="optional" />
+                            <xs:attribute name="selected" type="xs:boolean" use="optional" />
                             <xs:attribute name="command" type="xs:string" use="optional" />
                         </xs:extension>
                     </xs:simpleContent>
@@ -60,7 +60,7 @@
                 <xs:complexType>
                     <xs:simpleContent>
                         <xs:extension base="xs:string">
-							<xs:attribute name="key" type="xs:string" use="required" />
+                            <xs:attribute name="key" type="xs:string" use="required" />
                             <xs:attribute name="value" type="xs:string" use="required" />
                             <xs:attribute name="command" type="xs:string" use="optional" />
                         </xs:extension>
@@ -190,6 +190,7 @@
         <xs:attribute name="name" type="xs:string" use="required" />
         <xs:attribute name="version" type="xs:string" use="required" />
         <xs:attribute name="end_tag" type="xs:string" use="required" /> <!-- will be used to check in stdout if the command is finished -->
+        <xs:attribute name="end_tag_location" type="xs:string" use="optional" /> <!-- name of the file where the end_tag is written, in case it's not in stdout (use %stderr% if it's in stderr) -->
         <xs:attribute name="command" type="xs:string" use="required" /> <!-- will be used to start the command line, it's possible to set default arguments already there -->
         <xs:attribute name="convert_config_to" type="xs:string" use="optional" /> <!-- creates a file with the given format (yaml/json) in the job folder. Must be added in the 'command' with the variable %config-file% -->
         <xs:attribute name="description" type="xs:string" use="optional" />
