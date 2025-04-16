@@ -6,9 +6,15 @@
     display: inline;
 }
 
-#formParameters .app_header button {
+#formParameters .app_header_buttons {
     float: right;
-    margin-left: 10px;
+}
+
+#formParameters .app_header button {
+    /* float: right;
+    margin-left: 10px; */
+    /* float: left; */
+    margin-right: 10px;
 }
 
 #formParameters .section-parent {
@@ -80,8 +86,10 @@
     padding: 10px 0 6px 5px;
 }
 
-#formParameters input:focus {
-    outline: 2px solid var(--accent-color) !important;
+/* #formParameters input:focus, #formParameters select:focus, #formParameters button:focus, #formParameters .checklist:focus { */
+:focus {
+    /* outline: 2px solid var(--accent-color) !important; */
+    outline: 1px auto var(--opposite-color-dark) !important;
 }
 #formParameters .hover {
     outline: 1px solid var(--accent-color) !important;
@@ -173,6 +181,10 @@
     text-align: left;
 }
 
+#formParameters .param-keyvalue th i {
+    display: none;
+}
+
 #formParameters .param-keyvalue button {
     width: 24px;
     height: 24px;
@@ -213,16 +225,14 @@
     height: auto;
 }
 #formParameters .param-file-list button {
-    float: right;
+    float: left;
 }
-#formParameters .param-file-list button:first-of-type {
-    /* width: 50px; */
+#formParameters .param-file-list button:last-of-type {
     width: 36px;
     padding: 5px 8px;
     font-size: 16px;
 }
-#formParameters .param-file-list button:last-of-type {
-    /* width: 245px; */
+#formParameters .param-file-list button:first-of-type {
     width: 259px;
     margin-right: 5px;
 }
@@ -279,18 +289,20 @@
     /* padding-left: 36px; */
 }
 
-#formParameters .param-file input {
+#formParameters .param-file-input input {
     width: auto;
     /* min-width: 250px; */
     min-width: 259px;
-    float: right;
+    /* float: right; */
+    float: left;
     margin-right: 5px;
 }
 
-#formParameters .param-file button {
+#formParameters .param-file-input button {
     /* width: 50px; */
     width: 36px;
-    float: right;
+    /* float: right; */
+    float: left;
     font-size: 16px;
     padding: 5px 8px;
 }
@@ -306,11 +318,11 @@
 
 #formParameters .param-range input {
     width: 145px;
-    float: right;
+    float: left;
 }
 
 #formParameters .param-range input:last-of-type {
-    margin-right: 10px;
+    margin-left: 10px;
 }
 
 #formParameters .advanced-off {
@@ -325,11 +337,17 @@
     overflow: hidden;
     height: 0;
     transition: height 0.5s ease;
+
+    pointer-events: none;
+    visibility: hidden;
 }
 
 #formParameters .when.visible {
-    height: calc-size(fit-content, size - 4px);
+    height: calc-size(fit-content, size - 3px);
     transition: height 0.5s ease;
+
+    pointer-events: auto;
+    visibility: visible;
 }
 
 /* #divJobStart { */
@@ -351,7 +369,11 @@
 }
 
 .cumulus-checkbox .switch input {
-    display:none;
+    /* display:none; */
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 .cumulus-checkbox .slider {
@@ -374,6 +396,10 @@
     position: absolute;
     transition: .4s;
     width: 22px;
+}
+
+.cumulus-checkbox .switch input:focus + .slider {
+    outline: 1px auto var(--accent-color) !important;
 }
 
 .cumulus-checkbox input:checked + .slider { background-color: var(--opposite-color); }
