@@ -61,8 +61,10 @@ function getValue(item, map) {
     const input = item.getElementsByTagName("input")[0];
     // call the getFiles function
     const files = elements.getFiles([input.id]);
+    // only return one file (the first one)
+    if(files.length == 0) return;
     // store the files in the map
-    map.set(input.name, files);
+    map.set(input.name, files[0]);
 }
 
 function setValue(item, settings) {
