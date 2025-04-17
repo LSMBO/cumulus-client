@@ -62,7 +62,6 @@
                         <xs:extension base="xs:string">
                             <xs:attribute name="key" type="xs:string" use="required" />
                             <xs:attribute name="value" type="xs:string" use="required" />
-                            <xs:attribute name="command" type="xs:string" use="optional" />
                         </xs:extension>
                     </xs:simpleContent>
                 </xs:complexType>
@@ -74,6 +73,7 @@
         <xs:attribute name="placeholder_value" type="xs:string" use="optional" />
         <xs:attribute name="type_of" type="xs:string" use="optional" /> <!-- default is string, can be one of [integer,float,string] -->
         <xs:attribute name="is_list" type="xs:boolean" use="optional" />
+        <xs:attribute name="repeated_command" type="xs:string" use="optional" /> <!-- this command will be used for each option, variables allowed here are %key% and %value% -->
         <xs:attributeGroup ref="ParamAttributes" />
     </xs:complexType>
     <xs:element name="keyvalues" type="ParamKeyvalues" substitutionGroup="param" />
