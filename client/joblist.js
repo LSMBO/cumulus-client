@@ -132,6 +132,16 @@ function getJobAsHtml(job) {
   return html;
 }
 
+async function openJob(a) {
+  utils.setCurrentJobId(a.id.replace("job_", ""));
+  highlightJobButton(); // immediately highlight the selected job
+  utils.toggleLoadingScreen(); // show the loading screen
+  job.cleanJob(); // remove the previous list of output files
+  await reloadJobList(); // refresh the list of jobs
+  utils.toggleLoadingScreen(); // remove the loading screen
+  tabs.openTab("tabSummary"); // open the main tab
+}
+
 function addJobsToJobList(jobs) {
   // console.log(jobs);
   // top button is used to create a new job, or to cancel the search
@@ -153,14 +163,20 @@ function addJobsToJobList(jobs) {
   for(let a of document.getElementById("jobs").getElementsByTagName("a")) {
     if(a.id == "new_job") a.addEventListener("click", () => job.createJob());
     else if(a.id == "clear_search") a.addEventListener("click", async () => { IS_SEARCH = false; await reloadJobList(); });
-    else a.addEventListener("click", async () => {
-      utils.setCurrentJobId(a.id.replace("job_", ""));
-      highlightJobButton(); // immediately highlight the selected job
-      utils.toggleLoadingScreen(); // show the loading screen
-      job.cleanJob(); // remove the previous list of output files
-      await reloadJobList(); // refresh the list of jobs
-      utils.toggleLoadingScreen(); // remove the loading screen
-      tabs.openTab("tabSummary"); // open the main tab
+    // else a.addEventListener("click", async () => {
+    //   utils.setCurrentJobId(a.id.replace("job_", ""));
+    //   highlightJobButton(); // immediately highlight the selected job
+    //   utils.toggleLoadingScreen(); // show the loading screen
+    //   job.cleanJob(); // remove the previous list of output files
+    //   await reloadJobList(); // refresh the list of jobs
+    //   utils.toggleLoadingScreen(); // remove the loading screen
+    //   tabs.openTab("tabSummary"); // open the main tab
+    // });
+    else a.addEventListener("click", () => {
+      // if the previous job was a new job, warn the user that changes will be lost
+      if(utils.getCurrentJobId() <= 0 && apps.isFormDirty())
+        dialog.createDialogQuestion("Warning", "The changes you have made to the parameters will be lost, continue?", openJob, "Yes", a);
+      else openJob(a);
     });
   }
   // display what the user wants to see in the list
