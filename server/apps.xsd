@@ -2,12 +2,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
 
     <xs:attributeGroup name="ParamAttributes">
-        <xs:attribute name="name" type="xs:string" use="required" /> <!-- names should be unique, but it won't be checked -->
+        <xs:attribute name="name" type="xs:string" use="required" /> <!-- names should be unique, but it won't be checked; if 'convert_config_to', the name will be split by '.' to manage different levels  -->
         <xs:attribute name="label" type="xs:string" use="required" />
         <xs:attribute name="help" type="xs:string" use="optional" />
         <xs:attribute name="hidden" type="xs:boolean" use="optional" /> <!-- deprecated, use 'visibility' instead -->
         <xs:attribute name="command" type="xs:string" use="optional" />
-        <xs:attribute name="config_path" type="xs:string" use="optional" /> <!-- if 'convert_config_to', this value will be the path to the current parameter (use '.' to indicate multiple levels) -->
+        <xs:attribute name="config_path" type="xs:string" use="optional" /> <!-- deprecated, use the name as the full path -->
         <xs:attribute name="visibility" type="xs:string" use="optional" /> <!-- if 'advanced', the parameter will be hidden in the gui, and a button will turn them visible, if 'hidden' it will be there but not be displayed -->
     </xs:attributeGroup>
 
