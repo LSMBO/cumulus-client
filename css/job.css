@@ -158,6 +158,10 @@
     float: left;
 }
 
+.param-checkbox a, .param-checklist a, .param-file-input a, .param-file-list a, .param-keyvalue a, .param-number a, .param-text a, .param-select a, .param-range a {
+    display: none;
+}
+
 #formParameters .param-keyvalue > div {
     position: relative;
     display: block;
@@ -333,6 +337,10 @@
     display: block;
 }
 
+#formParameters button.advanced-visible {
+    background-color: var(--opposite-color-dark) !important;
+}
+
 #formParameters .when {
     overflow: hidden;
     height: 0;
@@ -399,7 +407,7 @@
 }
 
 .cumulus-checkbox .switch input:focus + .slider {
-    outline: 1px auto var(--accent-color) !important;
+    outline: 1px auto var(--opposite-color-dark) !important;
 }
 
 .cumulus-checkbox input:checked + .slider { background-color: var(--opposite-color); }
