@@ -39,18 +39,38 @@ function create(id, param, input_class) {
     const parent = elements.createDiv("", "param-row param-number w3-hover-light-grey");
     parent.appendChild(elements.createLabel(param, input_id));
     parent.appendChild(elements.createInputNumber(input_id, param, input_class, param.hasAttribute("value") ? param.getAttribute("value") : "", param.hasAttribute("placeholder") ? param.getAttribute("placeholder") : ""));
+    elements.addDefaultValue(parent, param.hasAttribute("value") ? param.getAttribute("value") : "");
     elements.setSettingVisibility(parent, param);
     return parent;
 }
 
 function getValue(item, map) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return;
+    // get the value of the first input
     const input = item.getElementsByTagName("input")[0];
-    if(input != null) map.set(input.name, input.value);
+    if(input != null && input.value != "") map.set(input.name, input.value);
 }
 
 function setValue(item, settings) {
     const input = item.getElementsByTagName("input")[0];
-    if(settings.has(input.name)) input.value = settings.get(input.name);
+    if(settings.has(input.name)) {
+        input.value = settings.get(input.name);
+    }
 }
 
-export { create, getValue, setValue };
+function isDefaultValue(item) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return true;
+    // compare the value of the first input to the default value
+    return item.getElementsByTagName("input")[0].value == item.getElementsByTagName("a")[0].textContent;
+}
+
+function isDirty() {
+    for(let item of document.getElementsByClassName("param-number")) {
+        if(!isDefaultValue(item)) return true;
+    }
+    return false;
+}
+
+export { create, getValue, isDirty, setValue };

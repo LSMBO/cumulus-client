@@ -37,6 +37,43 @@ import { addBrowsedFiles, fixFilePath, getBrowsedFiles, tooltip } from "../utils
 const SHARED_FILES_IDS = new Array();
 const LOCAL_FILES_IDS = new Array();
 
+function addDefaultValue(param, defaultValue) {
+    const item = document.createElement("a");
+    item.textContent = defaultValue;
+    param.appendChild(item);
+}
+
+function hasAdvancedParent(param) {
+    var parent = param;
+    console.log(param);
+    while(parent != null && parent.tagName.toUpperCase() != "FORM") {
+        // stop if we reach the the first element containing a class "when"
+        if(parent.classList.contains("advanced-off")) {
+            console.log("This is an advanced parameter!");
+            return true;
+        }
+        // continue with the next parent
+        parent = parent.parentNode;
+    }
+    // if there was no parent with class "when", return true
+    return true;
+}
+
+function hasVisibleWhenParent(param) {
+    var parent = param.parentNode;
+    while(parent != null && parent.tagName.toUpperCase() != "FORM") {
+        // stop if we reach the the first element containing a class "when"
+        if(parent.classList.contains("when")) {
+            // return true if the class "visible" is present, false otherwise
+            return parent.classList.contains("visible");
+        }
+        // continue with the next parent
+        parent = parent.parentNode;
+    }
+    // if there was no parent with class "when", return true
+    return true;
+}
+
 function createElement(tagName, options) {
     const element = document.createElement(tagName);
     // options is a map of attributes to set on the element
@@ -184,4 +221,4 @@ function getSharedFiles() {
     return getFiles(SHARED_FILES_IDS);
 }
 
-export { addFileDragAndDropEvents, createElement, createDiv, createLabel, createInputText, createInputNumber, createButton, createTextLabel, getFiles, getLocalFiles, getSharedFiles, setSettingVisibility, SHARED_FILES_IDS, LOCAL_FILES_IDS };
+export { addDefaultValue, addFileDragAndDropEvents, createElement, createDiv, createLabel, createInputText, createInputNumber, createButton, createTextLabel, getFiles, getLocalFiles, getSharedFiles, hasAdvancedParent, hasVisibleWhenParent, setSettingVisibility, SHARED_FILES_IDS, LOCAL_FILES_IDS };

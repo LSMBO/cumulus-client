@@ -40,7 +40,6 @@ function createHeader(table, param) {
     const th1 = elements.createElement("th", new Map([["textContent", param.getAttribute("label_key")]]));
     th1.appendChild(elements.createElement("i", new Map([["textContent", param.getAttribute("placeholder_key")]])));
     row.appendChild(th1);
-    // row.appendChild(elements.createElement("th", new Map([["textContent", param.getAttribute("label_value")]])));
     const th2 = elements.createElement("th", new Map([["textContent", param.getAttribute("label_value")]]));
     th2.appendChild(elements.createElement("i", new Map([["textContent", param.getAttribute("placeholder_value")]])));
     row.appendChild(th2);
@@ -92,59 +91,6 @@ function addRow(table, key, value) {
     table.appendChild(row);
 }
 
-// function createRow(param, option = null, is_header = false) {
-//     const row = document.createElement("tr");
-//     if(is_header) {
-//         // row.appendChild(elements.createElement("th", new Map([["textContent", param.getAttribute("label_key")]])));
-//         const th1 = elements.createElement("th", new Map([["textContent", param.getAttribute("label_key")]]));
-//         th1.appendChild(elements.createElement("i", new Map([["textContent", param.getAttribute("placeholder_key")]])));
-//         row.appendChild(th1);
-//         // row.appendChild(elements.createElement("th", new Map([["textContent", param.getAttribute("label_value")]])));
-//         const th2 = elements.createElement("th", new Map([["textContent", param.getAttribute("label_value")]]));
-//         th2.appendChild(elements.createElement("i", new Map([["textContent", param.getAttribute("placeholder_value")]])));
-//         row.appendChild(th2);
-//         const th3 = document.createElement("th");
-//         const button = elements.createElement("button", new Map([["textContent", "🗙"]]));
-//         button.addEventListener("click", (e) => {
-//             e.preventDefault();
-//             const table = e.target.parentElement.parentElement.parentElement;
-//             table.appendChild(createRow(param));
-//         });
-//         tooltip(button, "Add a new element");
-//         th3.appendChild(button);
-//         th3.appendChild(elements.createElement("i", new Map([["textContent", param.getAttribute("type_of")]])));
-//         row.appendChild(th3);
-//     } else {
-//         const placeholder_key = param.hasAttribute("placeholder_key") ? param.getAttribute("placeholder_key") : "Key";
-//         const placeholder_value = param.hasAttribute("placeholder_value") ? param.getAttribute("placeholder_value") : "Value";
-//         const cell1 = document.createElement("td");
-//         cell1.appendChild(elements.createElement("input", new Map([["type", "text"], ["class", "w3-input w3-border"], ["textContent", option ? option.getAttribute("key") : ""], ["placeholder", placeholder_key]])));
-//         row.appendChild(cell1);
-//         const cell2 = document.createElement("td");
-//         if(param.hasAttribute("type_of") && param.getAttribute("type_of") == "integer") {
-//             cell2.appendChild(elements.createElement("input", new Map([["type", "number"], ["class", "w3-input w3-border"], ["textContent", option ? option.getAttribute("value") : ""], ["placeholder", placeholder_value]])));
-//         } else if(param.hasAttribute("type_of") && param.getAttribute("type_of") == "float") {
-//             cell2.appendChild(elements.createElement("input", new Map([["type", "number"], ["step", 0.01], ["class", "w3-input w3-border"], ["textContent", option ? option.getAttribute("value") : ""], ["placeholder", placeholder_value]])));
-//         } else {
-//             cell2.appendChild(elements.createElement("input", new Map([["type", "text"], ["class", "w3-input w3-border"], ["textContent", option ? option.getAttribute("value") : ""], ["placeholder", placeholder_value]])));
-//         }
-//         row.appendChild(cell2);
-//         const td = document.createElement("td");
-//         const button = elements.createElement("button", new Map([["textContent", "🗙"]]));
-//         button.addEventListener("click", (e) => {
-//             e.preventDefault();
-//             const row = e.target.parentElement.parentElement;
-//             const table = row.parentElement;
-//             row.remove();
-//             if(table.rows.length == 1) table.appendChild(createRow(param));
-//         });
-//         tooltip(button, "Remove this element");
-//         td.appendChild(button);
-//         row.appendChild(td);
-//     }
-//     return row;
-// }
-
 function create(id, param, input_class) {
     // list of key-value pairs, one per line with two text fields and a button to remove the current line
     // there is also a header line with the label and a button to add a new line
@@ -155,20 +101,23 @@ function create(id, param, input_class) {
     // create an element with a first line containing the headers and the '+' button
     // TODO add value type in the table or the header line
     const table = elements.createElement("table", new Map([["id", input_id], ["name", param.getAttribute("name")], ["class", "w3-ul"]]));
-    // table.appendChild(createRow(param, null, true));
     createHeader(table, param);
+    const defaultValues = new Array();
     for(let option of param.children) {
-        // table.appendChild(createRow(param, option));
         addRow(table, option.getAttribute("key"), option.getAttribute("value"));
+        defaultValues.push(option.getAttribute("key")+"-"+option.getAttribute("value"));
     }
     // make sure to display at least one row
-    // if(table.rows.length == 1) table.appendChild(createRow(param));
     if(table.rows.length == 1) addRow(table, "", "");
     parent.appendChild(table);
+    elements.addDefaultValue(parent, defaultValues.join("-"));
     return parent;
 }
 
 function getValue(item, map) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return;
+    // get the value of the table
     const values = new Map();
     for(let row of item.getElementsByTagName("tr")) {
         if(row.getElementsByTagName("th").length > 0) continue; // skip the header row
@@ -176,6 +125,7 @@ function getValue(item, map) {
         const value = row.getElementsByTagName("input")[1].value;
         if(key != "" && value != "") values.set(key, value);
     }
+    if(values.size == 0) return; // no values to store
     map.set(item.name, values);
 }
 
@@ -191,7 +141,33 @@ function setValue(item, settings) {
         for(let [key, value] of map) {
             addRow(table, key, value);
         }
+        // make sure to display at least one row
+        if(table.rows.length == 1) addRow(table, "", "");
     }
 }
 
-export { create, getValue, setValue };
+function isDefaultValue(item) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return true;
+    // get the default value of the input
+    const defaultValue = item.getElementsByTagName("a")[0].textContent;
+    // get the list of selected values
+    const selectedValues = new Array();
+    for(let row of item.getElementsByTagName("tr")) {
+        if(row.getElementsByTagName("th").length > 0) continue; // skip the header row
+        const key = row.getElementsByTagName("input")[0].value;
+        const value = row.getElementsByTagName("input")[1].value;
+        if(key != "" && value != "") selectedValues.push(key+"-"+value);
+    }
+    // compare the default value to the selected values
+    return defaultValue == selectedValues.join("-");
+}
+
+function isDirty() {
+    for(let item of document.getElementsByClassName("param-keyvalue")) {
+        if(!isDefaultValue(item)) return true;
+    }
+    return false;
+}
+
+export { create, getValue, isDirty, setValue };

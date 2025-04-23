@@ -49,6 +49,7 @@ function create(id, param, input_class, useFolder) {
         event.preventDefault();
         browse(type, param.getAttribute("label"), [ { name: param.getAttribute("label"), extensions: ext }], [useFolder ? 'openDirectory' : 'openFile'], input_id);
     }));
+    elements.addDefaultValue(parent, param.hasAttribute("value") ? param.getAttribute("value") : "");
     if(type == "RAW") elements.SHARED_FILES_IDS.push(input_id);
     else elements.LOCAL_FILES_IDS.push(input_id);
     elements.setSettingVisibility(parent, param);
@@ -56,20 +57,37 @@ function create(id, param, input_class, useFolder) {
 }
 
 function getValue(item, map) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return;
     // get the id of either ul or input element
-    // const input = item.getElementsByTagName("input").length > 0 ? item.getElementsByTagName("input")[0] : item.getElementsByTagName("ul")[0];
     const input = item.getElementsByTagName("input")[0];
     // call the getFiles function
     const files = elements.getFiles([input.id]);
     // only return one file (the first one)
-    if(files.length == 0) return;
+    if(files.length == 0 || files[0] == "") return;
     // store the files in the map
     map.set(input.name, files[0]);
 }
 
 function setValue(item, settings) {
     const input = item.getElementsByTagName("input")[0];
-    if(settings.has(input.name)) input.value = settings.get(input.name);
+    if(settings.has(input.name)) {
+        input.value = settings.get(input.name);
+    }
 }
 
-export { create, getValue, setValue };
+function isDefaultValue(item) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return true;
+    // compare the value of the first input to the default value
+    return item.getElementsByTagName("input")[0].value == item.getElementsByTagName("a")[0].textContent;
+}
+
+function isDirty() {
+    for(let item of document.getElementsByClassName("param-file-input")) {
+        if(!isDefaultValue(item)) return true;
+    }
+    return false;
+}
+
+export { create, getValue, isDirty, setValue };

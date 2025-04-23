@@ -49,7 +49,7 @@ function updateLabel(input) {
 
 function toggleChecklist(event, dropdown, i) {
     // toggle the dropdown when the user clicks on the input or the label
-    event.preventDefault();
+    if(event.target.tagName == "DIV") event.preventDefault();
     if(!dropdown.contains(event.target)) {
         if(dropdown.classList.contains("w3-hide")) {
             dropdown.classList.remove("w3-hide");
@@ -76,10 +76,14 @@ function create(id, param, input_class) {
     input.appendChild(span);
     const dropdown = document.createElement("div");
     dropdown.classList.add("w3-hide");
+    const defaultValues = new Array();
     for(let option of param.children) {
         const opt = elements.createElement("input", new Map([["type", "checkbox"], ["id", `${input_id}_${option.getAttribute("value")}`], ["name", param.getAttribute("name")], ["value", option.getAttribute("value")], ["class", `w3-check ${input_class}`]]));
-        if(option.hasAttribute("selected") && option.getAttribute("selected")) opt.checked = true;
-        opt.addEventListener("change", () => updateLabel(input));
+        if(option.hasAttribute("selected") && option.getAttribute("selected")) {
+            opt.checked = true;
+            defaultValues.push("true");
+        } else defaultValues.push("false");
+        opt.addEventListener("change", (e) => updateLabel(input));
         // create a label for this checkbox
         const label = elements.createElement("label", new Map([["for", opt.id], ["textContent", option.textContent]]));
         label.appendChild(opt);
@@ -88,23 +92,12 @@ function create(id, param, input_class) {
     }
     input.appendChild(dropdown);
     parent.appendChild(input);
+    elements.addDefaultValue(parent, defaultValues.join("-"));
     updateLabel(input);
     // add an event to display the dropdown when the label is clicked
     input.addEventListener("click", (event) => toggleChecklist(event, dropdown, i));
-    // input.addEventListener("click", (event) => {
-    //     if(!dropdown.contains(event.target)) {
-    //         if(dropdown.classList.contains("w3-hide")) {
-    //             dropdown.classList.remove("w3-hide");
-    //             i.classList.replace("checklist-down", "checklist-up");
-    //         } else {
-    //             dropdown.classList.add("w3-hide");
-    //             i.classList.replace("checklist-up", "checklist-down");
-    //         }
-    //     }
-    // });
     // add an event to do the same when the input is focused and the space key is pressed
     input.addEventListener("keydown", (event) => {
-        // event.preventDefault();
         if(event.key == "Enter" || event.key == " ") toggleChecklist(event, dropdown, i);
     });
 
@@ -121,10 +114,14 @@ function create(id, param, input_class) {
 }
 
 function getValue(item, map) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return;
+    // get the value of the input
     const values = new Array();
     for(let input of item.getElementsByTagName("input")) {
         if(input.checked) values.push(input.value);
     }
+    if(values.length == 0) return; // no values to store
     map.set(item.name, values);
 }
 
@@ -136,6 +133,28 @@ function setValue(item, settings) {
             else input.checked = false;
         }
     }
+    updateLabel(item.children[1]);
 }
 
-export { create, getValue, setValue };
+function isDefaultValue(item) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return true;
+    // get the default value of the input
+    const defaultValue = item.getElementsByTagName("a")[0].textContent;
+    // get the list of selected values
+    var selectedValues = new Array();
+    for(let input of item.getElementsByTagName("input")) {
+        selectedValues.push(input.checked ? "true" : "false");
+    }
+    // compare the default value with the selected values
+    return defaultValue == selectedValues.join("-");
+}
+
+function isDirty() {
+    for(let item of document.getElementsByClassName("param-checklist")) {
+        if(!isDefaultValue(item)) return true;
+    }
+    return false;
+}
+
+export { create, getValue, isDirty, setValue };

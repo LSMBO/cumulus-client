@@ -47,18 +47,40 @@ function create(id, param, input_class) {
     label.appendChild(slider);
     div.appendChild(label);
     parent.appendChild(div);
+    elements.addDefaultValue(parent, param.getAttribute("value") == "true");
     elements.setSettingVisibility(parent, param);
     return parent;
 }
 
 function getValue(item, map) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return;
+    // get the value of the first input
     const input = item.getElementsByTagName("input")[0];
     if(input != null && input.checked) map.set(input.name, true);
 }
 
 function setValue(item, settings) {
     const input = item.getElementsByTagName("input")[0];
-    input.checked = settings.has(input.name) && settings.get(input.name);
+    if(settings.has(input.name) && settings.get(input.name)) {
+        input.checked = true;
+    }
 }
 
-export { create, getValue, setValue };
+function isDefaultValue(item) {
+    // do not check the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return true;
+    // get default value
+    const defaultValue = item.getElementsByTagName("a")[0].textContent == "true";
+    // compare the value of the first input to the default value
+    return item.getElementsByTagName("input")[0].checked == defaultValue;
+}
+
+function isDirty() {
+    for(let item of document.getElementsByClassName("param-checkbox")) {
+        if(!isDefaultValue(item)) return true;
+    }
+    return false;
+}
+
+export { create, getValue, isDirty, setValue };

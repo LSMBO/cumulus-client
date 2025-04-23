@@ -42,18 +42,38 @@ function create(id, param, input_class) {
     if(param.hasAttribute("placeholder")) input.placeholder = param.getAttribute("placeholder");
     if(param.hasAttribute("value")) input.value = param.getAttribute("value");
     parent.appendChild(input);
+    elements.addDefaultValue(parent, param.getAttribute("value"));
     elements.setSettingVisibility(parent, param);
     return parent;
 }
 
 function getValue(item, map) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return;
+    // get the value of the first input
     const input = item.getElementsByTagName("input")[0];
-    if(input != null) map.set(input.name, input.value);
+    if(input != null && input.value != "") map.set(input.name, input.value);
 }
 
 function setValue(item, settings) {
     const input = item.getElementsByTagName("input")[0];
-    if(settings.has(input.name)) input.value = settings.get(input.name);
+    if(settings.has(input.name)) {
+        input.value = settings.get(input.name);
+    }
 }
 
-export { create, getValue, setValue };
+function isDefaultValue(item) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return true;
+    // compare the value of the first input to the default value
+    return item.getElementsByTagName("input")[0].value == item.getElementsByTagName("a")[0].textContent;
+}
+
+function isDirty() {
+    for(let item of document.getElementsByClassName("param-text")) {
+        if(!isDefaultValue(item)) return true;
+    }
+    return false;
+}
+
+export { create, getValue, isDirty, setValue };

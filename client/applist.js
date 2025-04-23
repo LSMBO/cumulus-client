@@ -33,9 +33,9 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 // import { getSettings, setSettings } from "./job.js";
-import { setSettings } from "./job.js";
+import { prepareAppParameters, setSettings } from "./job.js";
 import { CONFIG } from "./settings.js";
-import { fixFilePath, getBrowsedFiles, tooltip } from "./utils.js";
+import { tooltip } from "./utils.js";
 import * as elements from "./app_elements/elements.js";
 import * as checkbox from "./app_elements/checkbox.js";
 import * as checklist from "./app_elements/checklist.js";
@@ -88,11 +88,20 @@ function getFullName(app_id) {
 
 function isAppVisible(xml) {
     // some apps are hidden but can be displayed if the user allowed it in the config file
-    if(CONFIG.has("display.hidden.apps") && CONFIG.get("display.hidden.apps")) return true;
+    // if(CONFIG.has("display.hidden.apps") && CONFIG.get("display.hidden.apps")) return true;
     // apps can be considered as hidden, its meant for older apps that should not be called anymore
-    if(isAppHidden(xml)) return false;
+    // if(isAppHidden(xml)) return false;
+    if(isAppHidden(xml)) {
+        // some apps are hidden but can be displayed if the user allowed it in the config file
+        if(CONFIG.has("display.hidden.apps") && CONFIG.get("display.hidden.apps")) return true;
+        else return false;
+    }
     // some categories can also prevent apps to be displayed
-    if(isAppWorkInProgress(xml)) return false;
+    if(isAppWorkInProgress(xml)) {
+        // some apps are not ready for production but can be displayed if the user allowed it in the config file
+        if(CONFIG.has("display.wip.apps") && CONFIG.get("display.wip.apps")) return true;
+        return false;
+    }
     // default is to display the app
     return true;
 }
@@ -210,12 +219,25 @@ function setParamValues(settings) {
     for(let item of document.getElementsByClassName("param-select")) select.setValue(item, settings);
     for(let item of document.getElementsByClassName("param-checklist")) checklist.setValue(item, settings);
     for(let item of document.getElementsByClassName("param-keyvalue")) keyvalues.setValue(item, settings);
-    for(let item of document.getElementsByClassName("param-checkbox")) checklist.setValue(item, settings);
+    for(let item of document.getElementsByClassName("param-checkbox")) checkbox.setValue(item, settings);
     for(let item of document.getElementsByClassName("param-text")) textfield.setValue(item, settings);
     for(let item of document.getElementsByClassName("param-number")) number.setValue(item, settings);
     for(let item of document.getElementsByClassName("param-range")) range.setValue(item, settings);
     for(let item of document.getElementsByClassName("param-file-input")) fileinput.setValue(item, settings);
     for(let item of document.getElementsByClassName("param-file-list")) filelist.setValue(item, settings);
+}
+
+function isFormDirty() {
+    if(select.isDirty()) return true;
+    if(checklist.isDirty()) return true;
+    if(keyvalues.isDirty()) return true;
+    if(checkbox.isDirty()) return true;
+    if(textfield.isDirty()) return true;
+    if(number.isDirty()) return true;
+    if(range.isDirty()) return true;
+    if(fileinput.isDirty()) return true;
+    if(filelist.isDirty()) return true;
+    return false;
 }
 
 function getConditionalParamElement(param) {
@@ -319,6 +341,7 @@ async function saveParameters(event) {
         const json = getParamValues();
         // add the app id to the json object
         json.set("app_id", document.getElementById("cmbAppName").value);
+        json.set("advanced_parameters_visible", document.getElementById("btn_header-advanced").classList.contains("advanced-visible"));
         // convert the json object to a string, using pretty print
         const settings = JSON.stringify(Object.fromEntries(json), (_, value) => {
             if (value instanceof Map) {
@@ -345,31 +368,56 @@ async function loadParameters(event) {
             // remove the app_id from the map
             delete(json.app_id);
             // set the parameters
-            setSettings(new Map(Object.entries(json)));
+            setSettings(new Map(Object.entries(json)), false);
+            if(json.advanced_parameters_visible) displayAdvancedParameters();
+        }
+    }
+}
+
+function displayAdvancedParameters() {
+    const parent = document.getElementById("btn_header-advanced");
+    parent.classList.add("advanced-visible");
+    for(let item of document.getElementsByTagName("div")) {
+        if(item.classList.contains("advanced-off")) {
+            item.classList.remove("advanced-off");
+            item.classList.add("advanced-on");
+        }
+    }
+}
+
+function hideAdvancedParameters() {
+    const parent = document.getElementById("btn_header-advanced");
+    parent.classList.remove("advanced-visible");
+    for(let item of document.getElementsByTagName("div")) {
+        if(item.classList.contains("advanced-on")) {
+            item.classList.remove("advanced-on");
+            item.classList.add("advanced-off");
         }
     }
 }
 
 function toggleAdvancedParameters(event) {
     event.preventDefault();
-    const parent = event.target;
-    if(parent.textContent == "Show advanced parameters") {
-        parent.textContent = "Hide advanced parameters";
-        for(let item of document.getElementsByTagName("div")) {
-            if(item.classList.contains("advanced-off")) {
-                item.classList.remove("advanced-off");
-                item.classList.add("advanced-on");
-            }
-        }
-    } else {
-        parent.textContent = "Show advanced parameters";
-        for(let item of document.getElementsByTagName("div")) {
-            if(item.classList.contains("advanced-on")) {
-                item.classList.remove("advanced-on");
-                item.classList.add("advanced-off");
-            }
-        }
-    }
+    // const parent = event.target;
+    // if(parent.classList.contains("advanced-visible")) {
+    //     parent.classList.remove("advanced-visible");
+    //     for(let item of document.getElementsByTagName("div")) {
+    //         if(item.classList.contains("advanced-on")) {
+    //             item.classList.remove("advanced-on");
+    //             item.classList.add("advanced-off");
+    //         }
+    //     }
+    // } else {
+    //     parent.classList.add("advanced-visible");
+    //     for(let item of document.getElementsByTagName("div")) {
+    //         if(item.classList.contains("advanced-off")) {
+    //             item.classList.remove("advanced-off");
+    //             item.classList.add("advanced-on");
+    //         }
+    //     }
+    // }
+    if(document.getElementById("btn_header-advanced").classList.contains("advanced-visible")) displayAdvancedParameters();
+    else hideAdvancedParameters();
 }
 
 // function that creates a header line with a h3 title, a button to save the parameters, and a button to load the parameters
@@ -378,13 +426,15 @@ function createHeader(id, title) {
     const h3 = document.createElement("h3");
     h3.textContent = title;
     header.appendChild(h3);
-    // header.appendChild(elements.createButton(`${id}-save`, "Save", saveParameters, "Save the parameters as a text file"));
-    // header.appendChild(elements.createButton(`${id}-load`, "Load", loadParameters, "Load the parameters"));
-    // header.appendChild(elements.createButton(`${id}-advanced`, "Show advanced parameters", toggleAdvancedParameters, "Display advanced parameters"));
     const buttons = elements.createDiv("", "app_header_buttons");
-    buttons.appendChild(elements.createButton(`${id}-advanced`, "Show advanced parameters", toggleAdvancedParameters, "Display advanced parameters"));
-    buttons.appendChild(elements.createButton(`${id}-load`, "Load", loadParameters, "Load the parameters"));
-    buttons.appendChild(elements.createButton(`${id}-save`, "Save", saveParameters, "Save the parameters as a text file"));
+    // buttons.appendChild(elements.createButton(`${id}-advanced`, "Advanced", toggleAdvancedParameters, "Display advanced parameters"));
+    // buttons.appendChild(elements.createButton(`${id}-load`, "Load", loadParameters, "Load the parameters"));
+    // buttons.appendChild(elements.createButton(`${id}-save`, "Save", saveParameters, "Save the parameters as a text file"));
+    // buttons.appendChild(elements.createButton(`${id}-reset`, "Reset", (event) => {event.preventDefault; prepareAppParameters();}, "Reset all parameters"));
+    buttons.appendChild(elements.createButton("btn_header-advanced", "Advanced", toggleAdvancedParameters, "Display advanced parameters"));
+    buttons.appendChild(elements.createButton("btn_header-load", "Load", loadParameters, "Load the parameters"));
+    buttons.appendChild(elements.createButton("btn_header-save", "Save", saveParameters, "Save the parameters as a text file"));
+    buttons.appendChild(elements.createButton("btn_header-reset", "Reset", (event) => {event.preventDefault; prepareAppParameters();}, "Reset all parameters"));
     header.appendChild(buttons);
     return header;
 }
@@ -403,4 +453,4 @@ function createAppPage(parent) {
     return div;
 }
 
-export { conditionalEvent, getFullName, getOptionList, getParamValues, initialize, setParamValues, updateAppList };
+export { conditionalEvent, getFullName, getOptionList, getParamValues, initialize, isFormDirty, setParamValues, updateAppList };

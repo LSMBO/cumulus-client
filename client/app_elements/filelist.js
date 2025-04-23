@@ -66,30 +66,51 @@ function create(id, param, input_class, useFolder) {
         updateFileList(parent);
     }, "Clear the list"));
     parent.appendChild(header);
-    const list = elements.createDiv("", "param-row w3-hide");
 
+    const list = elements.createDiv("", "param-row w3-hide");
     const ul = elements.createElement("ul", new Map([["id", input_id], ["class", `w3-ul w3-border ${input_class}`]]));
     elements.addFileDragAndDropEvents(ul, useFolder, true, [ext]);
     if(type == "RAW") elements.SHARED_FILES_IDS.push(input_id);
     else elements.LOCAL_FILES_IDS.push(input_id);
     list.appendChild(ul);
     parent.appendChild(list);
+
+    elements.addDefaultValue(parent, "");
     elements.setSettingVisibility(parent, param);
     return parent;
 }
 
 function getValue(item, map) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return;
     // get the id of either ul or input element
     const input = item.getElementsByTagName("ul")[0];
     // call the getFiles function
     const files = elements.getFiles([input.id]);
     // store the files in the map
+    if(files.length == 0) return;
     map.set(item.name, files);
 }
 
 function setValue(item, settings) {
     const ul = item.getElementsByTagName("ul")[0];
-    if(settings.has(item.name)) addBrowsedFiles(ul, settings.get(item.name));
+    if(settings.has(item.name)) {
+        addBrowsedFiles(ul, settings.get(item.name));
+    }
 }
 
-export { create, getValue, setValue, updateFileList };
+function isDefaultValue(item) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return true;
+    // default is an empty list
+    return item.getElementsByTagName("ul")[0].children.length == 0;
+}
+
+function isDirty() {
+    for(let item of document.getElementsByClassName("param-file-list")) {
+        if(!isDefaultValue(item)) return true;
+    }
+    return false;
+}
+
+export { create, getValue, isDirty, setValue, updateFileList };

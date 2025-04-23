@@ -39,26 +39,50 @@ function create(id, param, input_class) {
     const input_id = `${id}-${param.getAttribute("name")}`;
     parent.appendChild(elements.createLabel(param, input_id));
     const input = elements.createElement("select", new Map([["id", input_id], ["name", param.getAttribute("name")], ["class", `w3-select w3-border ${input_class}`]]));
+    var defaultValue = "";
     for(let option of param.children) {
         if(option.hasAttribute("value")) {
             const opt = elements.createElement("option", new Map([["value", option.getAttribute("value")], ["textContent", option.textContent]]));
-            if(option.hasAttribute("selected") && option.getAttribute("selected")) opt.selected = true;
+            if(option.hasAttribute("selected") && option.getAttribute("selected")) {
+                opt.selected = true;
+                defaultValue = option.getAttribute("value");
+            }
             input.appendChild(opt);
         }
     }
     parent.appendChild(input);
+    elements.addDefaultValue(parent, defaultValue);
     elements.setSettingVisibility(parent, param);
     return parent;
 }
 
 function getValue(item, map) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return;
+    // get the value of the first select
     const select = item.getElementsByTagName("SELECT")[0];
     if(select != null && select.name) map.set(select.name, select.value);
 }
 
 function setValue(item, settings) {
     const select = item.getElementsByTagName("SELECT")[0];
-    if(settings.has(select.name)) select.value = settings.get(select.name);
+    if(settings.has(select.name)) {
+        select.value = settings.get(select.name);
+    }
 }
 
-export { create, getValue, setValue };
+function isDefaultValue(item) {
+    // do not get the value if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return true;
+    // compare the value of the first input to the default value
+    return item.getElementsByTagName("SELECT")[0].value == item.getElementsByTagName("a")[0].textContent;
+}
+
+function isDirty() {
+    for(let item of document.getElementsByClassName("param-select")) {
+        if(!isDefaultValue(item)) return true;
+    }
+    return false;
+}
+
+export { create, getValue, isDirty, setValue };
