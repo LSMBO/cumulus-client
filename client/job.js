@@ -151,7 +151,7 @@ function refreshJob(job) {
       document.getElementById("btnDelete2").style.display = "inline-block";
     }
     // settings
-    setSettings(new Map(Object.entries(job.settings)));
+    setSettings(new Map(Object.entries(job.settings)), true);
     // logs
     if(job.status == "PENDING") {
       document.getElementById("tabLogs").children[0].classList.remove("w3-hide");
@@ -335,94 +335,11 @@ function deleteJob() {
   });
 }
 
-// function getSettings() {
-//   const settings = new Map();
-//   for(let item of FORM.getElementsByTagName("input")) {
-//     if(item.name) {
-//       if(item.type == "checkbox") {
-//         if(item.checked) settings.set(item.name, true);
-//       } else settings.set(item.name, item.value);
-//     }
-//   }
-//   for(let item of FORM.getElementsByTagName("select")) {
-//     if(item.name) settings.set(item.name, item.value);
-//   }
-//   // settings.set("files", utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
-//   const app_id = document.getElementById("cmbAppName").value;
-//   for(let item of FORM.getElementsByTagName("ul")) {
-//     // settings.set(item.name, utils.getBrowsedFiles(item));
-//     if(item.childElementCount > 0) {
-//       // ul elements do not have a name attribute, extract it from the id (which is formed like '<app_id>-<name>')
-//       const name = item.id.replace(`${app_id}-`, "");
-//       settings.set(name, utils.getBrowsedFiles(item));
-//     }
-//   }
-//   return settings;
-// }
-
-// temp code to keep it compatible with ancient jobs
-function getOldJobCompatibleName(name) {
-  if(name == "fasta-file") return "fasta";
-  else if(name == "dia-pasef-list") return "files";
-  else if(name == "protein-inference") return "inference";
-  else if(name == "ptm-carba") return "carba";
-  else if(name == "machine-learning") return "classifier";
-  else if(name == "ms2-acc") return "mass-acc";
-  else if(name == "fragment-mz-max") return "max-fr-mz";
-  else if(name == "peptide-length-max") return "max-pep-length";
-  else if(name == "precursor-charge-max") return "max-pr-charge";
-  else if(name == "precursor-mz-max") return "max-pr-mz";
-  else if(name == "fragment-mz-min") return "min-fr-mz";
-  else if(name == "peptide-length-min") return "min-pep-length";
-  else if(name == "precursor-charge-min") return "min-pr-charge";
-  else if(name == "precursor-mz-min") return "min-pr-mz";
-  else if(name == "cross-run-norm") return "norm";
-  else if(name == "quantification-strategy") return "quant";
-  else if(name == "raw-type") return "rawType";
-  else if(name == "speed-ram") return "speed";
-  else if(name == "max-var-mod") return "var-mods";
-  else if(name == "loglevel") return "verbose";
-  else if(name == "scan-window") return "window";
-  else return name;
-}
-function getOldJobCompatibleValue(value) {
-  if(value == "diapasef") return "dia-pasef";
-  else if(value == "slicepasef") return "slice-pasef";
-  else if(value == "raw") return "thermo-raw";
-  else if(value == "ums/prec") return "quantums-precision";
-  else if(value == "ums/acc") return "quantums-accuracy";
-  else if(value == "low ram") return "low-ram";
-  else if(value == "high speed") return "high-speed";
-  else if(value == "ultra fast") return "ultra-fast";
-  else return value;
-}
-
-function setSettings(settings) {
+function setSettings(settings, disable = false) {
   // console.log(settings);
   // create the html objects corresponding to the current app
   prepareAppParameters(settings);
   // set the values to the form
-  // const app_id = document.getElementById("cmbAppName").value;
-  // for(let item of FORM.getElementsByTagName("input")) {
-  //   if(item.name) {
-  //     const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
-  //     if(item.type == "checkbox") {
-  //       item.checked = settings.has(name) && settings.get(name);
-  //     } else if(settings.has(name)) {
-  //       item.value = settings.get(name);
-  //     }
-  //   }
-  // }
-  // for(let item of FORM.getElementsByTagName("select")) {
-  //   const name = settings.has(item.name) ? item.name : getOldJobCompatibleName(item.name);
-  //   if(name && settings.has(name)) item.value = getOldJobCompatibleValue(settings.get(name));
-  // }
-  // for(let item of FORM.getElementsByTagName("ul")) {
-  //   // ul elements do not have a name attribute, extract it from the id (which is formed like '<app_id>-<name>')
-  //   const item_name = item.id.replace(`${app_id}-`, "");
-  //   const name = settings.has(item_name) ? item_name : getOldJobCompatibleName(item_name);
-  //   if(settings.has(name)) utils.addBrowsedFiles(item, settings.get(name));
-  // }
   apps.setParamValues(settings);
   // call the events if there are any (only the WHEN cases!)
   for(let item of FORM.getElementsByClassName("cond")) {
@@ -433,12 +350,14 @@ function setSettings(settings) {
     updateFileList(item);
   }
   // when the job is not new, disable all parameters
-  for(let tagtype of ["input", "select", "button"]) {
-    for(let item of FORM.getElementsByTagName(tagtype)) {
-      item.disabled = true;
+  if(disable) {
+    // disable all parameters in the form
+    for(let tagtype of ["input", "select", "button"]) {
+      for(let item of FORM.getElementsByTagName(tagtype)) {
+        item.disabled = true;
+      }
     }
   }
 }
 
-// export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, getSettings, refreshJob, startJob, setAppParameters, setSettings };
 export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, prepareAppParameters, refreshJob, startJob, setSettings };
