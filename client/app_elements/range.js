@@ -52,7 +52,7 @@ function getValue(item, map) {
     if(!elements.hasVisibleWhenParent(item)) return;
     // get the value of the first two inputs
     for(let input of item.getElementsByTagName("input")) {
-        if(input.value != "") map.set(input.name, input.value);
+        if(input.value != "" || isDefaultValue(item)) map.set(input.name, input.value);
     }
 }
 
@@ -61,7 +61,7 @@ function setValue(item, settings) {
     for(let input of item.getElementsByTagName("input")) {
         if(settings.has(input.name)) {
             input.value = settings.get(input.name);
-        }
+        } else input.value = "";
     }
 }
 

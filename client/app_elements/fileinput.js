@@ -73,7 +73,7 @@ function setValue(item, settings) {
     const input = item.getElementsByTagName("input")[0];
     if(settings.has(input.name)) {
         input.value = settings.get(input.name);
-    }
+    } else input.value = ""; // reset the value if not in settings
 }
 
 function isDefaultValue(item) {

@@ -132,6 +132,10 @@ function setValue(item, settings) {
             if(values.includes(input.value)) input.checked = true;
             else input.checked = false;
         }
+    } else {
+        for(let input of item.getElementsByTagName("input")) {
+            input.checked = false;
+        }
     }
     updateLabel(item.children[1]);
 }

@@ -64,7 +64,7 @@ function setValue(item, settings) {
     const input = item.getElementsByTagName("input")[0];
     if(settings.has(input.name) && settings.get(input.name)) {
         input.checked = true;
-    }
+    } else input.checked = false; // reset the value if not in settings
 }
 
 function isDefaultValue(item) {

@@ -49,6 +49,7 @@ function createHeader(table, param) {
         e.preventDefault();
         const table = e.target.parentElement.parentElement.parentElement;
         addRow(table, "", "");
+        table.rows[table.rows.length - 1].getElementsByTagName("input")[0].focus();
     });
     tooltip(button, "Add a new element");
     th3.appendChild(button);
@@ -98,9 +99,12 @@ function create(id, param, input_class) {
     parent.name = param.getAttribute("name");
     const input_id = `${id}-${param.getAttribute("name")}`;
     parent.appendChild(elements.createLabel(param, input_id));
+    // determine the classes for the main table (using __class__ style to store information in the DOM, but they are not used in the CSS)
+    const classes = ["w3-ul"];
+    if(param.hasAttribute("is_list") && param.getAttribute("is_list") == "true") classes.push("__is_list__");
     // create an element with a first line containing the headers and the '+' button
     // TODO add value type in the table or the header line
-    const table = elements.createElement("table", new Map([["id", input_id], ["name", param.getAttribute("name")], ["class", "w3-ul"]]));
+    const table = elements.createElement("table", new Map([["id", input_id], ["name", param.getAttribute("name")], ["class", classes.join(" ")]]));
     createHeader(table, param);
     const defaultValues = new Array();
     for(let option of param.children) {
@@ -117,19 +121,32 @@ function create(id, param, input_class) {
 function getValue(item, map) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return;
+    // store the values differently is the elements are lists or not
+    const is_list = item.getElementsByTagName("table")[0].classList.contains("__is_list__");
     // get the value of the table
     const values = new Map();
     for(let row of item.getElementsByTagName("tr")) {
         if(row.getElementsByTagName("th").length > 0) continue; // skip the header row
         const key = row.getElementsByTagName("input")[0].value;
         const value = row.getElementsByTagName("input")[1].value;
-        if(key != "" && value != "") values.set(key, value);
+        if(key != "" && value != "") {
+            // values.set(key, value);
+            // if it's a list, store the values in an array, the key may have been already stored
+            if(is_list) {
+                if(!values.has(key)) values.set(key, new Array());
+                values.get(key).push(value);
+            } else {
+                // if it's not a list, store the value as a key-value pair
+                values.set(key, value);
+            }
+        }
     }
     if(values.size == 0) return; // no values to store
     map.set(item.name, values);
 }
 
 function setValue(item, settings) {
+    // console.log(settings);
     const table = item.getElementsByTagName("table")[0];
     // remove all rows except for the header row
     while(table.rows.length > 1) table.deleteRow(1);
@@ -141,9 +158,9 @@ function setValue(item, settings) {
         for(let [key, value] of map) {
             addRow(table, key, value);
         }
-        // make sure to display at least one row
-        if(table.rows.length == 1) addRow(table, "", "");
     }
+    // make sure to display at least one row
+    if(table.rows.length == 1) addRow(table, "", "");
 }
 
 function isDefaultValue(item) {
