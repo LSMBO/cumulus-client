@@ -110,7 +110,8 @@ button {
     margin-left: 250px;
     border-width: 0px 0 0 0;
     border-style: solid;
-    height: 100%;
+    /* height: 100%; */
+    height: calc(100% - 3px);
     overflow: auto;
 }
 
@@ -464,4 +465,27 @@ button {
 @keyframes mist {
     0% { background-position: 0 0; }
     100% { background-position: 100vw 0; }
+}
+
+#reloadbar {
+    height: 3px;
+    background-color: var(--primary-color-dark);
+    visibility: hidden;
+    margin-left: 250px;
+    overflow: auto;
+    width: calc(100% - 234px);
+}
+
+#reloadbar span {
+    display: block;
+    height: inherit;
+    background-color: var(--accent-color-light);
+    animation-name: grow;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+@keyframes grow {
+    0% { width: 0; }
+    100% { width: 100%; }
 }

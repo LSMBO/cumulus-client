@@ -43,6 +43,8 @@ import * as apps from "./applist.js";
 
 var INTERVAL; // used to store the variable that updates the list of jobs every n seconds
 var IS_SEARCH = false;
+const RELOAD_BAR = document.getElementById("reloadbar");
+const RELOAD_SPAN = RELOAD_BAR.getElementsByTagName("span")[0];
 
 function refreshStatus() {
   // console.log("refreshStatus()");
@@ -234,19 +236,32 @@ function reloadJobListOrSleep(reloadPreviousSettings = true) {
   utils.checkSleepMode();
 }
 
+function resetReloadBarTimer(time_left_in_seconds = settings.CONFIG.get("refresh.rate")) {
+  // display the refresh animation, to indicate to the user how long it will take before the next refresh
+  RELOAD_SPAN.style.animationDuration = `${time_left_in_seconds}s`;
+  RELOAD_SPAN.style.animationName = "none";
+  RELOAD_SPAN.offsetHeight; // trigger reflow (forces the animation to restart)
+  RELOAD_SPAN.style.animationName = "grow";
+  RELOAD_BAR.style.visibility = "visible";
+}
+
 function resetInterval() {
   if(INTERVAL) clearInterval(INTERVAL);
   INTERVAL = window.setInterval(reloadJobListOrSleep, settings.CONFIG.get("refresh.rate") * 1000);
+  resetReloadBarTimer();
 }
 
 function pauseRefresh() {
   if(INTERVAL) {
     __electronLog.debug("Stop refreshing");
     clearInterval(INTERVAL);
+    INTERVAL = null;
+    RELOAD_SPAN.style.animationPlayState = "paused";
   } else {
     __electronLog.debug("Start refreshing");
     resetInterval();
+    RELOAD_SPAN.style.animationPlayState = "running";
   }
 }
 
-export { highlightJobButton, isSearchMode, pauseRefresh, refreshStatus, reloadJobList, resetInterval, setJobListDisplay, setSearchMode };
+export { highlightJobButton, isSearchMode, pauseRefresh, refreshStatus, reloadJobList, resetInterval, resetReloadBarTimer, setJobListDisplay, setSearchMode };
