@@ -288,8 +288,8 @@ async function startJob() {
   const appName = document.getElementById("cmbAppName").value;
   const strategy = document.getElementById("cmbStrategy").value;
   const description = document.getElementById("txtJobDescription").value;
-  // const settings = JSON.stringify(Object.fromEntries(getSettings()));
-  const settings = JSON.stringify(Object.fromEntries(apps.getParamValues()));
+  // const settings = JSON.stringify(Object.fromEntries(apps.getParamValues()));
+  const settings = apps.getParamValuesAsString();
   // also get the files, make sure that UNC paths are replaced by the network path
   const sharedFiles = JSON.stringify(getSharedFiles());
   const localFiles = JSON.stringify(getLocalFiles());

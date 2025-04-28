@@ -215,6 +215,20 @@ function getParamValues() {
     return settings;
 }
 
+function getParamValuesAsString() {
+    const json = getParamValues();
+    // add the app id to the json object
+    json.set("app_id", document.getElementById("cmbAppName").value);
+    json.set("advanced_parameters_visible", document.getElementById("btn_header-advanced").classList.contains("advanced-visible"));
+    // convert the json object to a string, using pretty print
+    return JSON.stringify(Object.fromEntries(json), (_, value) => {
+        if (value instanceof Map) {
+            return [...value.entries()];
+        }
+        return value;
+    }, 2);
+}
+
 function setParamValues(settings) {
     for(let item of document.getElementsByClassName("param-select")) select.setValue(item, settings);
     for(let item of document.getElementsByClassName("param-checklist")) checklist.setValue(item, settings);
@@ -336,19 +350,18 @@ async function saveParameters(event) {
     // ask user where to save the file
     const output = await window.electronAPI.saveDialog("Save the parameters", "parameters.txt", []);
     if(output != "") {
-        // call job.getSettings() to get the parameters
-        // const json = getSettings();
-        const json = getParamValues();
-        // add the app id to the json object
-        json.set("app_id", document.getElementById("cmbAppName").value);
-        json.set("advanced_parameters_visible", document.getElementById("btn_header-advanced").classList.contains("advanced-visible"));
-        // convert the json object to a string, using pretty print
-        const settings = JSON.stringify(Object.fromEntries(json), (_, value) => {
-            if (value instanceof Map) {
-                return [...value.entries()];
-            }
-            return value;
-        }, 2);
+        // const json = getParamValues();
+        // // add the app id to the json object
+        // json.set("app_id", document.getElementById("cmbAppName").value);
+        // json.set("advanced_parameters_visible", document.getElementById("btn_header-advanced").classList.contains("advanced-visible"));
+        // // convert the json object to a string, using pretty print
+        // const settings = JSON.stringify(Object.fromEntries(json), (_, value) => {
+        //     if (value instanceof Map) {
+        //         return [...value.entries()];
+        //     }
+        //     return value;
+        // }, 2);
+        const settings = getParamValuesAsString();
         // ask the server to save the file
         await window.electronAPI.saveFile(output, settings);
     }
@@ -416,7 +429,7 @@ function toggleAdvancedParameters(event) {
     //         }
     //     }
     // }
-    if(document.getElementById("btn_header-advanced").classList.contains("advanced-visible")) displayAdvancedParameters();
+    if(!document.getElementById("btn_header-advanced").classList.contains("advanced-visible")) displayAdvancedParameters();
     else hideAdvancedParameters();
 }
 
@@ -453,4 +466,4 @@ function createAppPage(parent) {
     return div;
 }
 
-export { conditionalEvent, getFullName, getOptionList, getParamValues, initialize, isFormDirty, setParamValues, updateAppList };
+export { conditionalEvent, getFullName, getOptionList, getParamValuesAsString, initialize, isFormDirty, setParamValues, updateAppList };
