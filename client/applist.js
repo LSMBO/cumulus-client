@@ -35,6 +35,7 @@ knowledge of the CeCILL license and that you accept its terms.
 // import { getSettings, setSettings } from "./job.js";
 import { prepareAppParameters, setSettings } from "./job.js";
 import { CONFIG } from "./settings.js";
+import { createDialogWarning } from "./dialog.js";
 import { tooltip } from "./utils.js";
 import * as elements from "./app_elements/elements.js";
 import * as checkbox from "./app_elements/checkbox.js";
@@ -215,6 +216,15 @@ function getParamValues() {
     return settings;
 }
 
+function checkParamValues() {
+    // TODO test this function
+    const errors = new Array();
+    for(let item of document.getElementsByClassName("param-keyvalue")) keyvalues.checkValue(item, errors);
+    for(let item of document.getElementsByClassName("param-number")) number.checkValue(item, errors);
+    for(let item of document.getElementsByClassName("param-range")) range.checkValue(item, errors);
+     return errors;
+}
+
 function getParamValuesAsString() {
     const json = getParamValues();
     // add the app id to the json object
@@ -259,11 +269,13 @@ function getConditionalParamElement(param) {
     else if(param.classList.contains("param-file-input")) return param.getElementsByTagName("INPUT")[0];
     else if(param.classList.contains("param-checkbox")) return param.getElementsByTagName("INPUT")[0];
     else if(param.classList.contains("param-number")) return param.getElementsByTagName("INPUT")[0];
+    else if(param.classList.contains("param-text")) return param.getElementsByTagName("INPUT")[0];
 }
 
 function getConditionalEventType(param) {
     if(param.classList.contains("param-select") || param.classList.contains("param-checkbox")) return "change";
     else if(param.classList.contains("param-file-input") || param.classList.contains("param-number")) return "input";
+    else if(param.classList.contains("param-text")) return "input";
 }
 
 function conditionalEvent(conditional) {
@@ -273,10 +285,19 @@ function conditionalEvent(conditional) {
         const value = conditional.type == "checkbox" ? conditional.checked : conditional.value; // the value that will determine which when is displayed
         // loop through the next items that contain a "when" class
         const nextElements = getFirstParentWithClass(conditional, "param-row").parentElement.getElementsByClassName("when");
+        // show or hide the when cases
         for(let next of nextElements) {
-            // show or hide the when case
-            if(next.id == `${conditional.id}-when-${value}`) next.classList.add("visible");
-            else next.classList.remove("visible");
+            // get the value of the when case
+            const when_value = next.id.replace(`${conditional.id}-when-`, "");
+            // if the when has a class "allow_regex", check if the value matches the regex
+            if(next.classList.contains("__allow_regex__")) {
+                const regex = new RegExp(when_value);
+                if(regex.test(value)) next.classList.add("visible");
+                else next.classList.remove("visible");
+            } else {
+                if(when_value == value) next.classList.add("visible");
+                else next.classList.remove("visible");
+            }
         }
     }
 }
@@ -297,6 +318,7 @@ function createConditional(id, cond) {
             const value = when.getAttribute("value");
             const div_id = `${input.id}-when-${value}`;
             const div = elements.createDiv(div_id, "when");
+            if(when.hasAttribute("allow_regex") && when.getAttribute("allow_regex") == "true") div.classList.add("__allow_regex__");
             for(let child of when.children) {
                 if(child.tagName.toUpperCase() != "WHEN") div.appendChild(createParam(`${id}-${value}`, child, ""));
             }
@@ -305,7 +327,7 @@ function createConditional(id, cond) {
     }
     // for the event listener, i need the id of the element to target (or the element itself), and the type of event to listen to
     // for now, conditional does not support file-list and range
-    getConditionalParamElement(item).addEventListener(getConditionalEventType(item), (e) => conditionalEvent(input));
+    getConditionalParamElement(item).addEventListener(getConditionalEventType(item), () => conditionalEvent(input));
     // trigger the event to initialize the values
     conditionalEvent(input);
     return parent;
@@ -347,23 +369,19 @@ function createSection(id, section) {
 
 async function saveParameters(event) {
     event.preventDefault();
-    // ask user where to save the file
-    const output = await window.electronAPI.saveDialog("Save the parameters", "parameters.txt", []);
-    if(output != "") {
-        // const json = getParamValues();
-        // // add the app id to the json object
-        // json.set("app_id", document.getElementById("cmbAppName").value);
-        // json.set("advanced_parameters_visible", document.getElementById("btn_header-advanced").classList.contains("advanced-visible"));
-        // // convert the json object to a string, using pretty print
-        // const settings = JSON.stringify(Object.fromEntries(json), (_, value) => {
-        //     if (value instanceof Map) {
-        //         return [...value.entries()];
-        //     }
-        //     return value;
-        // }, 2);
-        const settings = getParamValuesAsString();
-        // ask the server to save the file
-        await window.electronAPI.saveFile(output, settings);
+    // check the parameters first
+    const errors = checkParamValues();
+    if(errors.length > 0) {
+        // display the errors in a dialog
+        createDialogWarning("Invalid parameters", errors.join("<br/>"));
+    } else {
+        // ask user where to save the file
+        const output = await window.electronAPI.saveDialog("Save the parameters", "parameters.txt", []);
+        if(output != "") {
+            const settings = getParamValuesAsString();
+            // ask the server to save the file
+            await window.electronAPI.saveFile(output, settings);
+        }
     }
 }
 

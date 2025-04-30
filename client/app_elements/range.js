@@ -51,9 +51,26 @@ function getValue(item, map) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return;
     // get the value of the first two inputs
-    for(let input of item.getElementsByTagName("input")) {
-        if(input.value != "" || isDefaultValue(item)) map.set(input.name, input.value);
+    // for(let input of item.getElementsByTagName("input")) {
+    //     if(input.value != "" || isDefaultValue(item)) map.set(input.name, input.value);
+    // }
+    const inputs = item.getElementsByTagName("input");
+    if(!isDefaultValue(item) && inputs[0].value != "" && inputs[1].value != "") { // if one value is empty, do not set the value (TODO user should be aware of this)
+        map.set(inputs[0].name, inputs[0].value);
+        map.set(inputs[1].name, inputs[1].value);
     }
+}
+
+function checkValue(item, errors) {
+    // do not check anything if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return;
+    // get the values
+    const value1 = item.getElementsByTagName("input")[0].value;
+    const value2 = item.getElementsByTagName("input")[1].value;
+    // if one value is missing, it's an error
+    if(value1 == "" || value2 == "") errors.push(`A value of '${item.getElementsByTagName("label")[0].textContent}' is missing`);
+    // if one value is not a number, it's an error
+    if(isNaN(value1) || isNaN(value2)) errors.push(`A value of '${item.getElementsByTagName("label")[0].textContent}' is not a number`);
 }
 
 function setValue(item, settings) {
@@ -79,4 +96,4 @@ function isDirty() {
     return false;
 }
 
-export { create, getValue, isDirty, setValue };
+export { checkValue, create, getValue, isDirty, setValue };

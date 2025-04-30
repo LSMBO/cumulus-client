@@ -145,18 +145,47 @@ function getValue(item, map) {
     map.set(item.name, values);
 }
 
+function checkValue(item, errors) {
+    // do not check anything if the element is not visible
+    if(!elements.hasVisibleWhenParent(item)) return;
+    // get the expected value type
+    const type_of = item.getElementsByTagName("th")[2].getElementsByTagName("i")[0].textContent;
+    // check each row of the table
+    for(let row of item.getElementsByTagName("tr")) {
+        if(row.getElementsByTagName("th").length > 0) continue; // skip the header row
+        const key = row.getElementsByTagName("input")[0].value;
+        const value = row.getElementsByTagName("input")[1].value;
+        // if one key or value is missing, it's an error
+        if((key == "" && value != "") || (key != "" && value == "")) {
+            errors.push(`A value of '${item.getElementsByTagName("label")[0].textContent}' is missing`);
+            return;
+        }
+        // if one value is not a number, it's an error
+        if((type_of == "integer" || type_of == "float") && isNaN(value)) {
+            errors.push(`A value of '${item.getElementsByTagName("label")[0].textContent}' is not a number`);
+            return;
+        }
+    }
+}
+
 function setValue(item, settings) {
-    // console.log(settings);
     const table = item.getElementsByTagName("table")[0];
+    // console.log(table);
     // remove all rows except for the header row
     while(table.rows.length > 1) table.deleteRow(1);
     // add the new rows eventually
     if(settings.has(item.name)) {
         // the setting is a map of key-value pairs
         const map = settings.get(item.name);
+        // console.log(map);
         // loop over the map and create a new row for each key-value pair
         for(let [key, value] of map) {
-            addRow(table, key, value);
+            // console.log(typeof value);
+            // addRow(table, key, value);
+            // if the value is an array, loop over the array and create a new row for each value
+            if(Array.isArray(value)) {
+                for(let v of value) addRow(table, key, v);
+            } else addRow(table, key, value);
         }
     }
     // make sure to display at least one row
@@ -187,4 +216,4 @@ function isDirty() {
     return false;
 }
 
-export { create, getValue, isDirty, setValue };
+export { checkValue, create, getValue, isDirty, setValue };

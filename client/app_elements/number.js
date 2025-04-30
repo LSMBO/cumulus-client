@@ -49,7 +49,15 @@ function getValue(item, map) {
     if(!elements.hasVisibleWhenParent(item)) return;
     // get the value of the first input
     const input = item.getElementsByTagName("input")[0];
-    if(input != null && (input.value != "" || isDefaultValue(item))) map.set(input.name, input.value);
+    // if(input != null && (input.value != "" || isDefaultValue(item))) map.set(input.name, input.value);
+    if(input != null && !isDefaultValue(item)) map.set(input.name, input.value);
+}
+
+function checkValue(item, errors) {
+    // get the value
+    const value = elements.hasVisibleWhenParent(item) ? item.getElementsByTagName("input")[0].value : null;
+    // if a value is there, check if it is a number
+    if(value != null && isNaN(value)) errors.push(`The value of '${item.getElementsByTagName("label")[0].textContent}' is not a number`);
 }
 
 function setValue(item, settings) {
@@ -73,4 +81,4 @@ function isDirty() {
     return false;
 }
 
-export { create, getValue, isDirty, setValue };
+export { checkValue, create, getValue, isDirty, setValue };
