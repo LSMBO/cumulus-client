@@ -42,6 +42,7 @@ const ICON_QUESTION = "img/question.png";
 const ICON_WARNING = "img/warning.png";
 const ICON_SLEEP = "img/sleep.png";
 const ICON_OFFLINE = "img/offline.png";
+var SLEEP_INTERVAL = undefined; // interval to update the sleep dialog
 
 function createDialog(title, message, icon) {
     if(ID == 0) {
@@ -66,25 +67,21 @@ function createDialogInfo(title, message) {
     PARENT.appendChild(createDialog(title, message, ICON_INFO));
 }
 
-// function createDialogSleep() {
-//     // do not create the dialog if a sleep dialog is already open
-//     if(isDialogOpen(ICON_SLEEP)) return;
-//     PARENT.appendChild(createDialog("Sleep mode", "Cumulus is in sleep mode and will be refreshed less often, but do not worry your jobs are still running!", ICON_SLEEP));
-// }
-
 function createDialogSleep(time_left_in_seconds) {
     // do not create the dialog if a sleep dialog is already open
     if(isDialogOpen(ICON_SLEEP)) return;
-    PARENT.appendChild(createDialog("Sleep mode", `Cumulus is in sleep mode. Next refresh will be in ${time_left_in_seconds} seconds`, ICON_SLEEP));
-}
-function updateDialogSleep(time_left_in_seconds) {
-    // get the first dialog with the sleep icon
-    for(let dialog of PARENT.childNodes) {
-        if(dialog.getElementsByTagName("img")[0].src.endsWith(ICON_SLEEP)) {
-            dialog.getElementsByTagName("label")[0].innerHTML = `Cumulus is in sleep mode. Next refresh will be in ${time_left_in_seconds} seconds`;
-            return;
-        }
-    }
+    // create a sleep dialog
+    const dialog = createDialog("Sleep mode", `Cumulus is in sleep mode. Next refresh will be in ${time_left_in_seconds} seconds`, ICON_SLEEP);
+    // add a countdown to the dialog
+    var countdown = time_left_in_seconds - 1;
+    clearInterval(SLEEP_INTERVAL); // clear the previous interval if it exists
+    SLEEP_INTERVAL = setInterval(() => {
+        dialog.getElementsByTagName("label")[0].innerHTML = `Cumulus is in sleep mode. Next refresh will be in ${countdown} seconds`;
+        countdown--; // decrement the countdown but not below 0
+        if(countdown == 0) countdown = time_left_in_seconds; // reset the countdown to the original value
+    }, 1000); // every second
+    // add the dialog to the parent
+    PARENT.appendChild(dialog);
 }
 
 function closeDialog(id) {
@@ -143,4 +140,4 @@ function isDialogOpen(icon) {
 }
 function isDialogOfflineOpen() { return isDialogOpen(ICON_OFFLINE); }
 
-export {createDialogInfo, createDialogQuestion, createDialogSleep, createDialogWarning, createDialogOffline, isDialogOfflineOpen, updateDialogSleep };
+export {createDialogInfo, createDialogQuestion, createDialogSleep, createDialogWarning, createDialogOffline, isDialogOfflineOpen };
