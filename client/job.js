@@ -284,30 +284,37 @@ function cloneJob() {
 
 async function startJob() {
   // console.log(`startJob()`);
-  // gather all parameters
-  const appName = document.getElementById("cmbAppName").value;
-  const strategy = document.getElementById("cmbStrategy").value;
-  const description = document.getElementById("txtJobDescription").value;
-  // const settings = JSON.stringify(Object.fromEntries(apps.getParamValues()));
-  const settings = apps.getParamValuesAsString();
-  // also get the files, make sure that UNC paths are replaced by the network path
-  const sharedFiles = JSON.stringify(getSharedFiles());
-  const localFiles = JSON.stringify(getLocalFiles());
-  // display the loading screen
-  utils.toggleLoadingScreen();
-  // send the job to the server
-  const job_id = await window.electronAPI.startJob(utils.getUserName(), appName, strategy, description, settings, sharedFiles, localFiles);
-  // if the job_id is not numeric, it's an error message
-  if(isNaN(job_id) || job_id === "") {
-    utils.toggleLoadingScreen();
-    dialog.createDialogWarning("Job creation failure", `The creation of the job failed with the following error:<br/>${job_id}`);
+  // check if the app parameters are valid
+  const errors = apps.checkParamValues();
+  if(errors.length > 0) {
+      // display the errors in a dialog
+      dialog.createDialogWarning("Invalid parameters", errors.join("<br/>"));
   } else {
+    // gather all parameters
+    const appName = document.getElementById("cmbAppName").value;
+    const strategy = document.getElementById("cmbStrategy").value;
+    const description = document.getElementById("txtJobDescription").value;
+    // const settings = JSON.stringify(Object.fromEntries(apps.getParamValues()));
+    const settings = apps.getParamValuesAsString();
+    // also get the files, make sure that UNC paths are replaced by the network path
+    const sharedFiles = JSON.stringify(getSharedFiles());
+    const localFiles = JSON.stringify(getLocalFiles());
+    // display the loading screen
     utils.toggleLoadingScreen();
-    // reload the job list
-    utils.setCurrentJobId(job_id);
-    jobs.reloadJobList();
-    document.getElementById("btnLogs").disabled = false;
-    tabs.openTab("tabLogs");
+    // send the job to the server
+    const job_id = await window.electronAPI.startJob(utils.getUserName(), appName, strategy, description, settings, sharedFiles, localFiles);
+    // if the job_id is not numeric, it's an error message
+    if(isNaN(job_id) || job_id === "") {
+      utils.toggleLoadingScreen();
+      dialog.createDialogWarning("Job creation failure", `The creation of the job failed with the following error:<br/>${job_id}`);
+    } else {
+      utils.toggleLoadingScreen();
+      // reload the job list
+      utils.setCurrentJobId(job_id);
+      jobs.reloadJobList();
+      document.getElementById("btnLogs").disabled = false;
+      tabs.openTab("tabLogs");
+    }
   }
 }
 
