@@ -208,10 +208,8 @@ async function searchJobs(reloadPreviousSettings = true) {
 
 async function reloadJobList(reloadPreviousSettings = true) {
   // refresh the list of jobs
-  // console.log("reloadJobList()");
+  // console.log("Reload job list at " + new Date().toLocaleTimeString());
   const [jobs, error] = IS_SEARCH ? await searchJobs(reloadPreviousSettings) : await getLastJobs();
-  // const errorMessage = error ? error : await window.electronAPI.checkRsyncAgent();
-  // if(errorMessage) {
   if(error) {
     // do not reopen the dialog if it's already open
     if(!dialog.isDialogOfflineOpen()) {

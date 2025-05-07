@@ -251,25 +251,13 @@
     list-style-type: none;
     min-height: 2em;
 }
-/* .drag {
-    pointer-events: none;
-} */
+
 #formParameters .param-file-list li {
     text-wrap: nowrap;
     padding: initial;
     line-height: 3em;
 }
-/* #formParameters .param-file-list li span {
-    cursor: pointer;
-    padding: 0 8px;
-    position: relative;
-    float: left;
-    height: 100%;
-}
-#formParameters .param-file-list li span:hover {
-    background-color: var(--accent-color) !important;
-    color: var(--primary-color) !important;
-} */
+
 #formParameters .param-file-list li button {
     float: unset;
     width: auto !important;

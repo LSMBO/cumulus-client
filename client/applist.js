@@ -484,4 +484,4 @@ function createAppPage(parent) {
     return div;
 }
 
-export { conditionalEvent, getFullName, getOptionList, getParamValuesAsString, initialize, isFormDirty, setParamValues, updateAppList };
+export { checkParamValues, conditionalEvent, getFullName, getOptionList, getParamValuesAsString, initialize, isFormDirty, setParamValues, updateAppList };

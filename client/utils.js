@@ -46,9 +46,7 @@ var LAST_ACTIVITY = new Date();
 var NB_SKIPS_BEFORE_REFRESH = 0;
 const TIME_BETWEEN_REFRESHS_DURING_SLEEP_IN_SECONDS = 600; // 10 minutes
 const TIME_BEFORE_SLEEP_IN_SECONDS = 300; // 5 minutes
-// const TIME_BEFORE_SLEEP_IN_SECONDS = 30; // 5 minutes
 const TOOLTIPTEXT = document.getElementById("tooltiptext");
-// const UNC_PATHS = new Map();
 const LOADER = document.getElementById("loading");
 const UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
 
@@ -73,19 +71,6 @@ function formatDate(timestamp) {
     // console.log(`Timestamp '${timestamp}' => '${formattedDate}'`);
     return formattedDate;
 }
-
-// async function convertToUncPath(file) {
-//     if(UNC_PATHS.size == 0) {
-//         const paths = await window.electronAPI.getUncPaths();
-//         for(let [letter, path] of paths) {
-//             UNC_PATHS.set(letter, path);
-//         }
-//         // add a blank entry, just in case there is no mapping on the computer (then, no need to run this again)
-//         UNC_PATHS.set("", "");
-//     }
-//     const letter = file.replace(/^([a-zA-Z]:).*/, "$1");
-//     return UNC_PATHS.has(letter) ? file.replace(letter, UNC_PATHS.get(letter)) : file;
-// }
 
 function tooltip(element, text) {
     element.addEventListener("mouseover", () => {
@@ -281,7 +266,6 @@ function checkSleepMode() {
     }
     // update the counter at every step
     updateSkipsBetweenRefreshs();
-    dialog.updateDialogSleep((NB_SKIPS_BEFORE_REFRESH + 1) * settings.CONFIG.get("refresh.rate"));
 }
 
 function doRefresh() {
