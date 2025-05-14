@@ -54,14 +54,16 @@ function getValue(item, map) {
     const input = item.getElementsByTagName("input")[0];
     // we only store the value if it's not empty, or if the default value is not the same as the current value
     // if(input != null && input.value != "") map.set(input.name, input.value);
-    if(input != null && (input.value == "" || isDefaultValue(item))) map.set(input.name, input.value);
+    // if(input != null && (input.value == "" || isDefaultValue(item))) map.set(input.name, input.value);
+    if(input != null) map.set(input.name, input.value);
 }
 
 function setValue(item, settings) {
     const input = item.getElementsByTagName("input")[0];
     if(settings.has(input.name)) {
         input.value = settings.get(input.name);
-    } else input.value = ""; // reset the value if not in settings
+    }
+    // else input.value = ""; // reset the value if not in settings
 }
 
 function isDefaultValue(item) {

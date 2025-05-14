@@ -55,7 +55,8 @@ function getValue(item, map) {
     //     if(input.value != "" || isDefaultValue(item)) map.set(input.name, input.value);
     // }
     const inputs = item.getElementsByTagName("input");
-    if(!isDefaultValue(item) && inputs[0].value != "" && inputs[1].value != "") { // if one value is empty, do not set the value (TODO user should be aware of this)
+    // if(!isDefaultValue(item) && inputs[0].value != "" && inputs[1].value != "") { // if one value is empty, do not set the value (TODO user should be aware of this)
+    if(inputs[0].value != "" && inputs[1].value != "") { // if one value is empty, do not set the value (user is made aware of this with checkValue)
         map.set(inputs[0].name, inputs[0].value);
         map.set(inputs[1].name, inputs[1].value);
     }
@@ -78,7 +79,8 @@ function setValue(item, settings) {
     for(let input of item.getElementsByTagName("input")) {
         if(settings.has(input.name)) {
             input.value = settings.get(input.name);
-        } else input.value = "";
+        }
+        // else input.value = "";
     }
 }
 

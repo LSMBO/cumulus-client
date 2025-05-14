@@ -68,7 +68,8 @@ function setValue(item, settings) {
     const select = item.getElementsByTagName("SELECT")[0];
     if(settings.has(select.name)) {
         select.value = settings.get(select.name);
-    } else select.value = ""; // reset the value if not in settings
+    }
+    //else select.value = ""; // reset the value if not in settings
 }
 
 function isDefaultValue(item) {

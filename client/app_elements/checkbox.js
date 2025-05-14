@@ -57,7 +57,8 @@ function getValue(item, map) {
     if(!elements.hasVisibleWhenParent(item)) return;
     // get the value of the first input
     const input = item.getElementsByTagName("input")[0];
-    if(input != null && input.checked) map.set(input.name, true);
+    // if(input != null && input.checked) map.set(input.name, true);
+    if(input != null) map.set(input.name, input.checked);
 }
 
 function setValue(item, settings) {
