@@ -346,6 +346,10 @@
     visibility: visible;
 }
 
+#formParameters .when.visible div.param-row > label::before {
+    content: "• ";
+}
+
 /* #divJobStart { */
 #divJobStart, #divButtonsNext, #divButtonsSummary, #divButtonsSummary2, #divButtonsSettings {
     position: sticky;
