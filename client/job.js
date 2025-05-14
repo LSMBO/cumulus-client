@@ -361,7 +361,8 @@ function setSettings(settings, disable = false) {
     // disable all parameters in the form
     for(let tagtype of ["input", "select", "button"]) {
       for(let item of FORM.getElementsByTagName(tagtype)) {
-        item.disabled = true;
+        // the button to display the advanced parameters should never be disabled
+        if(item.id != "btn_header-advanced") item.disabled = true;
       }
     }
   }

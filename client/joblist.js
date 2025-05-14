@@ -151,7 +151,9 @@ function addJobsToJobList(jobs) {
   var html = getHeadJobButton(jobs.length);
   for(let j of jobs) {
     html += getJobAsHtml(j);
-    if(j.id == utils.getCurrentJobId()) job.refreshJob(j);
+    // if(j.id == utils.getCurrentJobId()) job.refreshJob(j);
+    // refresh the job if it is the current one, except if we are reloading the same job and the parameter tab is open
+    if(j.id == utils.getCurrentJobId() && (j.id != utils.getPreviousJobId() || !tabs.isParameterTabOpen())) job.refreshJob(j);
   }
   document.getElementById("jobs").innerHTML = html;
   // add tooltips
@@ -165,15 +167,6 @@ function addJobsToJobList(jobs) {
   for(let a of document.getElementById("jobs").getElementsByTagName("a")) {
     if(a.id == "new_job") a.addEventListener("click", () => job.createJob());
     else if(a.id == "clear_search") a.addEventListener("click", async () => { IS_SEARCH = false; await reloadJobList(); });
-    // else a.addEventListener("click", async () => {
-    //   utils.setCurrentJobId(a.id.replace("job_", ""));
-    //   highlightJobButton(); // immediately highlight the selected job
-    //   utils.toggleLoadingScreen(); // show the loading screen
-    //   job.cleanJob(); // remove the previous list of output files
-    //   await reloadJobList(); // refresh the list of jobs
-    //   utils.toggleLoadingScreen(); // remove the loading screen
-    //   tabs.openTab("tabSummary"); // open the main tab
-    // });
     else a.addEventListener("click", () => {
       // if the previous job was a new job, warn the user that changes will be lost
       if(utils.getCurrentJobId() <= 0 && apps.isFormDirty())

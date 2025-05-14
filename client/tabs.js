@@ -67,6 +67,10 @@ function hideAllTabs() {
 //   return "";
 // }
 
+function isParameterTabOpen() {
+  return document.getElementById("tabParameters").classList.contains("visible");
+}
+
 function openTab(tabName) {
   hideAllTabs();
   if(TAB_NAMES.includes(tabName)) {
@@ -145,4 +149,4 @@ async function copyToClipboard(sourceName, target) {
     source.classList.remove("copied");
 }
 
-export { copyToClipboard, goToNextTab, goToPreviousTab, openTab, resizeLogAreas };
+export { copyToClipboard, goToNextTab, goToPreviousTab, isParameterTabOpen, openTab, resizeLogAreas };

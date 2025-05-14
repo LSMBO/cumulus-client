@@ -49,6 +49,7 @@ import * as select from "./app_elements/select.js";
 import * as textfield from "./app_elements/textfield.js";
 
 const XML_APP_LIST = new Map();
+var ADVANCED_VISIBLE = false;
 
 function isAppHidden(xml) {
     const parser = new DOMParser();
@@ -138,45 +139,14 @@ function initialize(app_id, parent_id, button_id) {
         document.getElementById(parent_id).appendChild(div);
         document.getElementById(button_id).disabled = false;
         // hide the advanced button if there is no advanced parameters
-        if(document.getElementsByClassName("advanced-off").length == 0) document.getElementById(`${main.getAttribute("id")}-advanced`).disabled = true;
+        if(document.getElementsByClassName("advanced-off").length + document.getElementsByClassName("advanced-on").length == 0) {
+            const item = document.getElementById(`${main.getAttribute("id")}-advanced`);
+            if(item != null) item.disabled = true;
+        }
     } else {
         document.getElementById(button_id).disabled = true;
     }
 }
-
-// function getFiles(ids) {
-//     const files = new Array();
-//     for(let id of ids) {
-//         const param = document.getElementById(id);
-//         if(param == null) {
-//             console.log(`File item '${id}' is missing!!`); // it happened once, how is it possible?
-//             return null;
-//         }
-//         if(param.tagName.toUpperCase() == "INPUT") { // a single file
-//             const path = fixFilePath(param.value);
-//             if(path != "" && !files.includes(path)) files.push(path);
-//         } else { // a list of files
-//             for(let path of getBrowsedFiles(document.getElementById(id))) {
-//                 if(!files.includes(path)) files.push(path); // these paths are already fixed and cannot be modified by user
-//             }
-//         }
-//     }
-//     return files;
-// }
-
-// function getLocalFiles() {
-//     // during initialize, store the ids of the elements that will contain local files (any file except raw data)
-//     // return the unique list of file paths for all these elements
-//     // console.log("getLocalFiles()");
-//     return elements.getFiles(elements.LOCAL_FILES_IDS);
-// }
-
-// function getSharedFiles() {
-//     // during initialize, store the ids of the elements that will contain shared files (only raw data)
-//     // return the unique list of file paths for all these elements
-//     // console.log("getSharedFiles()");
-//     return elements.getFiles(elements.SHARED_FILES_IDS);
-// }
 
 function getFirstParentWithClass(element, className) {
     var parent = element.parentElement;
@@ -295,7 +265,7 @@ function conditionalEvent(conditional) {
                 if(regex.test(value)) next.classList.add("visible");
                 else next.classList.remove("visible");
             } else {
-                if(when_value == value) next.classList.add("visible");
+                if(when_value == String(value)) next.classList.add("visible");
                 else next.classList.remove("visible");
             }
         }
@@ -414,6 +384,7 @@ function displayAdvancedParameters() {
             item.classList.add("advanced-on");
         }
     }
+    ADVANCED_VISIBLE = true;
 }
 
 function hideAdvancedParameters() {
@@ -425,30 +396,17 @@ function hideAdvancedParameters() {
             item.classList.add("advanced-off");
         }
     }
+    ADVANCED_VISIBLE = false;
 }
 
 function toggleAdvancedParameters(event) {
     event.preventDefault();
-    // const parent = event.target;
-    // if(parent.classList.contains("advanced-visible")) {
-    //     parent.classList.remove("advanced-visible");
-    //     for(let item of document.getElementsByTagName("div")) {
-    //         if(item.classList.contains("advanced-on")) {
-    //             item.classList.remove("advanced-on");
-    //             item.classList.add("advanced-off");
-    //         }
-    //     }
-    // } else {
-    //     parent.classList.add("advanced-visible");
-    //     for(let item of document.getElementsByTagName("div")) {
-    //         if(item.classList.contains("advanced-off")) {
-    //             item.classList.remove("advanced-off");
-    //             item.classList.add("advanced-on");
-    //         }
-    //     }
-    // }
     if(!document.getElementById("btn_header-advanced").classList.contains("advanced-visible")) displayAdvancedParameters();
     else hideAdvancedParameters();
+}
+
+function isAdvancedParametersVisible() {
+    return ADVANCED_VISIBLE;
 }
 
 // function that creates a header line with a h3 title, a button to save the parameters, and a button to load the parameters
@@ -458,10 +416,6 @@ function createHeader(id, title) {
     h3.textContent = title;
     header.appendChild(h3);
     const buttons = elements.createDiv("", "app_header_buttons");
-    // buttons.appendChild(elements.createButton(`${id}-advanced`, "Advanced", toggleAdvancedParameters, "Display advanced parameters"));
-    // buttons.appendChild(elements.createButton(`${id}-load`, "Load", loadParameters, "Load the parameters"));
-    // buttons.appendChild(elements.createButton(`${id}-save`, "Save", saveParameters, "Save the parameters as a text file"));
-    // buttons.appendChild(elements.createButton(`${id}-reset`, "Reset", (event) => {event.preventDefault; prepareAppParameters();}, "Reset all parameters"));
     buttons.appendChild(elements.createButton("btn_header-advanced", "Advanced", toggleAdvancedParameters, "Display advanced parameters"));
     buttons.appendChild(elements.createButton("btn_header-load", "Load", loadParameters, "Load the parameters"));
     buttons.appendChild(elements.createButton("btn_header-save", "Save", saveParameters, "Save the parameters as a text file"));
@@ -484,4 +438,4 @@ function createAppPage(parent) {
     return div;
 }
 
-export { checkParamValues, conditionalEvent, getFullName, getOptionList, getParamValuesAsString, initialize, isFormDirty, setParamValues, updateAppList };
+export { checkParamValues, conditionalEvent, getFullName, getOptionList, getParamValuesAsString, initialize, isAdvancedParametersVisible, isFormDirty, setParamValues, updateAppList };

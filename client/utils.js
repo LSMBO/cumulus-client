@@ -37,6 +37,7 @@ import * as dialog from "./dialog.js";
 import * as settings from "./settings.js";
 import { updateFileList } from "./app_elements/filelist.js";
 
+var PREVIOUS_JOB_ID = 0;
 var CURRENT_JOB_ID = 0;
 var USERNAME = "";
 var IS_ACTIVE = true; // used for sleep mode, it can be inactive even if app has focus
@@ -288,7 +289,12 @@ function setCurrentJobId(id) {
     // if value is zero, it's a new job
     // if value is above zero, it's an existing job
     // if value is below zero, it's a new job, cloned after an existing job
+    PREVIOUS_JOB_ID = CURRENT_JOB_ID;
     CURRENT_JOB_ID = id;
+}
+
+function getPreviousJobId() {
+    return PREVIOUS_JOB_ID;
 }
 
 function updateCheckboxList(target) {
@@ -360,4 +366,4 @@ function addCheckboxList(parent, label, items, allowZeroSelection, tooltiptext) 
 }
 
 // export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
-export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
+export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getPreviousJobId, getUserName, isActive, isFocus, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
