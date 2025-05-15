@@ -110,7 +110,7 @@ async function listApps() {
             log.error(error);
         } else {
             const output = Object.entries(JSON.parse(data));
-            log.debug(XSD);
+            // log.debug(XSD);
             for(let [id, xml] of output) {
                 // console.log(id);
                 // console.log(xml);
@@ -236,6 +236,7 @@ async function createJob(_, owner, app, strategy, description, settings, rawfile
         form.append("strategy", strategy);
         form.append("description", description);
         form.append("settings", str = settings);
+        log.debug(settings);
         // send the request
         const url = rest.getUrl("start");
         const [data, error] = await rest.sendPostRequest(url, form);
