@@ -43,6 +43,7 @@ const srv = require('./server.js');
 
 log.initialize();
 
+app.commandLine.appendSwitch('--no-sandbox'); // without this, the app crashes when launched from a network drive
 var mainWindow = null;
 // var DEBUG_MODE = false; // when true, allows some code to be executed or some extra logs to be displayed
 // srv.DEBUG_MODE = DEBUG_MODE;
