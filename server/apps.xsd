@@ -89,6 +89,7 @@
     <xs:complexType name="ParamString">
         <xs:attribute name="value" type="xs:string" use="optional" />
         <xs:attribute name="placeholder" type="xs:string" use="optional" />
+        <xs:attribute name="allow_empty" type="xs:boolean" use="optional" /> <!-- if true, the command line or config entry will be kept with the "" value, if not it will be skipped. Default is false. -->
         <xs:attributeGroup ref="ParamAttributes" />
     </xs:complexType>
     <xs:element name="string" type="ParamString" substitutionGroup="param" />
@@ -130,7 +131,6 @@
     
     <xs:complexType name="ParamText">
         <xs:attribute name="level" type="xs:string" use="optional" />
-        <xs:attribute name="allow_empty" type="xs:boolean" use="optional" /> <!-- if true, the command line or config entry will be kept with the "" value, if not it will be skipped. Default is false. -->
         <xs:attributeGroup ref="ParamAttributes" />
     </xs:complexType>
     <xs:element name="text" type="ParamText" substitutionGroup="param" />
