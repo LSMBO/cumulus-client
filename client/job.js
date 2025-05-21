@@ -366,6 +366,8 @@ function setSettings(settings, disable = false) {
       }
     }
   }
+  // always enable the "Save" button
+  document.getElementById("btn_header-save").disabled = false;
 }
 
 export { cancelJob, cleanJob, cloneJob, createJob, deleteJob, prepareAppParameters, refreshJob, startJob, setSettings };
