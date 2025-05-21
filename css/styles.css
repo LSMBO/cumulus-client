@@ -127,7 +127,7 @@ input::placeholder, textarea::placeholder {
 #detail header {
     border-width: 0 0 0px 0;
     border-style: solid;
-    height: 42px;
+    height: 45px;
     position: sticky;
     top: 0px;
     z-index: 10;
@@ -141,6 +141,10 @@ input::placeholder, textarea::placeholder {
 
 #detail header button:hover {
     border-width: 0 !important;
+}
+
+#detail header button:focus {
+    outline: 0px solid transparent !important;
 }
 
 #divDates label {
