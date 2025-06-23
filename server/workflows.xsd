@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xs:complexType name="paramType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">A parameter, to preset a value and change its visibility</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="value" type="xs:string" use="required" />
+        <xs:attribute name="from_tool" type="xs:string" use="optional" /> <!-- when using from_tool="n", load variables such as %job_dir% for the n-th job corresponding to the n-th tool in this workflow -->
+        <xs:attribute name="section" type="xs:string" use="optional" /> <!-- can be useful if the param name is not unique -->
+        <xs:attribute name="visibility" type="xs:string" use="optional" />
+    </xs:complexType>
+    <xs:element name="param" type="paramType" />
+    
+    <!-- Define the second level element -->
+    <xs:complexType name="toolType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">A tool, with a list of "Param" in it</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="param" type="paramType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required" />
+    </xs:complexType>
+    <xs:element name="tool" type="toolType" />
+
+    <!-- Define the root element -->
+    <xs:complexType name="workflowType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Root element, will only contain a list of "tool"</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="tool" type="toolType" minOccurs="1" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required" />
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="version" type="xs:string" use="required" />
+        <xs:attribute name="description" type="xs:string" use="optional" />
+        <xs:attribute name="category" type="xs:string" use="optional" /> <!-- not used for now, may help if there are many apps in the future; first category should be for apps currently in development -->
+        <xs:attribute name="hidden" type="xs:boolean" use="optional" /> <!-- used to tell if an app is still displayed or not -->
+    </xs:complexType>
+    <xs:element name="workflow" type="workflowType" />
+
+</xs:schema>
