@@ -34,22 +34,26 @@ knowledge of the CeCILL license and that you accept its terms.
 
 // import other modules
 import * as tabs from "./tabs.js";
-import * as job from "./job.js";
-import * as jobs from "./joblist.js";
+// import * as job from "./job.js";
+import * as jc from "./jobcontent.js";
+// import * as jobs from "./joblist.js";
+import * as sidebar from "./sidebar.js";
 import * as output from "./output.js";
 import * as dialog from "./dialog.js";
 import * as search from "./search.js";
 import * as settings from "./settings.js";
 import * as storage from "./storage.js";
 import * as utils from "./utils.js";
-import * as apps from "./applist.js";
+// import * as apps from "./applist.js";
+import * as apps from "./appmanager.js";
 
 var DEBUG_MODE = false;
 
 function loadAppList() {
   // list all the available apps and add them to the list
   // WARNING, this list has to match the list of available apps on the server!!
-  document.getElementById("cmbAppName").innerHTML = "<option value='' disabled></option>" + apps.getOptionList();
+  // document.getElementById("cmbAppName").innerHTML = "<option value='' disabled></option>" + apps.getOptionList("", true);
+  document.getElementById("cmbAppName").innerHTML = "<option value='' disabled></option>" + apps.getAppsAsOptionList("", true);
 }
 
 document.getElementById("btnSummary").addEventListener("click", () => tabs.openTab("tabSummary"));
@@ -60,22 +64,21 @@ document.getElementById("cmbAppName").addEventListener("change", () => {
   document.getElementById("btnParameters").disabled = false;
   document.getElementById("btnNext").disabled = false;
   // job.setAppParameters();
-  job.prepareAppParameters();
+  // job.prepareAppParameters();
+  apps.generate_parameters_page();
 });
 document.getElementById("aSelect").addEventListener("click", () => output.selectAllCheckboxes());
 document.getElementById("aUnselect").addEventListener("click", () => output.unselectAllCheckboxes());
 document.getElementById("aExpand").addEventListener("click", () => output.expandAllFolders());
 document.getElementById("aCollapse").addEventListener("click", () => output.collapseAllFolders());
-document.getElementById("btnClone").addEventListener("click", () => job.cloneJob());
-document.getElementById("btnClone2").addEventListener("click", () => job.cloneJob());
-document.getElementById("btnNext").addEventListener("click", () => tabs.openTab("tabParameters"));
-document.getElementById("btnStart").addEventListener("click", () => job.startJob());
-// document.getElementById("btnCancel").addEventListener("click", () => dialog.createDialogQuestion("Warning", "Are you sure you want to cancel this job?", job.cancelJob));
-// document.getElementById("btnDelete").addEventListener("click", () => dialog.createDialogQuestion("Warning", "Are you sure you want to delete this job?", job.deleteJob));
-document.getElementById("btnCancel").addEventListener("click", job.cancelJob);
-document.getElementById("btnDelete").addEventListener("click", job.deleteJob);
-document.getElementById("btnCancel2").addEventListener("click", job.cancelJob);
-document.getElementById("btnDelete2").addEventListener("click", job.deleteJob);
+// document.getElementById("btnClone").addEventListener("click", () => job.cloneJob());
+// document.getElementById("btnClone2").addEventListener("click", () => job.cloneJob());
+// document.getElementById("btnNext").addEventListener("click", () => tabs.openTab("tabParameters"));
+// document.getElementById("btnStart").addEventListener("click", () => job.startJob());
+// document.getElementById("btnCancel").addEventListener("click", job.cancelJob);
+// document.getElementById("btnDelete").addEventListener("click", job.deleteJob);
+// document.getElementById("btnCancel2").addEventListener("click", job.cancelJob);
+// document.getElementById("btnDelete2").addEventListener("click", job.deleteJob);
 document.getElementById("copyStdout").addEventListener("click", async () => await tabs.copyToClipboard("copyStdout", document.getElementById("stdout")));
 document.getElementById("copyStderr").addEventListener("click", async () => await tabs.copyToClipboard("copyStderr", document.getElementById("stderr")));
 document.getElementById("btnOutputDownload").addEventListener("click", async() => await output.downloadOutput());
@@ -143,7 +146,8 @@ async function keyupEvent(event) {
   else if(event.ctrlKey && (event.shiftKey && event.code === 'Tab' || event.code === 'PageUp')) tabs.goToPreviousTab();
   // Ctrl+N: new job (end search if search mode)
   else if(event.ctrlKey && event.key === 'n') {
-    if(jobs.isSearchMode()) document.getElementById("clear_search").click();
+    // if(jobs.isSearchMode()) document.getElementById("clear_search").click();
+    if(search.isSearchMode()) document.getElementById("clear_search").click();
     document.getElementById("new_job").click();
   }
   // Ctrl+F: search tab
@@ -161,7 +165,8 @@ async function keyupEvent(event) {
     // console.log(utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
     // console.log(utils.fixFilePath(document.getElementById("diann191_txtFasta").value));
     __electronLog.info("TEST KEY!");
-    jobs.pauseRefresh();
+    // jobs.pauseRefresh();
+    sidebar.pauseRefresh();
     // apps.loadXmlFile();
     // console.log(apps.getLocalFiles());
     // console.log(apps.getSharedFiles());
@@ -256,11 +261,18 @@ async function initialize() {
       // if(!DEBUG_MODE) dialog.openDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
       utils.setFocus(false);
     });
-    jobs.reloadJobList();
+    // jobs.reloadJobList();
+    sidebar.refreshSidebar();
     // window does not have focus at startup when devtools are open
     // load the first job on the list
-    job.createJob();
-    jobs.resetInterval();
+    // job.createJob();
+    jc.openNewJob();
+    // jobs.initializeReloadBar();
+    // jobs.resetInterval();
+    sidebar.resetInterval();
+    // remove the splash screen when all is ready
+    document.getElementById("detail").getElementsByTagName("header")[0].style.display = "block";
+    document.getElementById("splash").style.display = "none";
     utils.setActive(true); // only required on debug mode
   }
 }

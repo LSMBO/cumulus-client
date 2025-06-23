@@ -33,14 +33,25 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 import * as tabs from "./tabs.js";
-import * as jobs from "./joblist.js";
+// import * as jobs from "./joblist.js";
+import * as sidebar from "./sidebar.js";
 import * as settings from "./settings.js";
 import * as utils from "./utils.js";
-import * as apps from "./applist.js";
+// import * as apps from "./applist.js";
+import * as apps from "./appmanager.js";
 
+var IS_SEARCH = false;
 const LAST_SEARCH_SETTINGS = new Map();
 const mainSearchStatus = document.getElementById("divSearchStatusElement");
 const txtSearchAppName = document.getElementById("txtSearchAppName");
+
+function isSearchMode() {
+  return IS_SEARCH;
+}
+
+function setSearchMode(value) {
+  IS_SEARCH = value;
+}
 
 function openSearch() {
     tabs.openTab("tabSearch");
@@ -103,18 +114,34 @@ function initialize() {
   document.getElementById("btnSearchMe").addEventListener("click", (e) => { e.preventDefault(); document.getElementById("txtSearchOwner").value = utils.getUserName(); });
   document.getElementById("btnSearchOk").addEventListener("click", async (e) => {
       e.preventDefault();
-      jobs.setSearchMode(true);
-      jobs.reloadJobList(false);
+      // jobs.setSearchMode(true);
+      setSearchMode(true);
+      // jobs.reloadJobList(false);
+      sidebar.refreshSidebar(false);
   });
   document.getElementById("btnSearchReset").addEventListener("click", (e) => {
       e.preventDefault();
       setDefaultValues();
-      jobs.setSearchMode(false);
-      jobs.reloadJobList();
+      // jobs.setSearchMode(false);
+      setSearchMode(false);
+      // jobs.reloadJobList();
+      sidebar.refreshSidebar();
   });
 
   // initialize on first opening
-  txtSearchAppName.innerHTML = "<option value='all' selected></option>" + apps.getOptionList();
+  // txtSearchAppName.innerHTML = "<option value='all' selected></option>" + apps.getOptionList();
+  txtSearchAppName.innerHTML = "<option value='all' selected></option>" + apps.getAppsAsOptionList();
 }
 
-export { getCurrentSearchSettings, getPreviousSearchSettings, initialize, openSearch, setDefaultValues, storeSearchSettings };
+async function searchJobs(reloadPreviousSettings = true) {
+  // console.log("searchJobs()");
+  // the search is refreshed, so we store the settings in case the user changes a field without validating
+  const [owner, app, file, desc, statuses, date, from, to, number] = reloadPreviousSettings ? getPreviousSearchSettings() : getCurrentSearchSettings();
+  storeSearchSettings(owner, app, file, desc, statuses, date, from, to, number);
+  // send the search request
+  return await window.electronAPI.searchJobs(utils.getCurrentJobId(), owner, app, file, desc, statuses, date, from, to, number);
+}
+
+// export { getCurrentSearchSettings, getPreviousSearchSettings, initialize, openSearch, searchJobs, setDefaultValues, storeSearchSettings, setSearchMode };
+export { getCurrentSearchSettings, getPreviousSearchSettings, initialize, isSearchMode, openSearch, searchJobs, setDefaultValues, storeSearchSettings, setSearchMode };
+// export { initialize, isSearchMode, openSearch, searchJobs, setDefaultValues, setSearchMode };

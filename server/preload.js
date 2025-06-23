@@ -30,6 +30,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     startJob: (owner, app, strategy, description, settings, rawfiles, fastafiles) => ipcRenderer.invoke('start-job', owner, app, strategy, description, settings, rawfiles, fastafiles),
     cancelJob: (owner, id) => ipcRenderer.invoke('cancel-job', owner, id),
     deleteJob: (owner, id) => ipcRenderer.invoke('delete-job', owner, id),
+    openUrl: (url) => ipcRenderer.invoke('open-url', url),
     exitApp: () => ipcRenderer.invoke('close-app'),
     showFilePath: (file) => { return webUtils.getPathForFile(file); },
 })

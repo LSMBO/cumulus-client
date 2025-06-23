@@ -33,7 +33,8 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 import * as tabs from "./tabs.js";
-import * as jobs from "./joblist.js";
+// import * as jobs from "./joblist.js";
+import * as sidebar from "./sidebar.js";
 import * as utils from "./utils.js";
 
 const CONFIG = new Map();
@@ -84,15 +85,18 @@ async function saveSettings() {
         CONFIG.set(option, selectedOptions.includes(option));
     }
     await window.electronAPI.setConfig(CONFIG);
-    jobs.resetInterval();
-    jobs.setJobListDisplay();
+    // jobs.resetInterval();
+    // jobs.setJobListDisplay();
+    sidebar.resetInterval();
+    sidebar.setJobListDisplay();
 }
 
 async function resetSettings() {
     await window.electronAPI.resetConfig();
     await loadSettings();
     openSettings();
-    jobs.resetInterval();
+    // jobs.resetInterval();
+    sidebar.resetInterval();
 }
 
 function showLicense() {

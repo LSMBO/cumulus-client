@@ -40,11 +40,13 @@ const config = require('./config.js');
 const path = require('path');
 const rest = require('./rest.js');
 const xsdv = require('xsd-schema-validator');
+const { app } = require('electron');
 
 // const DEMO_MODE = true; // when true, the client works offline without any server or rsync agent
 // if(DEMO_MODE) log.info("DEMO MODE is activated, the GUI will only work offline");
 var DEMO_MODE = false;
-const XSD = path.join(__dirname, "apps.xsd");
+const JXSD = path.join(__dirname, "apps.xsd");
+const WXSD = path.join(__dirname, "workflows.xsd");
 var LAST_PING_RSYNC = 0;
 
 function setDemoMode(value) {
@@ -91,6 +93,26 @@ async function checkServerVersion() {
     }
 }
 
+async function isValidXml(id, xml) {
+    // only validate xml in debug mode, because it is slow
+    if(config.DEBUG_MODE) {
+        var xsd = JXSD;
+        if(xml.startsWith("<workflow")) xsd = WXSD; // use the workflow XSD
+        try {
+            log.debug(`Validating XML for app '${id}' with XSD '${xsd}'`);
+            const result = await xsdv.validateXML(xml, xsd);
+            if(result.valid) {
+                log.info(`${xml.startsWith("<workflow") ? "Workflow" : "App"} '${id}' is valid`);
+                return true;
+            }
+        } catch(err) {
+            log.error(`${xml.startsWith("<workflow") ? "Workflow" : "App"} '${id}' is not valid:`);
+            log.error(err);
+        }
+        return false;
+    } else return true; // do not validate XML in production mode
+}
+
 async function listApps() {
     log.info("Retrieving list of applications");
     if(DEMO_MODE) {
@@ -110,22 +132,9 @@ async function listApps() {
             log.error(error);
         } else {
             const output = Object.entries(JSON.parse(data));
-            // log.debug(XSD);
             for(let [id, xml] of output) {
-                // console.log(id);
-                // console.log(xml);
-                // only validate xml in debug mode, because it is slow
-                if(config.DEBUG_MODE) {
-                    try {
-                        const result = await xsdv.validateXML(xml, XSD);
-                        if(result.valid) {
-                            log.info(`App '${id}' is valid`);
-                            apps.push([id, xml]);
-                        }
-                    } catch(err) {
-                        log.error(err);
-                    }
-                } else apps.push([id, xml]);
+                if(await isValidXml(id, xml)) apps.push([id, xml]);
+                // apps.push([id, xml]);
             }
         }
         return apps;
@@ -219,7 +228,7 @@ async function listHosts() {
     }
 }
 
-async function createJob(_, owner, app, strategy, description, settings, rawfiles, fastafiles) {
+async function createJob(_, owner, app, strategy, description, settings, sharedFiles, localFiles, previous_job_id, workflow_id) {
     log.info(`Creating a new job for user '${owner}' with app '${app}'`);
     if(DEMO_MODE) {
         log.debug(settings);
@@ -233,9 +242,11 @@ async function createJob(_, owner, app, strategy, description, settings, rawfile
         const form = new FormData({ maxDataSize: 20971520 });
         form.append("username", owner);
         form.append("app_name", app);
+        form.append("workflow_name", workflow_id); // may be null
         form.append("strategy", strategy);
         form.append("description", description);
         form.append("settings", str = settings);
+        form.append("start_after_id", previous_job_id); // may be null
         log.debug(settings);
         // send the request
         const url = rest.getUrl("start");
@@ -250,8 +261,8 @@ async function createJob(_, owner, app, strategy, description, settings, rawfile
         form2.append("job_id", job_id);
         form2.append("job_dir", job_dir);
         form2.append("owner", owner);
-        form2.append("files", rawfiles);
-        form2.append("local_files", fastafiles);
+        form2.append("files", sharedFiles);
+        form2.append("local_files", localFiles);
         log.info("Sending files to the server");
         await rest.sendPostRequest(rest.getUrl("send-rsync", [], true), form2);
         // return the job id

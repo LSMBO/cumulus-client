@@ -2,19 +2,48 @@
     --param-width: 300px;
 }
 
-#formParameters .app_header h3 {
+#formParameters .tool_header div {
+    display: inline-block;
+}
+
+#formParameters .tool_header div:first-of-type {
+    width: calc(100% - 335px);
+}
+
+#formParameters .tool_header div:last-of-type {
+    width: 335px;
+}
+
+#formParameters .tool_header i {
+    cursor: pointer;
+    font-size: 2em;
+}
+
+#formParameters .tool_header i.w3-disabled {
+    cursor: default;
+}
+
+#formParameters .tool_header h3 {
     display: inline;
 }
 
-#formParameters .app_header_buttons {
-    float: right;
+#formParameters .tool_header button {
+    margin-right: 10px;
 }
 
-#formParameters .app_header button {
-    /* float: right;
-    margin-left: 10px; */
-    /* float: left; */
-    margin-right: 10px;
+#formParameters .tool_header a {
+    display: inline-block;
+    color: var(--primary-color-link);
+    padding-top: 5px;
+}
+#formParameters .tool_header a::after {
+    content: "";
+    background: url("../img/external-link.png") center right no-repeat;
+    background-size: 100%;
+    position: absolute;
+    margin-left: 5px;
+    width: 15px;
+    height: 15px;
 }
 
 #formParameters .section-parent {
@@ -350,10 +379,13 @@
     content: "• ";
 }
 
-/* #divJobStart { */
-#divJobStart, #divButtonsNext, #divButtonsSummary, #divButtonsSummary2, #divButtonsSettings {
+#divSummaryButtonBar { bottom: 30px;}
+#divButtonsSettings { bottom: 0; }
+#divParamsButtonBar:has(#btnStart) { bottom: 0; }
+#divParamsButtonBar:not(:has(#btnStart)) { bottom: 30px; }
+
+#divSummaryButtonBar, #divParamsButtonBar, #divButtonsSettings {
     position: sticky;
-    bottom: 0;
     margin-top: 30px;
     padding-bottom: 15px;
     background-color: var(--primary-color) !important;

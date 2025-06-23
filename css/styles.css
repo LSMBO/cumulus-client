@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Roboto';
-  src: url('../fonts/Roboto-Bold.ttf');
+  src: url('../fonts/Roboto-Medium.ttf');
 }
 
 html {
@@ -61,7 +61,20 @@ input::placeholder, textarea::placeholder {
     width: 25px;
     border-right: 1px solid var(--primary-color-dark);
 }
-
+#jobs img.workflow {
+    top: unset;
+    bottom: unset;
+    transform: unset;
+    width: 12px;
+    height: 12px;
+    left: 7px;
+}
+#jobs img.wf-top {
+    bottom: 0px;
+}
+#jobs img.wf-bottom {
+    top: 0px;
+}
 #jobs span img {
     width: 15px;
     height: 15px;

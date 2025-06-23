@@ -34,7 +34,7 @@ knowledge of the CeCILL license and that you accept its terms.
 
 // Modules to control application life and create native browser window
 const log = require('electron-log/main');
-const { app, BrowserWindow, dialog, ipcMain, nativeImage } = require('electron')
+const { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } = require('electron')
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path')
@@ -119,6 +119,15 @@ function countExistingFiles(_, currentPath, files) {
   return nbExistingFiles;
 }
 
+function openUrl(_, url) {
+  // some urls contain a ':' character that causes problems, encoding it to %3A
+  const items = url.split("/");
+  const file = items.pop().replace(":", "%3A");
+  const encoded = encodeURI(items.join("/") + "/" + file);
+  // console.log(`Opening URL ${url} (encoded to ${encoded})`);
+  shell.openExternal(encoded);
+}
+
 function createWindow () {
   // Create the browser window
   // const appIcon = nativeImage.createFromPath("img/icon.png");
@@ -152,32 +161,33 @@ function exitApp() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  ipcMain.handle('browse', browse);
+  ipcMain.handle('cancel-job', srv.cancelJob);
   ipcMain.handle('check-rsync', srv.checkRsyncAgent);
   ipcMain.handle('check-server', srv.checkServerVersion);
-  ipcMain.handle('get-unc-paths', getUncPaths);
+  ipcMain.handle('close-app', exitApp);
+  ipcMain.handle('count-existing-files', countExistingFiles);
+  ipcMain.handle('delete-job', srv.deleteJob);
+  ipcMain.handle('download', srv.downloadFile);
   ipcMain.handle('get-config', config.getConfig);
-  ipcMain.handle('set-config', config.saveConfig);
-  ipcMain.handle('reset-config', config.resetConfig);
-  ipcMain.handle('get-user-name', getUserName);
   ipcMain.handle('get-debug-mode', getDebugMode);
+  ipcMain.handle('get-disk-usage', srv.getDiskUsage);
   ipcMain.handle('get-last-jobs', srv.getLastJobs);
-  ipcMain.handle('search-jobs', srv.searchJobs);
   ipcMain.handle('get-transfer-progress', srv.transferProgress);
+  ipcMain.handle('get-unc-paths', getUncPaths);
+  ipcMain.handle('get-user-name', getUserName);
   ipcMain.handle('list-apps', srv.listApps);
   ipcMain.handle('list-hosts', srv.listHosts);
   ipcMain.handle('list-storage', srv.listStorage);
-  ipcMain.handle('get-disk-usage', srv.getDiskUsage);
-  ipcMain.handle('browse', browse);
+  ipcMain.handle('load-file', loadFile);
+  ipcMain.handle('open-url', openUrl);
+  ipcMain.handle('reset-config', config.resetConfig);
+  ipcMain.handle('search-jobs', srv.searchJobs);
   ipcMain.handle('save-dialog', saveDialog);
   ipcMain.handle('save-file', saveFile);
-  ipcMain.handle('load-file', loadFile);
-  ipcMain.handle('count-existing-files', countExistingFiles);
-  ipcMain.handle('download', srv.downloadFile);
+  ipcMain.handle('set-config', config.saveConfig);
   ipcMain.handle('start-job', srv.createJob);
-  ipcMain.handle('cancel-job', srv.cancelJob);
-  ipcMain.handle('delete-job', srv.deleteJob);
-  ipcMain.handle('close-app', exitApp);
-
+  
   createWindow()
 
   app.on('activate', function () {

@@ -32,7 +32,7 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-import * as jobs from "./joblist.js";
+// import * as jobs from "./joblist.js";
 import * as dialog from "./dialog.js";
 import * as settings from "./settings.js";
 import { updateFileList } from "./app_elements/filelist.js";
@@ -234,21 +234,21 @@ function updateSkipsBetweenRefreshs(reset = false) {
     // when the app is in sleep mode, we skip 11 calls to wait 60 seconds between 2 calls
     if(reset) {
         NB_SKIPS_BEFORE_REFRESH = 0;
-        jobs.resetReloadBarTimer();
+        // jobs.resetReloadBarTimer();
     } else if(NB_SKIPS_BEFORE_REFRESH <= 0) {
         // if(!isActive() || IS_OFFLINE) NB_SKIPS_BEFORE_REFRESH = parseInt(600 / settings.CONFIG.get("refresh.rate")) - 1; // 11;
         if(!isActive() || IS_OFFLINE) {
             // update every 10 minute if asleep
             NB_SKIPS_BEFORE_REFRESH = parseInt(TIME_BETWEEN_REFRESHS_DURING_SLEEP_IN_SECONDS / settings.CONFIG.get("refresh.rate")) - 1; // 11;
-            jobs.resetReloadBarTimer(TIME_BETWEEN_REFRESHS_DURING_SLEEP_IN_SECONDS);
+            // jobs.resetReloadBarTimer(TIME_BETWEEN_REFRESHS_DURING_SLEEP_IN_SECONDS);
         } else if(!isFocus()) {
             // update every 15 seconds if just blur
             NB_SKIPS_BEFORE_REFRESH = 2;
-            jobs.resetReloadBarTimer(settings.CONFIG.get("refresh.rate") * (NB_SKIPS_BEFORE_REFRESH + 1));
+            // jobs.resetReloadBarTimer(settings.CONFIG.get("refresh.rate") * (NB_SKIPS_BEFORE_REFRESH + 1));
         } else {
             // update every 5 seconds otherwise
             NB_SKIPS_BEFORE_REFRESH = 0;
-            jobs.resetReloadBarTimer();
+            // jobs.resetReloadBarTimer();
         }
         // set the timer with the new number of seconds to wait before refreshing the jobs
     } else NB_SKIPS_BEFORE_REFRESH -= 1; // decreasing the number of calls to skip, when we reach 0 we make the call again

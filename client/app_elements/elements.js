@@ -33,7 +33,8 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 import { addBrowsedFiles, fixFilePath, getBrowsedFiles, tooltip } from "../utils.js";
-import { isAdvancedParametersVisible } from "../applist.js";
+// import { isAdvancedParametersVisible } from "../applist.js";
+import { isAdvancedParametersVisible } from "../appmanager.js";
 
 const SHARED_FILES_IDS = new Array();
 const LOCAL_FILES_IDS = new Array();
@@ -75,12 +76,18 @@ function hasVisibleWhenParent(param) {
     return true;
 }
 
-function createElement(tagName, options) {
+function createElement(tagName, options, children = []) {
     const element = document.createElement(tagName);
     // options is a map of attributes to set on the element
-    for(let [key, value] of options) {
-        if(key == "textContent") element.textContent = value;
-        else element.setAttribute(key, value);
+    if(options) {
+        for(let [key, value] of options) {
+            if(key == "textContent") element.textContent = value;
+            else element.setAttribute(key, value);
+        }
+    }
+    // add children elements
+    for(let child of children) {
+        element.appendChild(child);
     }
     return element;
 }
