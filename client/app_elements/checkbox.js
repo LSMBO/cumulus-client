@@ -68,6 +68,15 @@ function setValue(item, settings) {
     } else input.checked = false; // reset the value if not in settings
 }
 
+function setValueTo(item, value) {
+    item.getElementsByTagName("input")[0].checked = value;
+}
+
+function copyFrom(source, destination) {
+    const value = source.getElementsByTagName("input")[0].checked;
+    destination.getElementsByTagName("input")[0].checked = value;
+}
+
 function isDefaultValue(item) {
     // do not check the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -84,4 +93,4 @@ function isDirty() {
     return false;
 }
 
-export { create, getValue, isDirty, setValue };
+export { copyFrom, create, getValue, isDirty, setValue, setValueTo };

@@ -53,6 +53,7 @@ function createHeader(table, param) {
     });
     tooltip(button, "Add a new element");
     th3.appendChild(button);
+    // add value type as a hidden element, so that the type can be used to create the input fields
     th3.appendChild(elements.createElement("i", new Map([["textContent", param.getAttribute("type_of")]])));
     row.appendChild(th3);
     table.appendChild(row);
@@ -103,7 +104,6 @@ function create(id, param, input_class) {
     const classes = ["w3-ul"];
     if(param.hasAttribute("is_list") && param.getAttribute("is_list") == "true") classes.push("__is_list__");
     // create an element with a first line containing the headers and the '+' button
-    // TODO add value type in the table or the header line
     const table = elements.createElement("table", new Map([["id", input_id], ["name", param.getAttribute("name")], ["class", classes.join(" ")]]));
     createHeader(table, param);
     const defaultValues = new Array();
@@ -192,6 +192,29 @@ function setValue(item, settings) {
     if(table.rows.length == 1) addRow(table, "", "");
 }
 
+function setValueTo(item, values) {
+    const table = item.getElementsByTagName("table")[0];
+    // remove all rows except for the header row
+    while(table.rows.length > 1) table.deleteRow(1);
+    // loop over the map and create a new row for each key-value pair
+    for(let [key, value] of values) {
+        // if the value is an array, loop over the array and create a new row for each value
+        if(Array.isArray(value)) {
+            for(let v of value) addRow(table, key, v);
+        } else addRow(table, key, value);
+    }
+}
+
+function copyFrom(source, destination) {
+    const source_table = source.getElementsByTagName("table")[0];
+    const dest_table = destination.getElementsByTagName("table")[0];
+    for(let row of source_table.getElementsByTagName("tr")) {
+        const key = row.getElementsByTagName("input")[0].value;
+        const value = row.getElementsByTagName("input")[1].value;
+        addRow(dest_table, key, value);
+    }
+}
+
 function isDefaultValue(item) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -216,4 +239,4 @@ function isDirty() {
     return false;
 }
 
-export { checkValue, create, getValue, isDirty, setValue };
+export { copyFrom, checkValue, create, getValue, isDirty, setValue, setValueTo };

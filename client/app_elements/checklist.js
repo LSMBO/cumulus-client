@@ -140,6 +140,27 @@ function setValue(item, settings) {
     updateLabel(item.children[1]);
 }
 
+function setValueTo(item, value) {
+    if(value) {
+        for(let input of item.getElementsByTagName("input")) {
+            if(value.includes(input.value)) input.checked = true;
+            else input.checked = false;
+        }
+    } else {
+        for(let input of item.getElementsByTagName("input")) {
+            input.checked = false;
+        }
+    }
+}
+
+function copyFrom(source, destination) {
+    const source_inputs = source.getElementsByTagName("input");
+    const dest_inputs = destination.getElementsByTagName("input");
+    for(let i = 0; i < source_inputs.length; i++) {
+        dest_inputs[i].checked = source_inputs[i].checked;
+    }
+}
+
 function isDefaultValue(item) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -161,4 +182,4 @@ function isDirty() {
     return false;
 }
 
-export { create, getValue, isDirty, setValue };
+export { copyFrom, create, getValue, isDirty, setValue, setValueTo };

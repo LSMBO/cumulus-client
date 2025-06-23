@@ -55,7 +55,6 @@ function getValue(item, map) {
     //     if(input.value != "" || isDefaultValue(item)) map.set(input.name, input.value);
     // }
     const inputs = item.getElementsByTagName("input");
-    // if(!isDefaultValue(item) && inputs[0].value != "" && inputs[1].value != "") { // if one value is empty, do not set the value (TODO user should be aware of this)
     if(inputs[0].value != "" && inputs[1].value != "") { // if one value is empty, do not set the value (user is made aware of this with checkValue)
         map.set(inputs[0].name, inputs[0].value);
         map.set(inputs[1].name, inputs[1].value);
@@ -84,6 +83,19 @@ function setValue(item, settings) {
     }
 }
 
+function setValueTo(item, value) {
+    const inputs = item.getElementsByTagName("input");
+    inputs[0].value = value[0];
+    inputs[1].value = value[1];
+}
+
+function copyFrom(source, destination) {
+    for(let i in source.getElementsByTagName("input")) {
+        const value = source.getElementsByTagName("input")[i].value;
+        destination.getElementsByTagName("input")[i].value = value;
+    }
+}
+
 function isDefaultValue(item) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -98,4 +110,4 @@ function isDirty() {
     return false;
 }
 
-export { checkValue, create, getValue, isDirty, setValue };
+export { copyFrom, checkValue, create, getValue, isDirty, setValue, setValueTo };

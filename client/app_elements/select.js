@@ -72,6 +72,15 @@ function setValue(item, settings) {
     //else select.value = ""; // reset the value if not in settings
 }
 
+function setValueTo(item, value) {
+    item.getElementsByTagName("SELECT")[0].value = value;
+}
+
+function copyFrom(source, destination) {
+    const value = source.getElementsByTagName("SELECT")[0].value;
+    destination.getElementsByTagName("SELECT")[0].value = value;
+}
+
 function isDefaultValue(item) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -86,4 +95,4 @@ function isDirty() {
     return false;
 }
 
-export { create, getValue, isDirty, setValue };
+export { copyFrom, create, getValue, isDirty, setValue, setValueTo };

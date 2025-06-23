@@ -69,6 +69,15 @@ function setValue(item, settings) {
     // else input.value = "";
 }
 
+function setValueTo(item, value) {
+    item.getElementsByTagName("input")[0].value = value;
+}
+
+function copyFrom(source, destination) {
+    const value = source.getElementsByTagName("input")[0].value;
+    destination.getElementsByTagName("input")[0].value = value;
+}
+
 function isDefaultValue(item) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -83,4 +92,4 @@ function isDirty() {
     return false;
 }
 
-export { checkValue, create, getValue, isDirty, setValue };
+export { copyFrom, checkValue, create, getValue, isDirty, setValue, setValueTo };

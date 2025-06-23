@@ -99,6 +99,19 @@ function setValue(item, settings) {
     }
 }
 
+function setValueTo(item, value) {
+    addBrowsedFiles(item.getElementsByTagName("ul")[0], value);
+}
+
+function copyFrom(source, destination) {
+    const files = [];
+    for(let label of source.getElementsByTagName("label")) {
+        files.push(label.textContent);
+    }
+    const ul = destination.getElementsByTagName("ul")[0];
+    addBrowsedFiles(ul, files);
+}
+
 function isDefaultValue(item) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -113,4 +126,4 @@ function isDirty() {
     return false;
 }
 
-export { create, getValue, isDirty, setValue, updateFileList };
+export { copyFrom, create, getValue, isDirty, setValue, setValueTo, updateFileList };
