@@ -1,3 +1,37 @@
+/*
+Copyright or © or Copr. Alexandre BUREL for LSMBO / IPHC UMR7178 / CNRS (2024)
+
+[a.burel@unistra.fr]
+
+This software is the client for Cumulus, a client-server to operate jobs on a Cloud.
+
+This software is governed by the CeCILL license under French law and
+abiding by the rules of distribution of free software.  You can  use, 
+modify and/ or redistribute the software under the terms of the CeCILL
+license as circulated by CEA, CNRS and INRIA at the following URL
+"http://www.cecill.info". 
+
+As a counterpart to the access to the source code and  rights to copy,
+modify and redistribute granted by the license, users are provided only
+with a limited warranty  and the software's author,  the holder of the
+economic rights,  and the successive licensors  have only  limited
+liability. 
+
+In this respect, the user's attention is drawn to the risks associated
+with loading,  using,  modifying and/or developing or reproducing the
+software by the user in light of its specific status of free software,
+that may mean  that it is complicated to manipulate,  and  that  also
+therefore means  that it is reserved for developers  and  experienced
+professionals having in-depth computer knowledge. Users are therefore
+encouraged to load and test the software's suitability as regards their
+requirements in conditions enabling the security of their systems and/or 
+data to be ensured and,  more generally, to use and operate it in the 
+same conditions as regards security. 
+
+The fact that you are presently reading this means that you have had
+knowledge of the CeCILL license and that you accept its terms.
+*/
+
 import * as utils from "./utils.js";
 import * as dialog from "./dialog.js";
 import * as elements from "./app_elements/elements.js";
@@ -11,15 +45,6 @@ import * as filelist from "./app_elements/filelist.js";
 const FORM = document.getElementById("formParameters");
 const STD_OUT = document.getElementById("stdout");
 const STD_ERR = document.getElementById("stderr");
-
-// TODO the button bar should be generated dynamically based on the tab, job status and job type
-// - new job + tab summary => Go to parameters tab
-// - new job + tab parameters => Start job
-// - new job + tab log/output => nothing
-// - existing job + tab summary + status:running|pending + type:app => Clone job, Cancel job
-// - existing job + tab summary + status:done|failed|canceled + type:app => Clone job, Delete job
-// - existing job + tab summary + status:running|pending + type:workflow => Clone job, Clone workflow, Cancel workflow
-// - existing job + tab summary + status:done|failed|canceled + type:workflow => Clone job, Clone workflow, Delete workflow
 
 function updateField(fieldId, value = null, display = null, dispay_of_parent = null, classes_to_add = [], classes_to_remove = [], disabled = null, selectedIndex = null, innerHTML = null) {
     const field = document.getElementById(fieldId);
@@ -43,16 +68,6 @@ function updateField(fieldId, value = null, display = null, dispay_of_parent = n
 
 function cleanJob() {
     // clear the Summary tab
-    // updateField("txtJobOwner", value = utils.getUserName());
-    // updateField("txtJobStatus", value = "", display_of_parent = "none");
-    // updateField("txtWorkflowName", value = "", classes_to_add = ["w3-hide"]);
-    // updateField("cmbAppName", value = "", disabled = false, classes_to_remove = ["w3-hide"]);
-    // updateField("txtAppName", classes_to_add = ["w3-hide"]);
-    // updateField("cmbStrategy", selectedIndex = 0, disabled = false, classes_to_remove = ["w3-hide"]);
-    // updateField("txtJobStrategy", classes_to_add = ["w3-hide"]);
-    // updateField("txtSelectedHost", display_of_parent = "none");
-    // updateField("txtJobDescription", value = "", disabled = false);
-    // updateField("divDates", display = "none");
     updateField("txtJobOwner", utils.getUserName());
     updateField("txtJobStatus", "", null, "none");
     updateField("txtWorkflowName", "", null, null, ["w3-hide"]);
@@ -149,9 +164,10 @@ async function displayFileTransfers(job) {
     ul.previousElementSibling.previousElementSibling.textContent = `File transfer ${nb}/${files.length}`;
 }
 
-function createJobPage(job) {
+function updateJobPage(job, generateParametersTab = true) {
     // sometimes the job or its settings can be null, it can happen when the refreshing of the job list is not done yet
     if(job != null && job.settings != null) {
+        console.log("Updating job page, generateParametersTab:", generateParametersTab);
         updateField("txtJobOwner", job.owner, null, null, [], [], true);
         updateField("txtJobStatus", job.status, null, "block", [], [], true);
         updateField("cmbAppName", job.app_name, null, null, ["w3-hide"]);
@@ -165,7 +181,7 @@ function createJobPage(job) {
         // generate the button bar
         generateButtonBars(job.status, job.workflow_name != null);
         // generate the parameters page, but do not set the values yet
-        apps.generate_parameters_page();
+        if(generateParametersTab) apps.generate_parameters_page();
         // update the content of the log tab
         if(job.status == "PENDING") {
             document.getElementById("tabLogs").children[0].classList.remove("w3-hide");
@@ -230,12 +246,7 @@ function setSettings(settings, disable_all_parameters = false) {
     // when the job is not new, disable all parameters
     if(disable_all_parameters) {
         // disable all parameters in the form
-        for(let tagtype of ["input", "select", "button"]) {
-            for(let item of FORM.getElementsByTagName(tagtype)) {
-                // the button to display the advanced parameters should never be disabled
-                if(item.id != "btn_header-advanced") item.disabled = true;
-            }
-        }
+        apps.disableParameters(FORM, true);
     }
     // always enable the "Save" button
     document.getElementById("btn_header-save").disabled = false;
@@ -252,13 +263,7 @@ function cloneJob() {
     // use the current job as a template for the new job
     // in fact, we just need to set the current job id to 0 and change some fields in the form
     // the parameters will remain as they are, so the user can modify them if needed
-    // for workflows, we should get the parameters from all the jobs in the workflow, not just the current one
-
-    // IDEAS for cloning workflows:
-    // on server side, search_jobs_args should be modified to return a map of [job_id, settings] instead of a single settings object (DONE)
-    // if the job is an app, the map will only contain one settings object for the current job (DONE)
-    // when loading the job on client side, we should always create the full parameters page with all the settings from the array (not just when creating a new job)
-    // when loading an existing job, we then hide the parameters from the other jobs
+    // if the job is part of a workflow, all the parameters are already set, but not displayed
 
     // set the new job id
     utils.setCurrentJobId(0);
@@ -365,4 +370,4 @@ async function startJob() {
     }
 }
 
-export { openNewJob, openCurrentJob, createJobPage, setSettings, startJob };
+export { openNewJob, openCurrentJob, updateJobPage, setSettings, startJob };
