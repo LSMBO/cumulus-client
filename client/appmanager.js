@@ -49,6 +49,7 @@ import * as textfield from "./app_elements/textfield.js";
 
 const XML_APP_LIST = new Map();
 var ADVANCED_VISIBLE = false;
+var CURRENT_APP_ID = null; // used to know which app is currently selected in the combobox
 
 function isAppHidden(xml) {
     const parser = new DOMParser();
@@ -129,50 +130,6 @@ function getAppsAsOptionList(selectedItem = "", display_description = false) {
     return html;
 }
 
-function findParamFinalId(app_id, name, include_hidden_params = true) {
-    // problem with this function is that the form is not defined yet when this function is called
-    // so, either we change the generate_parameters_page function to call this function after the form is generated
-    // or we set the values before they are added in the form (that would be better)
-    console.log(`findParamFinalId(${app_id}, ${name}, ${include_hidden_params})`);
-    // in a workflow, we have a tool id and a param name
-    // we need to find the complete id of the param for this tool
-    // it will be either {tool.id}-{section.name}-{param.name} or {tool.id}-{section.name}-{when.value}-{param.name}
-    // in the case of a conditional, we can set the value for each when value that contains the param
-    // the tool.id is easy to find, the sections are few so we can loop through them
-    // use a regex to search for all possible combinations
-
-    // first, we need to get the xml of the app
-    const xml = XML_APP_LIST.get(app_id);
-    if(xml == null) return []; // app not found
-    // get the corresponding div in formParameters (multiple divs in case of a workflow)
-    const div = Array.from(document.getElementById("formParameters").children).find(child => child.id === `${app_id}-main`) || null;
-    console.log(`Searching for ${app_id}-main`);
-    console.log(div);
-    // parse the xml to find the tool id and the sections
-    const parser = new DOMParser();
-    const main = parser.parseFromString(xml, "text/xml").firstChild;
-    const tool_id = main.getAttribute("id");
-    // prepare a map to store the possible results
-    const results = new Map();
-    // loop through the sections and conditionals to find the param
-    for(let section of main.children) {
-        const section_name = section.getAttribute("name");
-        // prepare the regex to find the param, it's either {tool.id}-{section.name}-{param.name} or {tool.id}-{section.name}-{when.value}-{param.name}
-        const regex = new RegExp(`${tool_id}-section-${section_name}(-[^<>"']+)?-${name}`, "g");
-        console.log(regex);
-        // search the regex in the div html and add the result to the map
-        const matches = div.matchAll(regex);
-        if(matches) {
-            for(let r of [...matches]) {
-                if(!include_hidden_params && !elements.hasVisibleWhenParent(r[0])) continue; // skip hidden params
-                results.set(r[0], ""); // store the full id in the map
-            }
-        }
-    }
-    // return the list of results
-    return Array.from(results.keys());
-}
-
 function readXmlApp(app_id) {
     // load the xml parser
     const parser = new DOMParser();
@@ -203,12 +160,6 @@ function get_app_templates(app_id) {
     return templates;
 }
 
-function getModifiers(app_id, index) {
-    const tools = readXmlApp(app_id).children;
-    if(index < 0 || index >= tools.length) return null; // index out of bounds
-    return tools[index];
-}
-
 function generate_parameters_page() {
     const parser = new DOMParser();
     const form = document.getElementById("formParameters");
@@ -225,31 +176,9 @@ function generate_parameters_page() {
         for(let xml of templates) {
             const template = parser.parseFromString(xml, "text/xml").firstChild;
             // get the template id
-            const tool_id = template.getAttribute("id");
+            CURRENT_APP_ID = template.getAttribute("id");
             // create the div for the app
             const div = createAppPage(template, i, templates.length);
-            // get the modifiers from the workflow for this app
-            // const parent_modifiers = getModifiers(app_id, i);
-            // for(let modifier of parent_modifiers.children) {
-            //     // change the parameters of the app based on the modifiers (only change fixed values, modifiers from another app or with global variables will be dealt with later)
-            //     if(!modifier.hasAttribute("from_tool") && modifier.hasAttribute("value")) {
-            //         const value = modifier.getAttribute("value");
-            //         // value should not contain "%", it is a fixed value
-            //         if(!value.includes("%")) {
-            //             for(let param_to_id of findParamFinalId(tool_id, modifier.getAttribute("name"))) {
-            //                 div.getElementById(param_to_id).value = value;
-            //             }
-            //         }
-            //     }
-            //     // change parameters visibility (hidden, disabled)
-            //     if(modifier.hasAttribute("visibility")) {
-            //         const visibility = modifier.getAttribute("visibility");
-            //         for(let param_to_id of findParamFinalId(tool_id, modifier.getAttribute("name"))) {
-            //             if(visibility == "hidden") div.getElementById(param_to_id).classList.add("w3-hide");
-            //             else if(visibility == "disabled") div.getElementById(param_to_id).disabled = true;
-            //         }
-            //     }
-            // }
             // only display the first app in the workflow
             if(i > 0) div.classList.add("w3-hide");
             // add the div to the form
@@ -258,7 +187,7 @@ function generate_parameters_page() {
         }
     } else {
         // simply create the app page for this app
-        // const div = createAppPage(get_app_template(app_id));
+        CURRENT_APP_ID = app_id;
         const template = parser.parseFromString(get_app_template(app_id), "text/xml").firstChild;
         const div = createAppPage(template);
         form.appendChild(div);
@@ -278,30 +207,46 @@ function getFirstParentWithClass(element, className) {
     return parent;
 }
 
-function adjustParameterValue(param) {
+function disableParameters(parent, disable) {
+    for(let tagtype of ["input", "select", "button"]) {
+        for(let item of parent.getElementsByTagName(tagtype)) {
+            // for checkboxes, we need to disable the parent label
+            if(tagtype == "input" && item.type == "checkbox") item = item.parentElement; // get the label element
+            // set the properties
+            item.disabled = disable;
+            if(disable) item.classList.add("cm-disabled");
+            else item.classList.remove("cm-disabled");
+        }
+    }
+}
+
+function adjustParameterValue(id, param) {
     // if the current app is not part of a workflow, return null already
     if(document.getElementById("txtWorkflowName").value == "") return null; // not a workflow, nothing to do
     // otherwise, get the workflow xml and search if the param id is listed there (also check that the app is the current one)
     const workflow_xml = XML_APP_LIST.get(document.getElementById("txtWorkflowName").value);
     const parser = new DOMParser();
     const workflow = parser.parseFromString(workflow_xml, "text/xml").firstChild;
-    // get the part of the workflow that corresponds to the current app (it's the only child of the form that is visible)
-    const div = Array.from(document.getElementById("formParameters").children).find(app => !app.classList.contains("w3-hide"));
-    const app_id = div.id.replace("-main", "");
+    // get the part of the workflow that corresponds to the current app
     for(let tool of workflow.children) {
-        if(tool.id == app_id) {
-            // loop through the parameters of the tool
+        if(tool.id == CURRENT_APP_ID) { // FIXME CURRENT_APP_ID is redefined when creating an app page, even when it's not displayed (ie. second app in a workflow)
             for(let wfp of tool.children) {
-                // if the workflow indicate a specific value for the param, change the value of the param
-                // do not change it if it's a dynamic value (i.e. contains "%" or has a "from_tool" argument)
-                if(wfp.id == param.id && !wfp.hasAttribute("from_tool") && !wfp.getAttribute("value").includes("%")) {
-                    setParamValue(param, p.getAttribute("name"), wfp.getAttribute("value"));
-                }
-                // also set the visibility
-                if(wfp.id == param.id && wfp.hasAttribute("visibility")) {
-                    const visibility = wfp.getAttribute("visibility");
-                    if(visibility == "hidden") param.classList.add("w3-hide");
-                    else if(visibility == "disabled") param.disabled = true;
+                if(wfp.getAttribute("name") == id) {
+                    console.log(`app: ${CURRENT_APP_ID}, target id: ${id}, wfp: ${wfp.getAttribute("name")}`);
+                    console.log(wfp);
+                    // if the workflow indicate a specific value for the param, change the value of the param
+                    // do not change it if it's a dynamic value (i.e. contains "%" or has a "from_tool" argument)
+                    if(!wfp.hasAttribute("from_tool") && !wfp.getAttribute("value").includes("%")) {
+                        // setParamValue(param, wfp.getAttribute("name"), wfp.getAttribute("value"));
+                        setParamValue(param, wfp.getAttribute("value"));
+                    }
+                    // also set the visibility
+                    if(wfp.hasAttribute("visibility")) {
+                        const visibility = wfp.getAttribute("visibility");
+                        if(visibility == "hidden") param.classList.add("w3-hide");
+                        else if(visibility == "disabled") disableParameters(param, true);
+                    }
+                    break; // no need to continue, we found the parameter
                 }
             }
             break;
@@ -310,18 +255,6 @@ function adjustParameterValue(param) {
 }
 
 function createParam(id, base_param, input_class) {
-    // if(param.tagName == "select") return select.create(id, param, input_class);
-    // else if(param.tagName == "checklist") return checklist.create(id, param, input_class);
-    // else if(param.tagName == "keyvalues") return keyvalues.create(id, param, input_class);
-    // else if(param.tagName == "checkbox") return checkbox.create(id, param, input_class);
-    // else if(param.tagName == "string") return textfield.create(id, param, input_class);
-    // else if(param.tagName == "number") return number.create(id, param, input_class);
-    // else if(param.tagName == "range") return range.create(id, param, input_class);
-    // else if(param.tagName == "text") return elements.createTextLabel(id, param, input_class);
-    // else if(param.tagName == "filelist") {
-    //     if(param.getAttribute("multiple") == "true") return filelist.create(id, param, input_class, param.getAttribute("is_folder") == "true");
-    //     else return fileinput.create(id, param, input_class, param.getAttribute("is_folder") == "true");
-    // }
     var param = null;
     if(base_param.tagName == "select") param = select.create(id, base_param, input_class);
     else if(base_param.tagName == "checklist") param = checklist.create(id, base_param, input_class);
@@ -337,7 +270,7 @@ function createParam(id, base_param, input_class) {
     }
     // the xml has been validated, so there is no chance that none of the above cases are not matched
     // in case of a workflow, the parameter value can be forced by the workflow
-    adjustParameterValue(param);
+    adjustParameterValue(base_param.getAttribute("name"), param);
     return param;
 }
 
@@ -388,18 +321,16 @@ function getSettingsSets() {
     return settings
 }
 
-function setParamValue(param, id, value) {
-    if(param.name == id) {
-        if(param.classList.contains(`param-select`)) select.setValueTo(param, value);
-        if(param.classList.contains(`param-checklist`)) checklist.setValueTo(param, value);
-        if(param.classList.contains(`param-keyvalue`)) keyvalues.setValueTo(param, value);
-        if(param.classList.contains(`param-checkbox`)) checkbox.setValueTo(param, value);
-        if(param.classList.contains(`param-text`)) textfield.setValueTo(param, value);
-        if(param.classList.contains(`param-number`)) number.setValueTo(param, value);
-        if(param.classList.contains(`param-range`)) range.setValueTo(param, value);
-        if(param.classList.contains(`param-fileinput`)) fileinput.setValueTo(param, value);
-        if(param.classList.contains(`param-filelist`)) filelist.setValueTo(param, value);
-    }
+function setParamValue(param, value) {
+    if(param.classList.contains(`param-select`)) select.setValueTo(param, value);
+    if(param.classList.contains(`param-checklist`)) checklist.setValueTo(param, value);
+    if(param.classList.contains(`param-keyvalue`)) keyvalues.setValueTo(param, value);
+    if(param.classList.contains(`param-checkbox`)) checkbox.setValueTo(param, value);
+    if(param.classList.contains(`param-text`)) textfield.setValueTo(param, value);
+    if(param.classList.contains(`param-number`)) number.setValueTo(param, value);
+    if(param.classList.contains(`param-range`)) range.setValueTo(param, value);
+    if(param.classList.contains(`param-fileinput`)) fileinput.setValueTo(param, value);
+    if(param.classList.contains(`param-filelist`)) filelist.setValueTo(param, value);
 }
 
 function setParamValues(settingsMap) {
@@ -711,4 +642,4 @@ function createAppPage(parent, index = 0, total = 1) {
     return div;
 }
 
-export { checkParamValues, conditionalEvent, generate_parameters_page, getFullName, getAppsAsOptionList, getParamValuesAsString, getSettingsSets, isAdvancedParametersVisible, isFormDirty, isWorkflow, setParamValues, updateAppList };
+export { checkParamValues, conditionalEvent, disableParameters, generate_parameters_page, getFullName, getAppsAsOptionList, getParamValuesAsString, getSettingsSets, isAdvancedParametersVisible, isFormDirty, isWorkflow, setParamValues, updateAppList };
