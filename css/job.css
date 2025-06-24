@@ -38,6 +38,7 @@
 
 #formParameters .tool_header a {
     display: inline-block;
+    position: relative;
     color: var(--primary-color-link);
     padding-top: 5px;
 }
@@ -387,6 +388,7 @@
 #divSummaryButtonBar { bottom: 30px;}
 #divButtonsSettings { bottom: 0; }
 #divParamsButtonBar:has(#btnStart) { bottom: 0; }
+#divParamsButtonBar:has(#btnGotoNext) { bottom: 30px; }
 #divParamsButtonBar:not(:has(#btnStart)) { bottom: 30px; }
 
 #divSummaryButtonBar, #divParamsButtonBar, #divButtonsSettings {

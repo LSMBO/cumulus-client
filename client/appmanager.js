@@ -185,6 +185,7 @@ function generate_parameters_page() {
             form.appendChild(div);
             i += 1;
         }
+        CURRENT_APP_ID = form.children[0].id.replace("-main", "");
     } else {
         // simply create the app page for this app
         CURRENT_APP_ID = app_id;
@@ -232,8 +233,6 @@ function adjustParameterValue(id, param) {
         if(tool.id == CURRENT_APP_ID) { // FIXME CURRENT_APP_ID is redefined when creating an app page, even when it's not displayed (ie. second app in a workflow)
             for(let wfp of tool.children) {
                 if(wfp.getAttribute("name") == id) {
-                    console.log(`app: ${CURRENT_APP_ID}, target id: ${id}, wfp: ${wfp.getAttribute("name")}`);
-                    console.log(wfp);
                     // if the workflow indicate a specific value for the param, change the value of the param
                     // do not change it if it's a dynamic value (i.e. contains "%" or has a "from_tool" argument)
                     if(!wfp.hasAttribute("from_tool") && !wfp.getAttribute("value").includes("%")) {
@@ -560,9 +559,11 @@ function isAdvancedParametersVisible() {
 }
 
 function switchWorkflowApp(event, moveNext = true) {
+// function switchWorkflowApp(target, moveNext = true) {
     event.preventDefault();
     // do nothing if the button is disabled
     if(event.target.classList.contains("w3-disabled")) return;
+    // if(target.classList.contains("w3-disabled")) return;
     // get the list of apps in the workflow, it's the children of the main form
     const children = document.getElementById("formParameters").children;
     // find the number of the app currently displayed (the only one that is not hidden)
@@ -579,7 +580,22 @@ function switchWorkflowApp(event, moveNext = true) {
         if(moveNext) children[currentIndex + 1].classList.remove("w3-hide"); // show the next app
         else children[currentIndex - 1].classList.remove("w3-hide"); // show the previous app
     }
+    // enable or disable the buttons in the button bar
+    if(currentIndex == 0) {
+        document.getElementById("btnGotoPrev").classList.add("w3-disabled");
+        document.getElementById("btnGotoNext").classList.remove("w3-disabled");
+    } else if(currentIndex == children.length - 1) {
+        document.getElementById("btnGotoPrev").classList.remove("w3-disabled");
+        document.getElementById("btnGotoNext").classList.add("w3-disabled");
+    }
+    // update the current app id
+    CURRENT_APP_ID = children[moveNext ? currentIndex + 1 : currentIndex - 1].getAttribute("id").replace("-main", "");
 }
+
+// function switchWorkflowAppEvent(event, moveNext = true) {
+//     event.preventDefault();
+//     switchWorkflowApp(event.target, moveNext);
+// }
 
 function createHeaderUrl(url) {
     const url_parent = elements.createDiv("", "url");
@@ -642,4 +658,4 @@ function createAppPage(parent, index = 0, total = 1) {
     return div;
 }
 
-export { checkParamValues, conditionalEvent, disableParameters, generate_parameters_page, getFullName, getAppsAsOptionList, getParamValuesAsString, getSettingsSets, isAdvancedParametersVisible, isFormDirty, isWorkflow, setParamValues, updateAppList };
+export { checkParamValues, conditionalEvent, disableParameters, generate_parameters_page, getFullName, getAppsAsOptionList, getParamValuesAsString, getSettingsSets, isAdvancedParametersVisible, isFormDirty, isWorkflow, setParamValues, switchWorkflowApp, updateAppList };

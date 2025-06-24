@@ -46,7 +46,7 @@ const FORM = document.getElementById("formParameters");
 const STD_OUT = document.getElementById("stdout");
 const STD_ERR = document.getElementById("stderr");
 
-function updateField(fieldId, value = null, display = null, dispay_of_parent = null, classes_to_add = [], classes_to_remove = [], disabled = null, selectedIndex = null, innerHTML = null) {
+function updateField(fieldId, value = null, display = null, display_of_parent = null, classes_to_add = [], classes_to_remove = [], disabled = null, selectedIndex = null, innerHTML = null) {
     const field = document.getElementById(fieldId);
     if(!field) {
         __electronLog.error(`Field with id '${fieldId}' not found in the DOM.`);
@@ -54,7 +54,7 @@ function updateField(fieldId, value = null, display = null, dispay_of_parent = n
     }
     if(value) field.value = value;
     if(display) field.style.display = display;
-    if(dispay_of_parent) field.parentNode.style.display = dispay_of_parent;
+    if(display_of_parent) field.parentNode.style.display = display_of_parent;
     for(const cls of classes_to_add) {
         field.classList.add(cls);
     }
@@ -97,34 +97,41 @@ function generateButton(label, callback, id = "", classes = "", is_disabled = fa
     return button;
 }
 
-function generateButtonBar(parent_id, is_workflow = false, add_btn_next = false, add_btn_start = false, add_btn_clone = false, add_btn_cancel = false, add_btn_delete = false) {
+function createButtonBarGotoParameters(parent_id, is_disabled) {
     const parent = document.getElementById(parent_id);
     parent.innerHTML = ""; // clear the content
-    if(add_btn_next) {
-        parent.appendChild(generateButton("Go to next tab", () => tabs.openTab("tabParameters"), "btnNext", "w3-button w3-block color-opposite", true));
+    parent.appendChild(generateButton("Set the parameters", () => tabs.openTab("tabParameters"), "btnNext", "w3-button w3-block color-opposite", is_disabled));
+}
+function createButtonBarCloneCancelDelete(parent_id, is_workflow, is_finished) {
+    const parent = document.getElementById(parent_id);
+    parent.innerHTML = ""; // clear the content
+    // add a clone button whatever the status
+    if(is_workflow) parent.appendChild(generateButton("Clone workflow", () => cloneWorkflow(), "", "w3-button w3-half color-opposite")); // TODO write cloneWorkflow function
+    parent.appendChild(generateButton("Clone job", () => cloneJob(), "", "w3-button w3-half color-opposite"));
+    // add a cancel button if the job is running or pending, otherwise add a delete button
+    if(is_finished) parent.appendChild(generateButton(is_workflow ? "Delete workflow" : "Delete job", () => deleteJob(), "", "w3-button w3-half color-secondary"));
+    else parent.appendChild(generateButton(is_workflow ? "Cancel workflow" : "Cancel job", () => cancelJob(), "", "w3-button w3-half color-secondary"));
+}
+function createButtonBarStartJob(parent_id, is_workflow) {
+    const parent = document.getElementById(parent_id);
+    parent.innerHTML = ""; // clear the content
+    if(is_workflow) {
+        parent.appendChild(generateButton("Previous app settings", (e) => apps.switchWorkflowApp(e, false), "btnGotoPrev", "w3-button w3-third color-secondary"));
+        parent.appendChild(generateButton("Start Workflow", () => startJob(), "btnStart", "w3-button w3-third color-accent"));
+        parent.appendChild(generateButton("Next app settings", (e) => apps.switchWorkflowApp(e, true), "btnGotoNext", "w3-button w3-third color-secondary"));
+    } else {
+        parent.appendChild(generateButton("Start job", () => startJob(), "btnStart", "w3-button w3-block w3-margin-top color-accent"));
     }
-    if(add_btn_start) parent.appendChild(generateButton(is_workflow ? "Start workflow" : "Start job", () => startJob(), "btnStart", "w3-button w3-block w3-margin-top color-accent"));
-    if(add_btn_clone) {
-        if(is_workflow) parent.appendChild(generateButton("Clone workflow", () => cloneWorkflow(), "", "w3-button w3-half color-opposite"));
-        parent.appendChild(generateButton("Clone job", () => cloneJob(), "", "w3-button w3-half color-opposite"));
-    }
-    if(add_btn_cancel) parent.appendChild(generateButton(is_workflow ? "Cancel workflow" : "Cancel job", () => cancelJob(), "", "w3-button w3-half color-secondary"));
-    if(add_btn_delete) parent.appendChild(generateButton(is_workflow ? "Delete workflow" : "Delete job", () => deleteJob(), "", "w3-button w3-half color-secondary"));
 }
 
-function generateButtonBars(status, isWorkflow) {
+function generateButtonBars(status = "", isWorkflow = false) {
     // a job is part of a workflow if the field "workflow_name" is not null
     if(utils.getCurrentJobId() <= 0) { // new job
-        generateButtonBar("divSummaryButtonBar", isWorkflow, true);
-        generateButtonBar("divParamsButtonBar", isWorkflow, false, true); // present but not visible
+        createButtonBarGotoParameters("divSummaryButtonBar", document.getElementById("cmbAppName").value == "");
+        createButtonBarStartJob("divParamsButtonBar", document.getElementById("txtWorkflowName").value != "");
     } else { // existing job
-        if(status == "RUNNING" || status == "PENDING") {
-            generateButtonBar("divSummaryButtonBar", isWorkflow, false, false, true, true);
-            generateButtonBar("divParamsButtonBar", isWorkflow, false, false, true, true);
-        } else { // status is done, failed or cancelled
-            generateButtonBar("divSummaryButtonBar", isWorkflow, false, false, true, false, true);
-            generateButtonBar("divParamsButtonBar", isWorkflow, false, false, true, false, true);
-        }
+        createButtonBarCloneCancelDelete("divSummaryButtonBar", isWorkflow, status != "RUNNING" && status != "PENDING");
+        createButtonBarCloneCancelDelete("divParamsButtonBar", isWorkflow, status != "RUNNING" && status != "PENDING");
     }
 }
 
@@ -167,7 +174,6 @@ async function displayFileTransfers(job) {
 function updateJobPage(job, generateParametersTab = true) {
     // sometimes the job or its settings can be null, it can happen when the refreshing of the job list is not done yet
     if(job != null && job.settings != null) {
-        console.log("Updating job page, generateParametersTab:", generateParametersTab);
         updateField("txtJobOwner", job.owner, null, null, [], [], true);
         updateField("txtJobStatus", job.status, null, "block", [], [], true);
         updateField("cmbAppName", job.app_name, null, null, ["w3-hide"]);
@@ -227,7 +233,7 @@ function openNewJob() {
     document.getElementById("btnLogs").disabled = true;
     document.getElementById("btnOutput").disabled = true;
     // generate the button bar
-    generateButtonBars("NEW");
+    generateButtonBars();
     // open the first tab
     tabs.openTab("tabSummary");
 }
@@ -370,4 +376,4 @@ async function startJob() {
     }
 }
 
-export { openNewJob, openCurrentJob, updateJobPage, setSettings, startJob };
+export { generateButtonBars, openNewJob, openCurrentJob, updateJobPage, setSettings, startJob };

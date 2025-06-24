@@ -62,26 +62,19 @@ document.getElementById("btnLogs").addEventListener("click", () => tabs.openTab(
 document.getElementById("btnOutput").addEventListener("click", () => tabs.openTab("tabOutput"));
 document.getElementById("cmbAppName").addEventListener("change", () => {
   document.getElementById("btnParameters").disabled = false;
-  document.getElementById("btnNext").disabled = false;
+  // document.getElementById("btnNext").disabled = false;
   if(apps.isWorkflow(document.getElementById("cmbAppName").value)) {
     document.getElementById("txtWorkflowName").value = document.getElementById("cmbAppName").value;
+  } else {
+    document.getElementById("txtWorkflowName").value = "";
   }
-  // job.setAppParameters();
-  // job.prepareAppParameters();
+  jc.generateButtonBars();
   apps.generate_parameters_page();
 });
 document.getElementById("aSelect").addEventListener("click", () => output.selectAllCheckboxes());
 document.getElementById("aUnselect").addEventListener("click", () => output.unselectAllCheckboxes());
 document.getElementById("aExpand").addEventListener("click", () => output.expandAllFolders());
 document.getElementById("aCollapse").addEventListener("click", () => output.collapseAllFolders());
-// document.getElementById("btnClone").addEventListener("click", () => job.cloneJob());
-// document.getElementById("btnClone2").addEventListener("click", () => job.cloneJob());
-// document.getElementById("btnNext").addEventListener("click", () => tabs.openTab("tabParameters"));
-// document.getElementById("btnStart").addEventListener("click", () => job.startJob());
-// document.getElementById("btnCancel").addEventListener("click", job.cancelJob);
-// document.getElementById("btnDelete").addEventListener("click", job.deleteJob);
-// document.getElementById("btnCancel2").addEventListener("click", job.cancelJob);
-// document.getElementById("btnDelete2").addEventListener("click", job.deleteJob);
 document.getElementById("copyStdout").addEventListener("click", async () => await tabs.copyToClipboard("copyStdout", document.getElementById("stdout")));
 document.getElementById("copyStderr").addEventListener("click", async () => await tabs.copyToClipboard("copyStderr", document.getElementById("stderr")));
 document.getElementById("btnOutputDownload").addEventListener("click", async() => await output.downloadOutput());
