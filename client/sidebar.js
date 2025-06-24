@@ -32,7 +32,6 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-// import * as apps from "./applist.js";
 import * as apps from "./appmanager.js";
 import * as dialog from "./dialog.js";
 import * as elements from "./app_elements/elements.js";
@@ -112,8 +111,6 @@ async function openJob(a) {
     utils.toggleLoadingScreen();
     // refresh the job list
     await refreshSidebar();
-    // // load the job content
-    // jc.openCurrentJob(job);
     // remove the loading screen
     utils.toggleLoadingScreen();
 }
@@ -173,7 +170,6 @@ async function refreshSidebar(reloadPreviousSettings = true) {
     if(!dialog.isDialogOfflineOpen()) {
         utils.setOffline(true);
         const title = "Cumulus is disconnected!";
-        // const message = `Cumulus has lost the connection with the ${error ? "server" : "RSync agent"} with the following error:<br/>${errorMessage}<br/><br/>Please contact your administrator.`;
         const message = `Cumulus has lost the connection with the server with the following error:<br/>${error}<br/><br/>Please contact your administrator.`;
         dialog.createDialogOffline(title, message, retryReloadJobList);
     }
@@ -186,8 +182,12 @@ async function refreshSidebar(reloadPreviousSettings = true) {
         for(let job of jobs) {
             SIDEBAR.appendChild(createJobButton(job));
             if(job.id == utils.getCurrentJobId()) {
-                jc.createJobPage(job);
-                if(OPEN_JOB) jc.openCurrentJob(job);
+                if(OPEN_JOB) {
+                    jc.updateJobPage(job, true);
+                    jc.openCurrentJob(job);
+                } else {
+                    jc.updateJobPage(job, false);
+                }
             }
         }
     }
