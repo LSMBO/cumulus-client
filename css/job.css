@@ -2,6 +2,11 @@
     --param-width: 300px;
 }
 
+.cm-disabled {
+    cursor: not-allowed !important;
+    opacity: 0.5;
+}
+
 #formParameters .tool_header div {
     display: inline-block;
 }
@@ -396,12 +401,12 @@
     height: 30px;
     position: relative;
     width: 60px;
-    /* width: var(--param-width); */
     top: 3px;
+
+    cursor: pointer;
 }
 
 .cumulus-checkbox .switch input {
-    /* display:none; */
     position: absolute;
     opacity: 0;
     width: 0;
@@ -411,7 +416,6 @@
 .cumulus-checkbox .slider {
     background-color: #ccc;
     bottom: 0;
-    cursor: pointer;
     left: 0;
     position: absolute;
     right: 0;
@@ -430,14 +434,8 @@
     width: 22px;
 }
 
-.cumulus-checkbox .switch input:focus + .slider {
-    outline: 1px auto var(--opposite-color-dark) !important;
-}
-
+.cumulus-checkbox .switch input:focus + .slider { outline: 1px auto var(--opposite-color-dark) !important; }
 .cumulus-checkbox input:checked + .slider { background-color: var(--opposite-color); }
-.cumulus-checkbox input:checked + .slider:before {
-    transform: translateX(30px);
-    /* transform: translateX(calc(var(--param-width) - 30px)); */
-}
+.cumulus-checkbox input:checked + .slider:before { transform: translateX(30px); }
 .cumulus-checkbox .slider.round { border-radius: 34px; }
 .cumulus-checkbox .slider.round:before { border-radius: 50%; }
