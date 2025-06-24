@@ -63,6 +63,9 @@ document.getElementById("btnOutput").addEventListener("click", () => tabs.openTa
 document.getElementById("cmbAppName").addEventListener("change", () => {
   document.getElementById("btnParameters").disabled = false;
   document.getElementById("btnNext").disabled = false;
+  if(apps.isWorkflow(document.getElementById("cmbAppName").value)) {
+    document.getElementById("txtWorkflowName").value = document.getElementById("cmbAppName").value;
+  }
   // job.setAppParameters();
   // job.prepareAppParameters();
   apps.generate_parameters_page();
