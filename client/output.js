@@ -302,7 +302,7 @@ async function downloadOutput() {
     // console.log(`${files.length} files to download`);
     if(files.length > 0) {
         // get the folder where to download the files
-        // FIXME files cannot be seen when browsing for a directory, it seems like it's how Windows manages it. OpenSaveDialog can only save a file, not a list of files
+        // files cannot be seen when browsing for a directory, it seems like it's how Windows manages it. OpenSaveDialog can only save a file, not a list of files
         const path = await window.electronAPI.browseServer("OUT", "Select where the files will be downloaded", "", [{ name: 'All files', extensions: ['*'] }], ['openDirectory']);
         if(path != "") {
           if(await window.electronAPI.countExistingFiles(path[0], files) > 0)

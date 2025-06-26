@@ -34,9 +34,7 @@ knowledge of the CeCILL license and that you accept its terms.
 
 // import other modules
 import * as tabs from "./tabs.js";
-// import * as job from "./job.js";
 import * as jc from "./jobcontent.js";
-// import * as jobs from "./joblist.js";
 import * as sidebar from "./sidebar.js";
 import * as output from "./output.js";
 import * as dialog from "./dialog.js";
@@ -44,7 +42,6 @@ import * as search from "./search.js";
 import * as settings from "./settings.js";
 import * as storage from "./storage.js";
 import * as utils from "./utils.js";
-// import * as apps from "./applist.js";
 import * as apps from "./appmanager.js";
 
 var DEBUG_MODE = false;
