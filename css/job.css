@@ -2,6 +2,11 @@
     --param-width: 300px;
 }
 
+button.cm-disabled {
+    cursor: not-allowed !important;
+    opacity: inherit in !important;
+}
+
 .cm-disabled {
     cursor: not-allowed !important;
     opacity: 0.5;
@@ -121,9 +126,7 @@
     padding: 10px 0 6px 5px;
 }
 
-/* #formParameters input:focus, #formParameters select:focus, #formParameters button:focus, #formParameters .checklist:focus { */
 :focus {
-    /* outline: 2px solid var(--accent-color) !important; */
     outline: 1px auto var(--opposite-color-dark) !important;
 }
 #formParameters .hover {
@@ -385,18 +388,19 @@
     content: "• ";
 }
 
-#divSummaryButtonBar { bottom: 30px;}
-#divButtonsSettings { bottom: 0; }
-#divParamsButtonBar:has(#btnStart) { bottom: 0; }
-#divParamsButtonBar:has(#btnGotoNext) { bottom: 30px; }
-#divParamsButtonBar:not(:has(#btnStart)) { bottom: 30px; }
-
 #divSummaryButtonBar, #divParamsButtonBar, #divButtonsSettings {
     position: sticky;
     margin-top: 30px;
     padding-bottom: 15px;
     background-color: var(--primary-color) !important;
+    height: 36px;
+    bottom: 15px;
 }
+
+#divSummaryButtonBar button:focus, #divParamsButtonBar button:focus, #divButtonsSettings button:focus {
+    outline: none !important;
+}
+
 
 .cumulus-checkbox .switch {
     display: inline-block;

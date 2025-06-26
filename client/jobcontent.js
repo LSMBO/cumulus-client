@@ -116,9 +116,9 @@ function createButtonBarStartJob(parent_id, is_workflow) {
     const parent = document.getElementById(parent_id);
     parent.innerHTML = ""; // clear the content
     if(is_workflow) {
-        parent.appendChild(generateButton("Previous app settings", (e) => apps.switchWorkflowApp(e, false), "btnGotoPrev", "w3-button w3-third color-secondary"));
+        parent.appendChild(generateButton("Previous app settings", (e) => apps.switchWorkflowApp(e, false), "btnGotoPrev", "w3-button w3-third color-opposite w3-disabled"));
         parent.appendChild(generateButton("Start Workflow", () => startJob(), "btnStart", "w3-button w3-third color-accent"));
-        parent.appendChild(generateButton("Next app settings", (e) => apps.switchWorkflowApp(e, true), "btnGotoNext", "w3-button w3-third color-secondary"));
+        parent.appendChild(generateButton("Next app settings", (e) => apps.switchWorkflowApp(e, true), "btnGotoNext", "w3-button w3-third color-opposite"));
     } else {
         parent.appendChild(generateButton("Start job", () => startJob(), "btnStart", "w3-button w3-block w3-margin-top color-accent"));
     }
@@ -255,7 +255,7 @@ function setSettings(settings, disable_all_parameters = false) {
         apps.disableParameters(FORM, true);
     }
     // always enable the "Save" button
-    document.getElementById("btn_header-save").disabled = false;
+    // document.getElementById("btn_header-save").disabled = false;
 }
 
 function openCurrentJob(job) {

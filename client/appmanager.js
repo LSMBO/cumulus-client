@@ -211,12 +211,19 @@ function getFirstParentWithClass(element, className) {
 function disableParameters(parent, disable) {
     for(let tagtype of ["input", "select", "button"]) {
         for(let item of parent.getElementsByTagName(tagtype)) {
-            // for checkboxes, we need to disable the parent label
-            if(tagtype == "input" && item.type == "checkbox") item = item.parentElement; // get the label element
+            // do not disable the Advanced and Save buttons
+            if(item.id == "btn_header-save") continue;
+            else if(item.id == "btn_header-advanced") continue;
             // set the properties
             item.disabled = disable;
             if(disable) item.classList.add("cm-disabled");
             else item.classList.remove("cm-disabled");
+            // do the same for the parent element of any checkbox
+            if(tagtype == "input" && item.type == "checkbox") {
+                item.parentElement.disabled = disable;
+                if(disable) item.parentElement.classList.add("cm-disabled");
+                else item.parentElement.classList.remove("cm-disabled");
+            }
         }
     }
 }
@@ -230,7 +237,7 @@ function adjustParameterValue(id, param) {
     const workflow = parser.parseFromString(workflow_xml, "text/xml").firstChild;
     // get the part of the workflow that corresponds to the current app
     for(let tool of workflow.children) {
-        if(tool.id == CURRENT_APP_ID) { // FIXME CURRENT_APP_ID is redefined when creating an app page, even when it's not displayed (ie. second app in a workflow)
+        if(tool.id == CURRENT_APP_ID) {
             for(let wfp of tool.children) {
                 if(wfp.getAttribute("name") == id) {
                     // if the workflow indicate a specific value for the param, change the value of the param
@@ -559,7 +566,6 @@ function isAdvancedParametersVisible() {
 }
 
 function switchWorkflowApp(event, moveNext = true) {
-// function switchWorkflowApp(target, moveNext = true) {
     event.preventDefault();
     // do nothing if the button is disabled
     if(event.target.classList.contains("w3-disabled")) return;
@@ -575,27 +581,23 @@ function switchWorkflowApp(event, moveNext = true) {
         }
     }
     // hide this div and display the previous one
-    if(currentIndex >= 0) {
+    if(currentIndex >= 0) { // this condition should always be true, but just in case
         children[currentIndex].classList.add("w3-hide"); // hide the current app
         if(moveNext) children[currentIndex + 1].classList.remove("w3-hide"); // show the next app
         else children[currentIndex - 1].classList.remove("w3-hide"); // show the previous app
     }
     // enable or disable the buttons in the button bar
-    if(currentIndex == 0) {
+    document.getElementById("btnGotoPrev").classList.remove("w3-disabled");
+    document.getElementById("btnGotoNext").classList.remove("w3-disabled");
+    if(!moveNext && currentIndex == 1) {
         document.getElementById("btnGotoPrev").classList.add("w3-disabled");
-        document.getElementById("btnGotoNext").classList.remove("w3-disabled");
-    } else if(currentIndex == children.length - 1) {
-        document.getElementById("btnGotoPrev").classList.remove("w3-disabled");
+    }
+    if(moveNext && currentIndex == children.length - 2) {
         document.getElementById("btnGotoNext").classList.add("w3-disabled");
     }
     // update the current app id
     CURRENT_APP_ID = children[moveNext ? currentIndex + 1 : currentIndex - 1].getAttribute("id").replace("-main", "");
 }
-
-// function switchWorkflowAppEvent(event, moveNext = true) {
-//     event.preventDefault();
-//     switchWorkflowApp(event.target, moveNext);
-// }
 
 function createHeaderUrl(url) {
     const url_parent = elements.createDiv("", "url");
