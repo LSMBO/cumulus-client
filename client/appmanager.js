@@ -588,12 +588,14 @@ function switchWorkflowApp(event, moveNext = true) {
     }
     // enable or disable the buttons in the button bar
     document.getElementById("btnGotoPrev").classList.remove("w3-disabled");
-    document.getElementById("btnGotoNext").classList.remove("w3-disabled");
+    document.getElementById("btnStart").classList.add("w3-hide");
+    document.getElementById("btnGotoNext").classList.remove("w3-hide");
     if(!moveNext && currentIndex == 1) {
         document.getElementById("btnGotoPrev").classList.add("w3-disabled");
     }
     if(moveNext && currentIndex == children.length - 2) {
-        document.getElementById("btnGotoNext").classList.add("w3-disabled");
+        document.getElementById("btnStart").classList.remove("w3-hide");
+        document.getElementById("btnGotoNext").classList.add("w3-hide");
     }
     // update the current app id
     CURRENT_APP_ID = children[moveNext ? currentIndex + 1 : currentIndex - 1].getAttribute("id").replace("-main", "");

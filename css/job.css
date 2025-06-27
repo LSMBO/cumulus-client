@@ -179,7 +179,7 @@ button.cm-disabled {
 
 #formParameters .param-checklist > div > div > label {
     display: inline-block;
-    float: unset;
+    /* float: unset; */
     width: 100%;
     padding: 5px;
 }
@@ -395,7 +395,13 @@ button.cm-disabled {
     background-color: var(--primary-color) !important;
     height: 36px;
     bottom: 15px;
+    transform: scale(1.02, 1.2);
 }
+
+#btnGotoPrev, #btnGotoNext, #btnStart {
+    float: left;
+}
+
 
 #divSummaryButtonBar button:focus, #divParamsButtonBar button:focus, #divButtonsSettings button:focus {
     outline: none !important;

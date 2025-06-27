@@ -89,9 +89,9 @@ function cleanJob() {
     document.getElementById("treeview").innerHTML = "";
 }
 
-function generateButton(label, callback, id = "", classes = "", is_disabled = false) {
+function generateButton(label, callback = null, id = "", classes = "", is_disabled = false) {
     const button = elements.createElement("button", new Map([["class", classes], ["textContent", label]]));
-    button.addEventListener("click", callback);
+    if(callback) button.addEventListener("click", callback);
     if(id) button.id = id;
     if(is_disabled) button.disabled = true;
     return button;
@@ -116,11 +116,15 @@ function createButtonBarStartJob(parent_id, is_workflow) {
     const parent = document.getElementById(parent_id);
     parent.innerHTML = ""; // clear the content
     if(is_workflow) {
-        parent.appendChild(generateButton("Previous app settings", (e) => apps.switchWorkflowApp(e, false), "btnGotoPrev", "w3-button w3-third color-opposite w3-disabled"));
-        parent.appendChild(generateButton("Start Workflow", () => startJob(), "btnStart", "w3-button w3-third color-accent"));
-        parent.appendChild(generateButton("Next app settings", (e) => apps.switchWorkflowApp(e, true), "btnGotoNext", "w3-button w3-third color-opposite"));
+        parent.appendChild(generateButton("Previous app settings", (e) => apps.switchWorkflowApp(e, false), "btnGotoPrev", "w3-button color-opposite w3-disabled"));
+        parent.appendChild(generateButton("Start Workflow", () => startJob(), "btnStart", "w3-button color-accent w3-hide"));
+        parent.appendChild(generateButton("Next app settings", (e) => apps.switchWorkflowApp(e, true), "btnGotoNext", "w3-button color-opposite"));
+        for(let i = 0; i < parent.children.length; i++) {
+            parent.children[i].style.width = "calc(50% - 1px)"; // make sure the buttons are equally sized, with some space between them
+            if(i > 0) parent.children[i].style.marginLeft = "2px"; // add a margin to the right of the first button
+        }
     } else {
-        parent.appendChild(generateButton("Start job", () => startJob(), "btnStart", "w3-button w3-block w3-margin-top color-accent"));
+        parent.appendChild(generateButton("Start job", () => startJob(), "btnStart", "w3-bar-item w3-button w3-block w3-margin-top color-accent"));
     }
 }
 
