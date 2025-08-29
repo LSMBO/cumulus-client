@@ -136,8 +136,10 @@ function goToPreviousTab() {
 }
 
 function resizeLogAreas() {
-    document.getElementById("stdout").style.height = `${window.innerHeight - 130}px`;
-    document.getElementById("stderr").style.height = `${window.innerHeight - 130}px`;
+    // document.getElementById("stdout").style.height = `${window.innerHeight - 130}px`;
+    // document.getElementById("stderr").style.height = `${window.innerHeight - 130}px`;
+    // document.getElementById("txtMergedLog").style.height = `${window.innerHeight - 180}px`;
+    // document.getElementById("pltJobUsage").style.height = "300px";
 }
 
 async function copyToClipboard(sourceName, target) {

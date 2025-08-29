@@ -365,5 +365,18 @@ function addCheckboxList(parent, label, items, allowZeroSelection, tooltiptext) 
     tooltip(parent.getElementsByTagName("label")[0], tooltiptext);
 }
 
+function extractJobLog(text, extract_stdout = true, extract_stderr = true, extract_info = false) {
+    // the jobs are logged in a single file, each line from stdout starts with [STDOUT], similarly for stderr
+    // there are also [INFO] lines with date, cpu and memory usage
+    // level can be "stdout", "stderr", "info" or "all"
+    var output = "";
+    for(let line of text.split("\n")) {
+        if(extract_stdout && line.startsWith("[STDOUT]")) output += line.replace("[STDOUT] ", "<span class='stdout'>") + "</span>\n";
+        if(extract_stderr && line.startsWith("[STDERR]")) output += line.replace("[STDERR] ", "<span class='stderr'>") + "</span>\n";
+        if(extract_info && line.startsWith("[INFO]")) output += line.replace("[INFO] ", "") + "\n";
+    }
+    return output;
+}
+
 // export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
-export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getPreviousJobId, getUserName, isActive, isFocus, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
+export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, doRefresh, extractJobLog, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getPreviousJobId, getUserName, isActive, isFocus, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };

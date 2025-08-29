@@ -89,7 +89,7 @@ function highlightJobButton() {
 }
 
 function setJobListDisplay() {
-    const items = ["display.job.id", "display.job.owner", "display.app.name", "display.host.name", "display.job.creation.date", "display.job.end.date"];
+    const items = ["display.job.id", "display.job.owner", "display.app.name", "display.flavor.name", "display.job.creation.date", "display.job.end.date"];
     for(let a of SIDEBAR.getElementsByTagName("a")) {
         const labels = a.getElementsByTagName("i");
         if(labels.length > 0) {
@@ -133,11 +133,12 @@ function createJobButton(job) {
     const id = createJobItem(`Job ID: ${job.id}`);
     const owner = createJobItem(`Owner: ${job.owner}`, "img/owner.png", job.id);
     const appName = createJobItem(apps.getFullName(job.app_name), "img/cmd-app.png");
-    const host = createJobItem(job.host == "" ? "No host selected" : job.host, "img/host.png");
+    // const host = createJobItem(job.host == "" ? "No host selected" : job.host, "img/host.png");
+    const strategy = createJobItem(job.strategy == "" ? "No strategy selected" : job.strategy, "img/strategy.png");
     const creationDate = createJobItem(utils.formatDate(job.creation_date), "img/hg-create-white.png");
     const endDate = job.end_date ? createJobItem(utils.formatDate(job.end_date), "img/hg-end-white.png") : createJobItem("");
     // add all the elements in a label
-    const label = elements.createElement("label", new Map([["class", job.status.startsWith("ARCHIVED_") ? "archived" : ""]]), [id, owner, appName, host, creationDate, endDate]);
+    const label = elements.createElement("label", new Map([["class", job.status.startsWith("ARCHIVED_") ? "archived" : ""]]), [id, owner, appName, strategy, creationDate, endDate]);
     // add a class to the label if the job is part of a workflow (the css should add a small icon on the top right side of the label, to link it with the previous job)
     if(job.start_after_id != null) {
         const top = elements.createElement("img", new Map([["class", "workflow wf-top"], ["src", "img/link-top.png"]]));

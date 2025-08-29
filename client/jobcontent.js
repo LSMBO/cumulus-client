@@ -43,8 +43,43 @@ import * as settings from "./settings.js";
 import * as filelist from "./app_elements/filelist.js";
 
 const FORM = document.getElementById("formParameters");
-const STD_OUT = document.getElementById("stdout");
-const STD_ERR = document.getElementById("stderr");
+// const STD_OUT = document.getElementById("stdout");
+// const STD_ERR = document.getElementById("stderr");
+const LOG_ELEMENT = document.getElementById("txtMergedLog");
+// Create the chart once
+// const PLOT_ELEMENT = document.getElementById("pltJobUsage");
+const PLOT_CONTEXT = document.getElementById('pltJobUsage').getContext('2d');
+var PLOT_LABELS = [];
+var PLOT_CPU = [];
+var PLOT_RAM = [];
+// const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+// const accentColorDark = getComputedStyle(document.documentElement).getPropertyValue('--accent-color-dark').trim();
+// const oppositeColor = getComputedStyle(document.documentElement).getPropertyValue('--opposite-color').trim();
+// const oppositeColorDark = getComputedStyle(document.documentElement).getPropertyValue('--opposite-color-dark').trim();
+const PLOT_ELEMENT = new Chart(PLOT_CONTEXT, {
+  type: 'line',
+  data: {
+    labels: PLOT_LABELS,
+    datasets: [
+        { label: 'CPU Usage (%)', borderColor: 'rgba(255, 99, 132, 1)', backgroundColor: 'rgba(255, 99, 132, 0.2)', data: PLOT_CPU, fill: true, tension: 0.1 },
+        { label: 'RAM Usage (%)', borderColor: 'rgba(54, 162, 235, 1)', backgroundColor: 'rgba(54, 162, 235, 0.2)', data: PLOT_RAM, fill: true, tension: 0.1 }
+        // { label: 'CPU Usage (%)', borderColor: accentColor, backgroundColor: accentColorDark, data: PLOT_CPU, fill: true, tension: 0.25 },
+        // { label: 'RAM Usage (%)', borderColor: oppositeColor, backgroundColor: oppositeColorDark, data: PLOT_RAM, fill: true, tension: 0.25 }
+    ]
+  },
+  options: {
+    responsive: true, animation: true,
+    scales: {
+      y: { min: 0, max: 100, title: { display: true, text: 'Usage (%)' }, ticks: { stepSize: 10 } },
+      x: { title: { display: true, text: 'Time' }, ticks: { display: false } }
+    },
+    plugins: {
+      legend: { position: 'top' },
+    //   title: { display: true, text: 'CPU and RAM Usage Over Time' }
+    }
+  }
+});
+
 
 function updateField(fieldId, value = null, display = null, display_of_parent = null, classes_to_add = [], classes_to_remove = [], disabled = null, selectedIndex = null, innerHTML = null) {
     const field = document.getElementById(fieldId);
@@ -76,14 +111,17 @@ function cleanJob() {
     updateField("txtAppName", null, null, null, ["w3-hide"]);
     updateField("cmbStrategy", null, null, null, [], ["w3-hide"], false, 0);
     updateField("txtJobStrategy", null, null, null, ["w3-hide"]);
-    updateField("txtSelectedHost", null, null, "none");
+    // updateField("txtSelectedHost", null, null, "none");
     updateField("txtJobDescription", "", null, null, [], [], false);
     updateField("divDates", null, "none");
     // clear the Parameters tab
     FORM.innerHTML = "";
     // clear the Log tab
-    STD_OUT.textContent = "";
-    STD_ERR.textContent = "";
+    // STD_OUT.textContent = "";
+    // STD_ERR.textContent = "";
+    LOG_ELEMENT.innerHTML = "";
+    PLOT_ELEMENT.data.datasets[0].data = [];
+    PLOT_ELEMENT.data.datasets[1].data = [];
     // clear the Output tab
     document.getElementById("outputSummary").textContent = "Nothing yet...";
     document.getElementById("treeview").innerHTML = "";
@@ -184,8 +222,9 @@ function updateJobPage(job, generateParametersTab = true) {
         updateField("txtAppName", job.app_name, null, null, [], ["w3-hide"]);
         updateField("txtWorkflowName", job.workflow_name, null, null, [], ["w3-hide"]);
         updateField("cmbStrategy", job.strategy, null, null, ["w3-hide"]);
-        updateField("txtJobStrategy", job.strategy, null, null, [], ["w3-hide"]);
-        updateField("txtSelectedHost", job.host, null, "block");
+        // updateField("txtJobStrategy", job.strategy, null, null, [], ["w3-hide"]);
+        updateField("txtJobStrategy", document.getElementById("cmbStrategy").textContent, null, null, [], ["w3-hide"]);
+        // updateField("txtSelectedHost", job.host, null, "block");
         updateField("txtJobDescription", job.description, null, null, [], [], true);
         updateField("divDates", null, "block", null, [], [], null, null, describeJobDates(job));
         // generate the button bar
@@ -201,16 +240,36 @@ function updateJobPage(job, generateParametersTab = true) {
         } else if(job.status == "RUNNING") {
             document.getElementById("tabLogs").children[0].classList.add("w3-hide");
             document.getElementById("tabLogs").children[1].classList.remove("w3-hide");
-            STD_OUT.textContent = job.stdout;
-            STD_OUT.scrollTop = STD_OUT.scrollHeight;
-            STD_ERR.textContent = job.stderr;
-            STD_ERR.scrollTop = STD_ERR.scrollHeight;
+            // STD_OUT.textContent = utils.extractJobLog(job.stdout, "stdout");
+            // STD_OUT.scrollTop = STD_OUT.scrollHeight;
+            // STD_ERR.textContent = utils.extractJobLog(job.stderr, "stderr");
+            // STD_ERR.scrollTop = STD_ERR.scrollHeight;
+            // const logContent = job.log.split("\n").map(line => `[STDOUT] ${line}`).join("\n");
+            LOG_ELEMENT.innerHTML = utils.extractJobLog(job.log, true, true, false);
+            LOG_ELEMENT.scrollTop = LOG_ELEMENT.scrollHeight;
+            // TODO get the data, normally we should use utils.extractJobLog(job.stdout, "info");
+            PLOT_LABELS = ["2025-08-28 13:52:17 UTC", "2025-08-28 13:52:47 UTC", "2025-08-28 13:53:17 UTC", "2025-08-28 13:53:47 UTC", "2025-08-28 13:54:17 UTC", "2025-08-28 13:54:47 UTC", "2025-08-28 13:55:17 UTC", "2025-08-28 13:55:47 UTC", "2025-08-28 13:56:17 UTC", "2025-08-28 13:56:47 UTC", "2025-08-28 13:57:17 UTC", "2025-08-28 13:57:47 UTC", "2025-08-28 13:58:17 UTC", "2025-08-28 13:58:47 UTC", "2025-08-28 13:59:17 UTC", "2025-08-28 13:59:47 UTC", "2025-08-28 14:00:17 UTC", "2025-08-28 14:00:47 UTC", "2025-08-28 14:01:17 UTC", "2025-08-28 14:01:47 UTC", "2025-08-28 14:02:17 UTC", "2025-08-28 14:02:47 UTC", "2025-08-28 14:03:17 UTC", "2025-08-28 14:03:47 UTC", "2025-08-28 14:04:17 UTC", "2025-08-28 14:04:47 UTC", "2025-08-28 14:05:17 UTC", "2025-08-28 14:05:47 UTC", "2025-08-28 14:06:17 UTC", "2025-08-28 14:06:47 UTC", "2025-08-28 14:07:17 UTC", "2025-08-28 14:07:47 UTC", "2025-08-28 14:08:17 UTC", "2025-08-28 14:08:47 UTC", "2025-08-28 14:09:17 UTC", "2025-08-28 14:09:47 UTC", "2025-08-28 14:10:17 UTC", "2025-08-28 14:10:47 UTC", "2025-08-28 14:11:17 UTC"];
+            PLOT_CPU = [86, 70, 99, 71, 94, 50, 54, 63, 67, 52, 52, 94, 80, 98, 99, 78, 54, 68, 60, 96, 60, 87, 65, 60, 55, 75, 65, 57, 99, 77, 64, 63, 57, 94, 80, 93, 93, 50, 65];
+            PLOT_RAM = [70, 84, 50, 57, 97, 85, 94, 68, 78, 72, 63, 71, 74, 75, 87, 69, 54, 92, 77, 84, 61, 70, 52, 53, 80, 86, 83, 98, 79, 72, 97, 83, 76, 58, 64, 89, 58, 93, 73];
+            PLOT_ELEMENT.data.labels = PLOT_LABELS;
+            PLOT_ELEMENT.data.datasets[0].data = PLOT_CPU;
+            PLOT_ELEMENT.data.datasets[1].data = PLOT_RAM;
+            PLOT_ELEMENT.update();
         } else {
             // do not reload the logs if the job is finished
             document.getElementById("tabLogs").children[0].classList.add("w3-hide");
             document.getElementById("tabLogs").children[1].classList.remove("w3-hide");
-            if(STD_OUT.textContent == "") STD_OUT.textContent = job.stdout;
-            if(STD_ERR.textContent == "") STD_ERR.textContent = job.stderr;
+            // if(STD_OUT.textContent == "") STD_OUT.textContent = utils.extractJobLog(job.stdout, "stdout");
+            // if(STD_ERR.textContent == "") STD_ERR.textContent = utils.extractJobLog(job.stderr, "stderr");
+            // const logContent = job.log.split("\n").map(line => line.startsWith("WARNING") ? "[STDERR] "+line : "[STDOUT] "+line).join("\n");
+            if(LOG_ELEMENT.innerHTML == "") LOG_ELEMENT.innerHTML = utils.extractJobLog(job.log, true, true, false);
+            PLOT_LABELS = ["2025-08-28 13:52:17 UTC", "2025-08-28 13:52:47 UTC", "2025-08-28 13:53:17 UTC", "2025-08-28 13:53:47 UTC", "2025-08-28 13:54:17 UTC", "2025-08-28 13:54:47 UTC", "2025-08-28 13:55:17 UTC", "2025-08-28 13:55:47 UTC", "2025-08-28 13:56:17 UTC", "2025-08-28 13:56:47 UTC", "2025-08-28 13:57:17 UTC", "2025-08-28 13:57:47 UTC", "2025-08-28 13:58:17 UTC", "2025-08-28 13:58:47 UTC", "2025-08-28 13:59:17 UTC", "2025-08-28 13:59:47 UTC", "2025-08-28 14:00:17 UTC", "2025-08-28 14:00:47 UTC", "2025-08-28 14:01:17 UTC", "2025-08-28 14:01:47 UTC", "2025-08-28 14:02:17 UTC", "2025-08-28 14:02:47 UTC", "2025-08-28 14:03:17 UTC", "2025-08-28 14:03:47 UTC", "2025-08-28 14:04:17 UTC", "2025-08-28 14:04:47 UTC", "2025-08-28 14:05:17 UTC", "2025-08-28 14:05:47 UTC", "2025-08-28 14:06:17 UTC", "2025-08-28 14:06:47 UTC", "2025-08-28 14:07:17 UTC", "2025-08-28 14:07:47 UTC", "2025-08-28 14:08:17 UTC", "2025-08-28 14:08:47 UTC", "2025-08-28 14:09:17 UTC", "2025-08-28 14:09:47 UTC", "2025-08-28 14:10:17 UTC", "2025-08-28 14:10:47 UTC", "2025-08-28 14:11:17 UTC"];
+            PLOT_CPU = [86, 70, 99, 71, 94, 50, 54, 63, 67, 52, 52, 94, 80, 98, 99, 78, 54, 68, 60, 96, 60, 87, 65, 60, 55, 75, 65, 57, 99, 77, 64, 63, 57, 94, 80, 93, 93, 50, 65];
+            PLOT_RAM = [70, 84, 50, 57, 97, 85, 94, 68, 78, 72, 63, 71, 74, 75, 87, 69, 54, 92, 77, 84, 61, 70, 52, 53, 80, 86, 83, 98, 79, 72, 97, 83, 76, 58, 64, 89, 58, 93, 73];
+            PLOT_ELEMENT.data.labels = PLOT_LABELS;
+            PLOT_ELEMENT.data.datasets[0].data = PLOT_CPU;
+            PLOT_ELEMENT.data.datasets[1].data = PLOT_RAM;
+            PLOT_ELEMENT.update();
         }
         // update the content of the Output tab
         if(!job.status.startsWith("ARCHIVED_")) output.insertOutputFiles(job.files);
@@ -287,12 +346,15 @@ function cloneJob() {
     document.getElementById("cmbStrategy").disabled = false;
     document.getElementById("cmbStrategy").classList.remove("w3-hide");
     document.getElementById("txtJobStrategy").classList.add("w3-hide");
-    document.getElementById("txtSelectedHost").parentNode.style.display = "none";
+    // document.getElementById("txtSelectedHost").parentNode.style.display = "none";
     document.getElementById("txtJobDescription").disabled = false;
     document.getElementById("divDates").style.display = "none";
     generateButtonBars("PENDING", false);
-    STD_OUT.textContent = "";
-    STD_ERR.textContent = "";
+    // STD_OUT.textContent = "";
+    // STD_ERR.textContent = "";
+    LOG_ELEMENT.innerHTML = "";
+    PLOT_ELEMENT.data.datasets[0].data = [];
+    PLOT_ELEMENT.data.datasets[1].data = [];
     document.getElementById("outputSummary").textContent = "Nothing yet...";
     document.getElementById("treeview").innerHTML = "";
     document.getElementById("btnLogs").disabled = true;

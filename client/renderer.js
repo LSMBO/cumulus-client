@@ -72,8 +72,8 @@ document.getElementById("aSelect").addEventListener("click", () => output.select
 document.getElementById("aUnselect").addEventListener("click", () => output.unselectAllCheckboxes());
 document.getElementById("aExpand").addEventListener("click", () => output.expandAllFolders());
 document.getElementById("aCollapse").addEventListener("click", () => output.collapseAllFolders());
-document.getElementById("copyStdout").addEventListener("click", async () => await tabs.copyToClipboard("copyStdout", document.getElementById("stdout")));
-document.getElementById("copyStderr").addEventListener("click", async () => await tabs.copyToClipboard("copyStderr", document.getElementById("stderr")));
+// document.getElementById("copyStdout").addEventListener("click", async () => await tabs.copyToClipboard("copyStdout", document.getElementById("stdout")));
+// document.getElementById("copyStderr").addEventListener("click", async () => await tabs.copyToClipboard("copyStderr", document.getElementById("stderr")));
 document.getElementById("btnOutputDownload").addEventListener("click", async() => await output.downloadOutput());
 document.getElementById("txtStorageSearch").addEventListener("keyup", storage.searchStorage);
 // settings tab
@@ -178,19 +178,20 @@ window.addEventListener("click", e => {
   if(utils.isFocus()) utils.setActive(true);
 });
 
-async function loadRemoteHosts() {
+async function loadRemoteFlavors() {
   // load the host list
-  const [hosts] = await window.electronAPI.listHosts();
+  const [flavors] = await window.electronAPI.listFlavors();
+  // const [flavors] = {"m1.4xlarge":{"weight":1,"cpu":32,"ram":64},"m1.8xlarge-16xmem":{"weight":2,"cpu":64,"ram":256},"m1.16xlarge-32xmem":{"weight":4,"cpu":128,"ram":512}};
   // generate the combo content
-  var content = "<option value=\"first_available\">Use the first available host</option>";
-  content += "<option value=\"best_cpu\">Wait for the host with the most CPU</option>";
-  content += "<option value=\"best_ram\">Wait for the host with the most RAM</option>";
-  for(let host of hosts) {
-    content += `<option value="host:${host["name"]}">Use host '${host["name"]}' (${host["cpu"]} CPU, ${host["ram"]} GB of RAM), wait if it's used</option>`;
+  var content = "";
+  for(let flavor in flavors) {
+    content += `<option value="${flavor}">${flavor} [CPU: ${flavors[flavor].cpu}, RAM: ${flavors[flavor].ram} GB, Weight: ${flavors[flavor].weight}]</option>`;
   }
-  // fill all the combo that list the hosts
+  // fill all the combo that list the flavors
   document.getElementById("cmbSettingsDefaultStrategy").innerHTML = content;
   document.getElementById("cmbStrategy").innerHTML = content;
+  // also set the max weight for the OpenStack strategy
+  document.getElementById("txtStrategy").textContent = `Strategy (maximum weight on the server: ${settings.CONFIG.get("openstack.max.flavor")})`;
 }
 
 function addTooltips() {
@@ -204,8 +205,8 @@ function addTooltips() {
   utils.tooltip(document.getElementById("txtJobOwner").previousElementSibling, "This field shows the name of the user who created the job, it cannot be modified.");
   utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, RUNNING, DONE or FAILED or CANCELED. It will also be archived later."); // PENDING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
   utils.tooltip(document.getElementById("cmbAppName").previousElementSibling, "Select the software to run, with its corresponding version.");
-  utils.tooltip(document.getElementById("cmbStrategy").previousElementSibling, "The software will run on a virtual machine (VM) in the Cloud, the strategy allows you to influence which VM will be selected.");
-  utils.tooltip(document.getElementById("txtSelectedHost").previousElementSibling, "The host is the virtual machine (VM) where the job has been sent. Each VM has its own resources.");
+  utils.tooltip(document.getElementById("cmbStrategy").previousElementSibling, "The strategy to create the virtual machine. WARNING: the heavier the strategy the longer it may take to start your job.");
+  // utils.tooltip(document.getElementById("txtSelectedHost").previousElementSibling, "The host is the virtual machine (VM) where the job has been sent. Each VM has its own resources.");
   utils.tooltip(document.getElementById("txtJobDescription").previousElementSibling, "Add a description to your job, it can help you or others to distinguish a job without reviewing the set of parameters.");
   // settings tab
   utils.tooltip(document.getElementById("txtSettingsServerAddress").previousElementSibling, "Warning: do not change this value unless you are certain!");
@@ -236,8 +237,8 @@ async function initialize() {
     document.getElementsByTagName("title")[0].textContent = `Cumulus [${settings.CONFIG.get("cumulus.version")}]`;
     // adjust the size of the elements
     tabs.resizeLogAreas();
-    // list all the available hosts
-    await loadRemoteHosts();
+    // list all the available flavors
+    await loadRemoteFlavors();
     // load the list of available apps
     await apps.updateAppList();
     loadAppList();

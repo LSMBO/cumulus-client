@@ -177,7 +177,8 @@ app.whenReady().then(() => {
   ipcMain.handle('get-unc-paths', getUncPaths);
   ipcMain.handle('get-user-name', getUserName);
   ipcMain.handle('list-apps', srv.listApps);
-  ipcMain.handle('list-hosts', srv.listHosts);
+  // ipcMain.handle('list-hosts', srv.listHosts);
+  ipcMain.handle('list-flavors', srv.listFlavors);
   ipcMain.handle('list-storage', srv.listStorage);
   ipcMain.handle('load-file', loadFile);
   ipcMain.handle('open-url', openUrl);

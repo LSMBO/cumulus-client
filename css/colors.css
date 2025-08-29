@@ -13,8 +13,10 @@
     --accent-color-dark: #A71143;
     --accent-color-text: #FFFFFF;
     --opposite-color: #0CBABA;
-    --opposite-color-light: #00CCB8;
-    --opposite-color-dark: #0e8b7d;
+    /* --opposite-color-light: #00CCB8;
+    --opposite-color-dark: #0e8b7d; */
+    --opposite-color-light: #75BAB7;
+    --opposite-color-dark: #00717E;
     --opposite-color-text: #FFFFFF;
 }
 
@@ -36,8 +38,10 @@
 .color-opposite { color: var(--opposite-color-text) !important; background-color: var(--opposite-color) !important; border-color: var(--opposite-color) !important; }
 .color-opposite-hover:hover { color: var(--opposite-color) !important; background-color: var(--opposite-color-text) !important; }
 .color-opposite-border { border-color: var(--opposite-color) !important; }
+.color-opposite-light { color: var(--opposite-color-text) !important; background-color: var(--opposite-color-light) !important; border-color: var(--opposite-color-light) !important; }
+.color-opposite-dark { color: var(--opposite-color-text) !important; background-color: var(--opposite-color-dark) !important; border-color: var(--opposite-color-dark) !important; }
 
-button.color-primary, button.color-primary-border, button.color-primary-light, button.color-primary-dark, button.color-secondary, button.color-secondary-light, button.color-accent, button.color-opposite {
+button.color-primary, button.color-primary-border, button.color-primary-light, button.color-primary-dark, button.color-secondary, button.color-secondary-light, button.color-accent, button.color-opposite, button.color-opposite-light, button.color-opposite-dark {
     border-width: 1px !important;
     border-style: solid !important;
 }

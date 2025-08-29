@@ -515,3 +515,18 @@ input::placeholder, textarea::placeholder {
     0% { width: 0; }
     100% { width: 100%; }
 }
+
+#txtMergedLog {
+    overflow: auto;
+    height: calc(100% - 350px);
+}
+#txtMergedLog span {
+    display: block;
+}
+#txtMergedLog span.stderr {
+    color: var(--accent-color);
+}
+#pltJobUsage {
+    height: 350px;
+    /* height: 50%; */
+}

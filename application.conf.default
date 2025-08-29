@@ -11,11 +11,11 @@ rsync.min.version = 0.6.0
 
 max.nb.jobs = 100
 refresh.rate = 5
-default.strategy = "best_ram"
+default.strategy = "m1.4xlarge"
 
 display.job.id = true
 display.job.owner = true
 display.app.name = true
-display.host.name = false
 display.job.creation.date = true
 display.job.end.date = false
+display.flavor.name = false

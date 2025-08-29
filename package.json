@@ -22,7 +22,9 @@
       "makers": [
         {
           "name": "@electron-forge/maker-zip",
-          "platforms": ["win32"]
+          "platforms": [
+            "win32"
+          ]
         }
       ],
       "publishers": []
@@ -47,6 +49,7 @@
   },
   "homepage": "https://github.com/LSMBO/cumulus-client#readme",
   "dependencies": {
+    "chart.js": "^4.5.0",
     "electron-log": "^5.2.4",
     "electron-squirrel-startup": "^1.0.1",
     "form-data": "^4.0.0",
