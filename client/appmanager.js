@@ -140,6 +140,8 @@ function readXmlApp(app_id) {
 }
 
 function isWorkflow(app_id) {
+    // console.log(app_id);
+    // console.log(readXmlApp(app_id));
     return readXmlApp(app_id).tagName.toLowerCase() == "workflow";
 }
 
@@ -321,7 +323,7 @@ function getSettingsSets() {
     // do the same as getParamValues, but separate the settings by app id
     const settings = new Map();
     for(let tool of document.getElementById("formParameters").children) {
-        settings.set(tool.id, getParamValuesAsString(tool));
+        settings.set(tool.id.replace("-main", ""), getParamValuesAsString(tool));
     }
     // return the map as a string (this should work with workflows and jobs)
     return settings

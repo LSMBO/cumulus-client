@@ -378,5 +378,27 @@ function extractJobLog(text, extract_stdout = true, extract_stderr = true, extra
     return output;
 }
 
+function extractInfoFromJobLog(text) {
+    // only extract lines starting with [INFO]
+    const data = extractJobLog(text, false, false, true);
+    // split each line and return arrays of dates, cpus and memories
+    const dates = []; const cpus = []; const memories = [];
+    for(let line of data.split("\n")) {
+        // prepare variables with default values
+        var date = ""; var cpu = 0; var ram = 0;
+        // each line should be like: 2025-08-28 13:52:17 UTC;CPU:86%;RAM:70%
+        for(let part of line.split(";")) {
+            if(part.startsWith("CPU:")) cpu = parseInt(part.replace("CPU:", "").replace("%", "").trim());
+            else if(part.startsWith("RAM:")) ram = parseInt(part.replace("RAM:", "").replace("%", "").trim());
+            else date = part.trim();
+        }
+        // store the values
+        dates.push(date);
+        cpus.push(cpu);
+        memories.push(ram);
+    }
+    return [dates, cpus, memories];
+}
+
 // export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
-export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, doRefresh, extractJobLog, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getPreviousJobId, getUserName, isActive, isFocus, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
+export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, doRefresh, extractJobLog, extractInfoFromJobLog, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getPreviousJobId, getUserName, isActive, isFocus, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };

@@ -160,6 +160,7 @@ async function keyupEvent(event) {
     __electronLog.info("TEST KEY!");
     // jobs.pauseRefresh();
     sidebar.pauseRefresh();
+    // console.log(apps.getSettingsSets());
     // apps.loadXmlFile();
     // console.log(apps.getLocalFiles());
     // console.log(apps.getSharedFiles());

@@ -141,14 +141,22 @@ function createButtonBarGotoParameters(parent_id, is_disabled) {
     parent.appendChild(generateButton("Set the parameters", () => tabs.openTab("tabParameters"), "btnNext", "w3-button w3-block color-opposite", is_disabled));
 }
 function createButtonBarCloneCancelDelete(parent_id, is_workflow, is_finished) {
+    // display a button to clone the job, if the job is part of a workflow we also display a button to clone the workflow
+    // if the job is finished, we display a delete button, otherwise a cancel button
     const parent = document.getElementById(parent_id);
     parent.innerHTML = ""; // clear the content
-    // add a clone button whatever the status
-    if(is_workflow) parent.appendChild(generateButton("Clone workflow", () => cloneWorkflow(), "", "w3-button w3-half color-opposite")); // TODO write cloneWorkflow function
-    parent.appendChild(generateButton("Clone job", () => cloneJob(), "", "w3-button w3-half color-opposite"));
+    // define the number of buttons: 2 if the job is part of a workflow, 3 otherwise
+    const button_width = is_workflow ? "w3-third" : "w3-half";
+    // add a clone button for the job
+    parent.appendChild(generateButton("Clone job", () => cloneJob(), "", `w3-button ${button_width} color-opposite`));
+    // add a clone button for the workflow if applicable
+    if(is_workflow) parent.appendChild(generateButton("Clone workflow", () => cloneWorkflow(), "", `w3-button ${button_width} color-opposite`)); // TODO write cloneWorkflow function
+    // // add a clone button whatever the status
+    // if(is_workflow) parent.appendChild(generateButton("Clone workflow", () => cloneWorkflow(), "", "w3-button w3-half color-opposite")); // TODO write cloneWorkflow function
+    // parent.appendChild(generateButton("Clone job", () => cloneJob(), "", "w3-button w3-half color-opposite"));
     // add a cancel button if the job is running or pending, otherwise add a delete button
-    if(is_finished) parent.appendChild(generateButton(is_workflow ? "Delete workflow" : "Delete job", () => deleteJob(), "", "w3-button w3-half color-secondary"));
-    else parent.appendChild(generateButton(is_workflow ? "Cancel workflow" : "Cancel job", () => cancelJob(), "", "w3-button w3-half color-secondary"));
+    if(is_finished) parent.appendChild(generateButton(is_workflow ? "Delete workflow" : "Delete job", () => deleteJob(), "", `w3-button ${button_width} color-secondary`));
+    else parent.appendChild(generateButton(is_workflow ? "Cancel workflow" : "Cancel job", () => cancelJob(), "", `w3-button ${button_width} color-secondary`));
 }
 function createButtonBarStartJob(parent_id, is_workflow) {
     const parent = document.getElementById(parent_id);
@@ -221,9 +229,10 @@ function updateJobPage(job, generateParametersTab = true) {
         updateField("cmbAppName", job.app_name, null, null, ["w3-hide"]);
         updateField("txtAppName", job.app_name, null, null, [], ["w3-hide"]);
         updateField("txtWorkflowName", job.workflow_name, null, null, [], ["w3-hide"]);
-        updateField("cmbStrategy", job.strategy, null, null, ["w3-hide"]);
+        // updateField("cmbStrategy", job.strategy, null, null, ["w3-hide"]);
+        updateField("cmbStrategy", null, null, null, ["w3-hide"], [], null, job.strategy)
         // updateField("txtJobStrategy", job.strategy, null, null, [], ["w3-hide"]);
-        updateField("txtJobStrategy", document.getElementById("cmbStrategy").textContent, null, null, [], ["w3-hide"]);
+        updateField("txtJobStrategy", document.getElementById("cmbStrategy").selectedOptions[0].textContent, null, null, [], ["w3-hide"]);
         // updateField("txtSelectedHost", job.host, null, "block");
         updateField("txtJobDescription", job.description, null, null, [], [], true);
         updateField("divDates", null, "block", null, [], [], null, null, describeJobDates(job));
@@ -248,9 +257,10 @@ function updateJobPage(job, generateParametersTab = true) {
             LOG_ELEMENT.innerHTML = utils.extractJobLog(job.log, true, true, false);
             LOG_ELEMENT.scrollTop = LOG_ELEMENT.scrollHeight;
             // TODO get the data, normally we should use utils.extractJobLog(job.stdout, "info");
-            PLOT_LABELS = ["2025-08-28 13:52:17 UTC", "2025-08-28 13:52:47 UTC", "2025-08-28 13:53:17 UTC", "2025-08-28 13:53:47 UTC", "2025-08-28 13:54:17 UTC", "2025-08-28 13:54:47 UTC", "2025-08-28 13:55:17 UTC", "2025-08-28 13:55:47 UTC", "2025-08-28 13:56:17 UTC", "2025-08-28 13:56:47 UTC", "2025-08-28 13:57:17 UTC", "2025-08-28 13:57:47 UTC", "2025-08-28 13:58:17 UTC", "2025-08-28 13:58:47 UTC", "2025-08-28 13:59:17 UTC", "2025-08-28 13:59:47 UTC", "2025-08-28 14:00:17 UTC", "2025-08-28 14:00:47 UTC", "2025-08-28 14:01:17 UTC", "2025-08-28 14:01:47 UTC", "2025-08-28 14:02:17 UTC", "2025-08-28 14:02:47 UTC", "2025-08-28 14:03:17 UTC", "2025-08-28 14:03:47 UTC", "2025-08-28 14:04:17 UTC", "2025-08-28 14:04:47 UTC", "2025-08-28 14:05:17 UTC", "2025-08-28 14:05:47 UTC", "2025-08-28 14:06:17 UTC", "2025-08-28 14:06:47 UTC", "2025-08-28 14:07:17 UTC", "2025-08-28 14:07:47 UTC", "2025-08-28 14:08:17 UTC", "2025-08-28 14:08:47 UTC", "2025-08-28 14:09:17 UTC", "2025-08-28 14:09:47 UTC", "2025-08-28 14:10:17 UTC", "2025-08-28 14:10:47 UTC", "2025-08-28 14:11:17 UTC"];
-            PLOT_CPU = [86, 70, 99, 71, 94, 50, 54, 63, 67, 52, 52, 94, 80, 98, 99, 78, 54, 68, 60, 96, 60, 87, 65, 60, 55, 75, 65, 57, 99, 77, 64, 63, 57, 94, 80, 93, 93, 50, 65];
-            PLOT_RAM = [70, 84, 50, 57, 97, 85, 94, 68, 78, 72, 63, 71, 74, 75, 87, 69, 54, 92, 77, 84, 61, 70, 52, 53, 80, 86, 83, 98, 79, 72, 97, 83, 76, 58, 64, 89, 58, 93, 73];
+            // PLOT_LABELS = ["2025-08-28 13:52:17 UTC", "2025-08-28 13:52:47 UTC", "2025-08-28 13:53:17 UTC", "2025-08-28 13:53:47 UTC", "2025-08-28 13:54:17 UTC", "2025-08-28 13:54:47 UTC", "2025-08-28 13:55:17 UTC", "2025-08-28 13:55:47 UTC", "2025-08-28 13:56:17 UTC", "2025-08-28 13:56:47 UTC", "2025-08-28 13:57:17 UTC", "2025-08-28 13:57:47 UTC", "2025-08-28 13:58:17 UTC", "2025-08-28 13:58:47 UTC", "2025-08-28 13:59:17 UTC", "2025-08-28 13:59:47 UTC", "2025-08-28 14:00:17 UTC", "2025-08-28 14:00:47 UTC", "2025-08-28 14:01:17 UTC", "2025-08-28 14:01:47 UTC", "2025-08-28 14:02:17 UTC", "2025-08-28 14:02:47 UTC", "2025-08-28 14:03:17 UTC", "2025-08-28 14:03:47 UTC", "2025-08-28 14:04:17 UTC", "2025-08-28 14:04:47 UTC", "2025-08-28 14:05:17 UTC", "2025-08-28 14:05:47 UTC", "2025-08-28 14:06:17 UTC", "2025-08-28 14:06:47 UTC", "2025-08-28 14:07:17 UTC", "2025-08-28 14:07:47 UTC", "2025-08-28 14:08:17 UTC", "2025-08-28 14:08:47 UTC", "2025-08-28 14:09:17 UTC", "2025-08-28 14:09:47 UTC", "2025-08-28 14:10:17 UTC", "2025-08-28 14:10:47 UTC", "2025-08-28 14:11:17 UTC"];
+            // PLOT_CPU = [86, 70, 99, 71, 94, 50, 54, 63, 67, 52, 52, 94, 80, 98, 99, 78, 54, 68, 60, 96, 60, 87, 65, 60, 55, 75, 65, 57, 99, 77, 64, 63, 57, 94, 80, 93, 93, 50, 65];
+            // PLOT_RAM = [70, 84, 50, 57, 97, 85, 94, 68, 78, 72, 63, 71, 74, 75, 87, 69, 54, 92, 77, 84, 61, 70, 52, 53, 80, 86, 83, 98, 79, 72, 97, 83, 76, 58, 64, 89, 58, 93, 73];
+            [PLOT_LABELS, PLOT_CPU, PLOT_RAM] = utils.extractInfoFromJobLog(job.log);
             PLOT_ELEMENT.data.labels = PLOT_LABELS;
             PLOT_ELEMENT.data.datasets[0].data = PLOT_CPU;
             PLOT_ELEMENT.data.datasets[1].data = PLOT_RAM;
@@ -263,9 +273,10 @@ function updateJobPage(job, generateParametersTab = true) {
             // if(STD_ERR.textContent == "") STD_ERR.textContent = utils.extractJobLog(job.stderr, "stderr");
             // const logContent = job.log.split("\n").map(line => line.startsWith("WARNING") ? "[STDERR] "+line : "[STDOUT] "+line).join("\n");
             if(LOG_ELEMENT.innerHTML == "") LOG_ELEMENT.innerHTML = utils.extractJobLog(job.log, true, true, false);
-            PLOT_LABELS = ["2025-08-28 13:52:17 UTC", "2025-08-28 13:52:47 UTC", "2025-08-28 13:53:17 UTC", "2025-08-28 13:53:47 UTC", "2025-08-28 13:54:17 UTC", "2025-08-28 13:54:47 UTC", "2025-08-28 13:55:17 UTC", "2025-08-28 13:55:47 UTC", "2025-08-28 13:56:17 UTC", "2025-08-28 13:56:47 UTC", "2025-08-28 13:57:17 UTC", "2025-08-28 13:57:47 UTC", "2025-08-28 13:58:17 UTC", "2025-08-28 13:58:47 UTC", "2025-08-28 13:59:17 UTC", "2025-08-28 13:59:47 UTC", "2025-08-28 14:00:17 UTC", "2025-08-28 14:00:47 UTC", "2025-08-28 14:01:17 UTC", "2025-08-28 14:01:47 UTC", "2025-08-28 14:02:17 UTC", "2025-08-28 14:02:47 UTC", "2025-08-28 14:03:17 UTC", "2025-08-28 14:03:47 UTC", "2025-08-28 14:04:17 UTC", "2025-08-28 14:04:47 UTC", "2025-08-28 14:05:17 UTC", "2025-08-28 14:05:47 UTC", "2025-08-28 14:06:17 UTC", "2025-08-28 14:06:47 UTC", "2025-08-28 14:07:17 UTC", "2025-08-28 14:07:47 UTC", "2025-08-28 14:08:17 UTC", "2025-08-28 14:08:47 UTC", "2025-08-28 14:09:17 UTC", "2025-08-28 14:09:47 UTC", "2025-08-28 14:10:17 UTC", "2025-08-28 14:10:47 UTC", "2025-08-28 14:11:17 UTC"];
-            PLOT_CPU = [86, 70, 99, 71, 94, 50, 54, 63, 67, 52, 52, 94, 80, 98, 99, 78, 54, 68, 60, 96, 60, 87, 65, 60, 55, 75, 65, 57, 99, 77, 64, 63, 57, 94, 80, 93, 93, 50, 65];
-            PLOT_RAM = [70, 84, 50, 57, 97, 85, 94, 68, 78, 72, 63, 71, 74, 75, 87, 69, 54, 92, 77, 84, 61, 70, 52, 53, 80, 86, 83, 98, 79, 72, 97, 83, 76, 58, 64, 89, 58, 93, 73];
+            // PLOT_LABELS = ["2025-08-28 13:52:17 UTC", "2025-08-28 13:52:47 UTC", "2025-08-28 13:53:17 UTC", "2025-08-28 13:53:47 UTC", "2025-08-28 13:54:17 UTC", "2025-08-28 13:54:47 UTC", "2025-08-28 13:55:17 UTC", "2025-08-28 13:55:47 UTC", "2025-08-28 13:56:17 UTC", "2025-08-28 13:56:47 UTC", "2025-08-28 13:57:17 UTC", "2025-08-28 13:57:47 UTC", "2025-08-28 13:58:17 UTC", "2025-08-28 13:58:47 UTC", "2025-08-28 13:59:17 UTC", "2025-08-28 13:59:47 UTC", "2025-08-28 14:00:17 UTC", "2025-08-28 14:00:47 UTC", "2025-08-28 14:01:17 UTC", "2025-08-28 14:01:47 UTC", "2025-08-28 14:02:17 UTC", "2025-08-28 14:02:47 UTC", "2025-08-28 14:03:17 UTC", "2025-08-28 14:03:47 UTC", "2025-08-28 14:04:17 UTC", "2025-08-28 14:04:47 UTC", "2025-08-28 14:05:17 UTC", "2025-08-28 14:05:47 UTC", "2025-08-28 14:06:17 UTC", "2025-08-28 14:06:47 UTC", "2025-08-28 14:07:17 UTC", "2025-08-28 14:07:47 UTC", "2025-08-28 14:08:17 UTC", "2025-08-28 14:08:47 UTC", "2025-08-28 14:09:17 UTC", "2025-08-28 14:09:47 UTC", "2025-08-28 14:10:17 UTC", "2025-08-28 14:10:47 UTC", "2025-08-28 14:11:17 UTC"];
+            // PLOT_CPU = [86, 70, 99, 71, 94, 50, 54, 63, 67, 52, 52, 94, 80, 98, 99, 78, 54, 68, 60, 96, 60, 87, 65, 60, 55, 75, 65, 57, 99, 77, 64, 63, 57, 94, 80, 93, 93, 50, 65];
+            // PLOT_RAM = [70, 84, 50, 57, 97, 85, 94, 68, 78, 72, 63, 71, 74, 75, 87, 69, 54, 92, 77, 84, 61, 70, 52, 53, 80, 86, 83, 98, 79, 72, 97, 83, 76, 58, 64, 89, 58, 93, 73];
+            [PLOT_LABELS, PLOT_CPU, PLOT_RAM] = utils.extractInfoFromJobLog(job.log);
             PLOT_ELEMENT.data.labels = PLOT_LABELS;
             PLOT_ELEMENT.data.datasets[0].data = PLOT_CPU;
             PLOT_ELEMENT.data.datasets[1].data = PLOT_RAM;

@@ -186,8 +186,10 @@ async function refreshSidebar(reloadPreviousSettings = true) {
                 if(OPEN_JOB) {
                     jc.updateJobPage(job, true);
                     jc.openCurrentJob(job);
+                    jc.generateButtonBars(job.status, job.workflow_name != null && job.workflow_name != "");
                 } else {
                     jc.updateJobPage(job, false);
+                    jc.generateButtonBars(job.status, job.workflow_name != null && job.workflow_name != "");
                 }
             }
         }

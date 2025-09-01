@@ -257,11 +257,11 @@ async function createJob(_, owner, app, strategy, description, settings, sharedF
         const form = new FormData({ maxDataSize: 20971520 });
         form.append("username", owner);
         form.append("app_name", app);
-        form.append("workflow_name", workflow_id); // may be null
+        form.append("workflow_name", workflow_id != null ? workflow_id : ""); // may be null
         form.append("strategy", strategy);
         form.append("description", description);
         form.append("settings", str = settings);
-        form.append("start_after_id", previous_job_id); // may be null
+        form.append("start_after_id", previous_job_id != null ? previous_job_id : ""); // may be null
         log.debug(settings);
         // send the request
         const url = rest.getUrl("start");
