@@ -33,7 +33,6 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 import * as tabs from "./tabs.js";
-// import * as jobs from "./joblist.js";
 import * as sidebar from "./sidebar.js";
 import * as utils from "./utils.js";
 
@@ -61,7 +60,6 @@ function openSettings() {
     if(CONFIG.has("raw.file.path")) document.getElementById("txtSettingsDefaultRawFilesPath").value = CONFIG.get("raw.file.path");
     if(CONFIG.has("fasta.path")) document.getElementById("txtSettingsDefaultFastaFilesPath").value = CONFIG.get("fasta.path");
     if(CONFIG.has("license")) document.getElementById("txtSettingsLicense").value = CONFIG.get("license");
-    // for(let option of ["display.job.id", "display.job.owner", "display.app.name", "display.job.start.date"]) {
     for(let option of ["display.job.id", "display.job.owner", "display.app.name", "display.flavor.name", "display.job.creation.date", "display.job.end.date"]) {
         utils.selectCheckboxListItem(jobLabels, option, CONFIG.has(option) ? CONFIG.get(option) : true);
     }
@@ -85,17 +83,19 @@ async function saveSettings() {
         CONFIG.set(option, selectedOptions.includes(option));
     }
     await window.electronAPI.setConfig(CONFIG);
-    // jobs.resetInterval();
-    // jobs.setJobListDisplay();
     sidebar.resetInterval();
     sidebar.setJobListDisplay();
+}
+
+async function updateSetting(key, value) {
+    CONFIG.set(key, value);
+    await window.electronAPI.setConfig(CONFIG);
 }
 
 async function resetSettings() {
     await window.electronAPI.resetConfig();
     await loadSettings();
     openSettings();
-    // jobs.resetInterval();
     sidebar.resetInterval();
 }
 
@@ -114,8 +114,7 @@ function toggleLicense() {
     else hideLicense();
 }
 
-// utils.addCheckboxList(jobLabels, "Job descriptions", {"display.job.id": "Job ID", "display.job.owner": "Job owner", "display.app.name": "Software name", "display.job.start.date": "Start date"}, false, "Select the information that will be displayed in the job list.");
 utils.addCheckboxList(jobLabels, "Job descriptions", {"display.job.id": "Job ID", "display.job.owner": "Job owner", "display.app.name": "Software name", "display.flavor.name": "Strategy", "display.job.creation.date": "Creation date", "display.job.end.date": "End date"}, false, "Select the information that will be displayed in the job list.");
 utils.updateCheckboxList(jobLabels);
 
-export { CONFIG, hideLicense, loadSettings, openSettings, resetSettings, saveSettings, toggleLicense };
+export { CONFIG, hideLicense, loadSettings, openSettings, resetSettings, saveSettings, toggleLicense, updateSetting };

@@ -41,13 +41,12 @@ import * as settings from "./settings.js";
 import * as utils from "./utils.js";
 
 var INTERVAL; // used to store the variable that updates the list of jobs every n seconds
-var IS_SEARCH = false;
 var OPEN_JOB = false; // used to know if the user has opened a job or not, so we only set the parameters once
 const SIDEBAR = document.getElementById("jobs");
 
 function createNewJobButton() {
     const a = elements.createElement("a", new Map([["id", "new_job"], ["href", "#"], ["class", "w3-button"]]));
-    if(IS_SEARCH) a.classList.add("w3-hide");
+    if(search.isSearchMode()) a.classList.add("w3-hide");
     const img = elements.createElement("img", new Map([["src", "./img/new_job.png"]]));
     utils.tooltip(img, "NEW JOB");
     a.appendChild(elements.createElement("span", null, [img]));
@@ -58,13 +57,13 @@ function createNewJobButton() {
 
 function createCancelSearchButton(nb_jobs) {
     const a = elements.createElement("a", new Map([["id", "clear_search"], ["href", "#"], ["class", "w3-button"]]));
-    if(!IS_SEARCH) a.classList.add("w3-hide");
+    if(!search.isSearchMode()) a.classList.add("w3-hide");
     const img = elements.createElement("img", new Map([["src", "./img/unfilter.png"]]));
     utils.tooltip(img, "CLEAR SEARCH FILTERS");
     a.appendChild(elements.createElement("span", null, [img]));
     a.appendChild(elements.createElement("label", new Map([["textContent", `Cancel search (${nb_jobs} result${nb_jobs > 1 ? "s" : ""})`]])));
     a.addEventListener("click", async () => { 
-        S_SEARCH = false; // disable search mode
+        search.setSearchMode(false); // disable search mode
         await refreshSidebar();
     });
     return a;
@@ -72,7 +71,7 @@ function createCancelSearchButton(nb_jobs) {
 
 function highlightJobButton() {
     for(let a of SIDEBAR.getElementsByTagName("a")) {
-        if((a.id == "clear_search" && IS_SEARCH)) {
+        if(a.id == "clear_search" && search.isSearchMode()) {
             a.classList.remove("color-secondary");
             a.classList.remove("color-accent");
             a.classList.add("color-opposite");
@@ -133,14 +132,13 @@ function createJobButton(job) {
     const id = createJobItem(`Job ID: ${job.id}`);
     const owner = createJobItem(`Owner: ${job.owner}`, "img/owner.png", job.id);
     const appName = createJobItem(apps.getFullName(job.app_name), "img/cmd-app.png");
-    // const host = createJobItem(job.host == "" ? "No host selected" : job.host, "img/host.png");
     const strategy = createJobItem(job.strategy == "" ? "No strategy selected" : job.strategy, "img/strategy.png");
     const creationDate = createJobItem(utils.formatDate(job.creation_date), "img/hg-create-white.png");
     const endDate = job.end_date ? createJobItem(utils.formatDate(job.end_date), "img/hg-end-white.png") : createJobItem("");
     // add all the elements in a label
     const label = elements.createElement("label", new Map([["class", job.status.startsWith("ARCHIVED_") ? "archived" : ""]]), [id, owner, appName, strategy, creationDate, endDate]);
     // add a class to the label if the job is part of a workflow (the css should add a small icon on the top right side of the label, to link it with the previous job)
-    if(job.start_after_id != null) {
+    if(job.start_after_id != null && job.start_after_id != "") {
         const top = elements.createElement("img", new Map([["class", "workflow wf-top"], ["src", "img/link-top.png"]]));
         utils.tooltip(top, "This job is part of a workflow");
         SIDEBAR.children[SIDEBAR.children.length - 1].children[0].appendChild(top);
@@ -161,11 +159,11 @@ function createJobButton(job) {
 
 function retryReloadJobList() {
     utils.setOffline(false);
-    reloadJobList();
+    refreshSidebar();
 }
 
 async function refreshSidebar(reloadPreviousSettings = true) {
-    const [jobs, error] = IS_SEARCH ? await search.searchJobs(reloadPreviousSettings) : await window.electronAPI.getLastJobs(utils.getCurrentJobId(), settings.CONFIG.get("max.nb.jobs"));
+    const [jobs, error] = search.isSearchMode() ? await search.searchJobs(reloadPreviousSettings) : await window.electronAPI.getLastJobs(utils.getCurrentJobId(), settings.CONFIG.get("max.nb.jobs"));
     if(error) {
     // do not reopen the dialog if it's already open
     if(!dialog.isDialogOfflineOpen()) {

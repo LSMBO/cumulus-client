@@ -116,16 +116,31 @@ async function updateAppList() {
 
 function getAppsAsOptionList(selectedItem = "", display_description = false) {
     var html = "";
-    for(let tag of ["Tool", "Workflow"]) {
-        html += `<optgroup label="${tag}s">`;
-        for(let id of XML_APP_LIST.keys()) {
-            const xml = XML_APP_LIST.get(id);
-            if(xml.startsWith(`<${tag.toLowerCase()}`) && isAppVisible(xml)) {
-                var sel = selectedItem == id ? "selected='true'" : "";
-                html += `<option value="${id}" ${sel}>${getFullName(id, display_description)}</option>`;
-            }
+    /* 
+    The following code lists the apps and the workflows too
+    It's disabled because workflows could not be tested enough
+     */
+    // for(let tag of ["Tool", "Workflow"]) {
+    //     html += `<optgroup label="${tag}s">`;
+    //     for(let id of XML_APP_LIST.keys()) {
+    //         const xml = XML_APP_LIST.get(id);
+    //         if(xml.startsWith(`<${tag.toLowerCase()}`) && isAppVisible(xml)) {
+    //             var sel = selectedItem == id ? "selected='true'" : "";
+    //             html += `<option value="${id}" ${sel}>${getFullName(id, display_description)}</option>`;
+    //         }
+    //     }
+    //     html += "</optgroup>";
+    // }
+
+    /* 
+    The following code only lists the apps
+     */
+    for(let id of XML_APP_LIST.keys()) {
+        const xml = XML_APP_LIST.get(id);
+        if(xml.startsWith(`<${"tool".toLowerCase()}`) && isAppVisible(xml)) {
+            var sel = selectedItem == id ? "selected='true'" : "";
+            html += `<option value="${id}" ${sel}>${getFullName(id, display_description)}</option>`;
         }
-        html += "</optgroup>";
     }
     return html;
 }
@@ -140,8 +155,6 @@ function readXmlApp(app_id) {
 }
 
 function isWorkflow(app_id) {
-    // console.log(app_id);
-    // console.log(readXmlApp(app_id));
     return readXmlApp(app_id).tagName.toLowerCase() == "workflow";
 }
 
@@ -262,6 +275,28 @@ function adjustParameterValue(id, param) {
     }
 }
 
+function addUrlLineIfAny(parent, base_param) {
+    // if the base_param has a url attribute, add a line to the parent with a link to that url
+    // if the base_param has a url_label attribute, prepend that label to the url (it would not be clickable)
+    if(base_param.hasAttribute("url")) {
+        const div = elements.createDiv("", "param-row param-url");
+        if(base_param.hasAttribute("url_label")) {
+            // const label = document.createElement("label");
+            // label.textContent = param.getAttribute("label");
+            const label = elements.createElement("label", new Map([["textContent", base_param.getAttribute("url_label")]]));
+            div.appendChild(label);
+        }
+        const url = base_param.getAttribute("url");
+        const link = elements.createElement("a", new Map([["href", url], ["textContent", url], ["target", "_blank"]]));
+        link.addEventListener("click", (event) => {
+            event.preventDefault();
+            window.electronAPI.openUrl(url);
+        });
+        div.appendChild(link);
+        parent.appendChild(div);
+    }
+}
+
 function createParam(id, base_param, input_class) {
     var param = null;
     if(base_param.tagName == "select") param = select.create(id, base_param, input_class);
@@ -276,6 +311,8 @@ function createParam(id, base_param, input_class) {
         if(base_param.getAttribute("multiple") == "true") param = filelist.create(id, base_param, input_class, base_param.getAttribute("is_folder") == "true");
         else param = fileinput.create(id, base_param, input_class, base_param.getAttribute("is_folder") == "true");
     }
+    // the params may have a url attribute, add a line to the parent with a link to that url
+    addUrlLineIfAny(param, base_param)
     // the xml has been validated, so there is no chance that none of the above cases are not matched
     // in case of a workflow, the parameter value can be forced by the workflow
     adjustParameterValue(base_param.getAttribute("name"), param);
@@ -516,15 +553,6 @@ async function loadParameters(event) {
     if(output != "") {
         // read the file
         const content = await window.electronAPI.loadFile(output[0]);
-        const json = JSON.parse(content);
-        // // check that the file content is for the current app
-        // if(json.app_id == app_id) {
-        //     // remove the app_id from the map
-        //     delete(json.app_id);
-        //     // set the parameters
-        //     setSettings(new Map(Object.entries(json)), false);
-        //     if(json.advanced_parameters_visible) displayAdvancedParameters();
-        // }
         // old versions were not made for workflows, check and adjust the content
         const settings = loadSettingsFromContent(content);
         // set the parameters

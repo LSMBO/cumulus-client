@@ -32,7 +32,6 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-// const app = require('electron');
 const log = require('electron-log/main');
 const FormData = require('form-data');
 const fs = require('fs');
@@ -42,8 +41,6 @@ const rest = require('./rest.js');
 const xsdv = require('xsd-schema-validator');
 const { app } = require('electron');
 
-// const DEMO_MODE = true; // when true, the client works offline without any server or rsync agent
-// if(DEMO_MODE) log.info("DEMO MODE is activated, the GUI will only work offline");
 var DEMO_MODE = false;
 const JXSD = path.join(__dirname, "apps.xsd");
 const WXSD = path.join(__dirname, "workflows.xsd");
@@ -86,7 +83,6 @@ async function checkServerVersion() {
         if(error2) return explain(error2, false);
         config.set("rsync.version", version);
         // check that all versions are compatible
-        // return config.checkVersion();
         const check = config.checkVersion();
         if(check == "") log.info("Version check is OK");
         else log.error(check);
@@ -117,11 +113,6 @@ async function isValidXml(id, xml) {
 async function listApps() {
     log.info("Retrieving list of applications");
     if(DEMO_MODE) {
-        // read the xml files in test
-        // return [
-        //     ["diann_1.9.1", fs.readFileSync("test/diann_1.9.1.xml", 'utf-8')],
-        //     ["alphadia_1.8.2", fs.readFileSync("test/alphadia_1.8.2.xml", 'utf-8')]
-        // ]
         // read the test/apps.txt file, it contains a copy of the real output from the server
         const data = fs.readFileSync("test/apps.txt", 'utf-8')
         return Object.entries(JSON.parse(data));
@@ -134,7 +125,6 @@ async function listApps() {
         } else {
             const output = Object.entries(JSON.parse(data));
             for(let [id, xml] of output) {
-                // if(await isValidXml(id, xml)) apps.push([id, xml]);
                 apps.push([id, xml]);
             }
         }
@@ -159,7 +149,6 @@ async function checkRsyncAgent() {
             const [_, error] = await rest.sendGetRequest(rest.getUrl("/", [], true));
             LAST_PING_RSYNC = Date.now();
             if(error) return error;
-            // else if(response != "OK") return "The RSync agent was reached but the expected code was incorrect.";
             else return "";
         } else return "";
     }
@@ -197,7 +186,6 @@ async function listStorage() {
 
 async function getDiskUsage() {
     log.info("Get server disk usage");
-    // const map = { "total": 0, "used": 0, "free": 0 };
     const map = new Map([["total", 0], ["used", 0], ["free", 0]]);
     if(DEMO_MODE) {
         map.set("total", 15609467670528);
@@ -216,19 +204,6 @@ async function getDiskUsage() {
     return map;
 }
 
-// async function listHosts() {
-//     log.info("Get the list of available hosts");
-//     if(DEMO_MODE) {
-//         const data = [{"cpu":"32","jobs_pending":0,"jobs_running":0,"name":"VM1","ram":"64"}];
-//         return [data, ""];
-//     } else {
-//         const url = rest.getUrl("info");
-//         const [data, error] = await rest.sendGetRequest(url);
-//         // console.log("listHosts: "+data);
-//         return [JSON.parse(data), error];
-//     }
-// }
-
 async function listFlavors() {
     log.info("Get the list of available flavors");
     if(DEMO_MODE) {
@@ -238,7 +213,6 @@ async function listFlavors() {
     } else {
         const url = rest.getUrl("info");
         const [data, error] = await rest.sendGetRequest(url);
-        // console.log("listHosts: "+data);
         return [JSON.parse(data), error];
     }
 }
@@ -247,7 +221,6 @@ async function createJob(_, owner, app, strategy, description, settings, sharedF
     log.info(`Creating a new job for user '${owner}' with app '${app}'`);
     if(DEMO_MODE) {
         log.debug(settings);
-        // {"fasta-file":"//ANALYST-PC/sequence/08Jan2024_Only14Defensin_DCp_BAR_20240402/current/08Jan2024_Only14Defensin_DCp_BAR_20240402.fasta","contaminants":true,"mc":"1","met-excision":true,"peptide-length-max":"30","peptide-length-min":"7","precursor-charge-max":"4","precursor-charge-min":"2","precursor-mz-max":"1800","precursor-mz-min":"300","fragment-mz-max":"1800","fragment-mz-min":"200","speclib-path":"","matrices":true,"prosit":true,"fdr":"1.0","loglevel":"1","max-var-mod":"2","ptm-carba":true,"ptm-ox":true,"ptm-ac":true,"ms1-acc":"10.0","ms2-acc":"10.0","scan-window":"10","mbr":true,"no-shared-spectra":true,"raw-type":"dia-pasef","format":"fasta","protease":"K*,R*","protein-inference":"protein","machine-learning":"single","quantification-strategy":"quantums-precision","cross-run-norm":"rt","library-generation":"rt-profiling","speed-ram":"low-ram","dia-pasef-list":["//SERV-NAS-II/RawDataTemporaire/BUREL Alexandre/DIA/TP4808CMO_Slot2-1_1_4820.d","//SERV-NAS-II/RawDataTemporaire/BUREL Alexandre/DIA/TP4823CMO_Slot2-17_1_4835.d","//SERV-NAS-II/RawDataTemporaire/BUREL Alexandre/DIA/TU013690CK_Slot2-2_1_2031.d","//SERV-NAS-II/RawDataTemporaire/BUREL Alexandre/DIA/TU013766CK_Slot1-02_1_2095.d"],"slice-pasef-list":[],"thermo-raw-list":[],"mzml-list":[]}
         return 10000;
     } else {
         // test that the rsync client is available, do not create a job if it is not

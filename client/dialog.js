@@ -32,7 +32,6 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-// import { on } from "form-data";
 import * as utils from "./utils.js";
 
 const PARENT = document.getElementById("dialogs");
@@ -44,7 +43,7 @@ const ICON_SLEEP = "img/sleep.png";
 const ICON_OFFLINE = "img/offline.png";
 var SLEEP_INTERVAL = undefined; // interval to update the sleep dialog
 
-function createDialog(title, message, icon) {
+function createDialog(title, message, icon, value = "", placeholder = "") {
     if(ID == 0) {
         // initialize the event listener on the parent
         PARENT.addEventListener("click", (e) => {
@@ -57,11 +56,31 @@ function createDialog(title, message, icon) {
     dialog.id = `dialog_${ID++}`;
     dialog.className = "w3-modal-content dialog";
     dialog.innerHTML = `<img src="${icon}"/><header>${title}</header><label>${message.replace(/\\n/g, "<br/>")}</label>`;
+    if(value != "") dialog.innerHTML += `<input class="w3-input" type="text" value="${value}" placeholder="${placeholder}"/>`;
     dialog.style.zIndex = 10 + ID;
     dialog.style.display = "block";
     if(PARENT.childElementCount == 0) PARENT.classList.remove("w3-hide");
     return dialog;
 }
+
+// function createDialogInput(title, message, icon, value = "", placeholder = "") {
+//     if(ID == 0) {
+//         // initialize the event listener on the parent
+//         PARENT.addEventListener("click", (e) => {
+//             // do not close the last dialog if the click was on the button of another dialog
+//             if(e.target.tagName != "BUTTON") closeLastDialogIf([ICON_INFO, ICON_SLEEP]);
+//         });
+//         ID++;
+//     }
+//     const dialog = document.createElement("div");
+//     dialog.id = `dialog_${ID++}`;
+//     dialog.className = "w3-modal-content dialog";
+//     dialog.innerHTML = `<img src="${icon}"/><header>${title}</header><label>${message.replace(/\\n/g, "<br/>")}</label><input class="w3-input" type="text" value="${value}" placeholder="${placeholder}"/>`;
+//     dialog.style.zIndex = 10 + ID;
+//     dialog.style.display = "block";
+//     if(PARENT.childElementCount == 0) PARENT.classList.remove("w3-hide");
+//     return dialog;
+// }
 
 function createDialogInfo(title, message) {
     PARENT.appendChild(createDialog(title, message, ICON_INFO));
@@ -91,9 +110,19 @@ function closeDialog(id) {
     utils.setActive(true);
 }
 
-function closeLastDialogIf(icons) {
+function getLastDialog() {
     if(PARENT.childElementCount > 0) {
-        const lastDialog = PARENT.childNodes[PARENT.childElementCount - 1];
+        return PARENT.childNodes[PARENT.childElementCount - 1];
+    } else {
+        return undefined;
+    }
+}
+
+function closeLastDialogIf(icons) {
+    // if(PARENT.childElementCount > 0) {
+    const lastDialog = getLastDialog();
+    if(lastDialog !== undefined) {
+        // const lastDialog = PARENT.childNodes[PARENT.childElementCount - 1];
         const lastIcon = lastDialog.getElementsByTagName("img")[0].src;
         var isExpectedIcon = false;
         for(let icon of icons) {
@@ -113,10 +142,8 @@ function createDialogQuestion(title, message, onYes, onYesLabel = "Yes", onYesAr
     else buttons[1].addEventListener("click", () => { closeDialog(dialog.id); onYesArgs !== undefined ? onYes(onYesArgs) : onYes(); }, { once: true });
     PARENT.appendChild(dialog);
 }
-// function createDialogOffline(errorServer, errorRsync, onRetry) {
+
 function createDialogOffline(title, message, onRetry = undefined) {
-    // const errorMessage = errorServer ? errorServer : errorRsync;
-    // createDialogQuestion("Cumulus is disconnected!", `Cumulus has lost the connection with the ${errorServer ? "server" : "RSync agent"} with the following error:<br/>${errorMessage}<br/><br/>Please contact your administrator.`, onRetry, "Retry", undefined, async () => await window.electronAPI.exitApp(), "Quit", undefined, ICON_OFFLINE);
     if(onRetry != undefined) {
         createDialogQuestion(title, message, onRetry, "Retry", undefined, async () => await window.electronAPI.exitApp(), "Quit", undefined, ICON_OFFLINE);
     } else {
@@ -132,6 +159,16 @@ function createDialogWarning(title, message, action = undefined, label = "Close"
     PARENT.appendChild(dialog);
 }
 
+// specific dialog that can be displayed at the beginning of the app, if the server cannot be reached
+function createDialogForBootCheck(title, message, value = "", onRetryBeforeClosingDialog, onRetryAfterClosingDialog) {
+    const dialog = createDialog(title, message, ICON_WARNING, value, "Cumulus Server address");
+    dialog.innerHTML += `<div class="w3-bar"><button class="w3-bar-item w3-button color-primary-border">Quit</button><button class="w3-bar-item w3-button color-accent">Retry</button></div>`
+    const buttons = dialog.getElementsByTagName("button");
+    buttons[0].addEventListener("click", async () => { closeDialog(dialog.id); await window.electronAPI.exitApp(); } , { once: true });
+    buttons[1].addEventListener("click", async () => { onRetryBeforeClosingDialog(); closeDialog(dialog.id); onRetryAfterClosingDialog(); } , { once: true });
+    PARENT.appendChild(dialog);
+}
+
 function isDialogOpen(icon) {
     for(let dialog of PARENT.childNodes) {
         if(dialog.getElementsByTagName("img")[0].src.endsWith(icon)) return true;
@@ -140,4 +177,4 @@ function isDialogOpen(icon) {
 }
 function isDialogOfflineOpen() { return isDialogOpen(ICON_OFFLINE); }
 
-export {createDialogInfo, createDialogQuestion, createDialogSleep, createDialogWarning, createDialogOffline, isDialogOfflineOpen };
+export { createDialogForBootCheck, createDialogInfo, createDialogQuestion, createDialogSleep, createDialogWarning, createDialogOffline, getLastDialog, isDialogOfflineOpen };

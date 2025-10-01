@@ -45,8 +45,6 @@ log.initialize();
 
 app.commandLine.appendSwitch('--no-sandbox'); // without this, the app crashes when launched from a network drive
 var mainWindow = null;
-// var DEBUG_MODE = false; // when true, allows some code to be executed or some extra logs to be displayed
-// srv.DEBUG_MODE = DEBUG_MODE;
 
 for(let arg of process.argv) {
   if(arg == "-demo") srv.setDemoMode(true);
@@ -177,7 +175,6 @@ app.whenReady().then(() => {
   ipcMain.handle('get-unc-paths', getUncPaths);
   ipcMain.handle('get-user-name', getUserName);
   ipcMain.handle('list-apps', srv.listApps);
-  // ipcMain.handle('list-hosts', srv.listHosts);
   ipcMain.handle('list-flavors', srv.listFlavors);
   ipcMain.handle('list-storage', srv.listStorage);
   ipcMain.handle('load-file', loadFile);

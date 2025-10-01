@@ -43,39 +43,38 @@ import * as settings from "./settings.js";
 import * as filelist from "./app_elements/filelist.js";
 
 const FORM = document.getElementById("formParameters");
-// const STD_OUT = document.getElementById("stdout");
-// const STD_ERR = document.getElementById("stderr");
 const LOG_ELEMENT = document.getElementById("txtMergedLog");
 // Create the chart once
-// const PLOT_ELEMENT = document.getElementById("pltJobUsage");
 const PLOT_CONTEXT = document.getElementById('pltJobUsage').getContext('2d');
 var PLOT_LABELS = [];
 var PLOT_CPU = [];
 var PLOT_RAM = [];
-// const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
-// const accentColorDark = getComputedStyle(document.documentElement).getPropertyValue('--accent-color-dark').trim();
-// const oppositeColor = getComputedStyle(document.documentElement).getPropertyValue('--opposite-color').trim();
-// const oppositeColorDark = getComputedStyle(document.documentElement).getPropertyValue('--opposite-color-dark').trim();
+const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+const accentColorDark = getComputedStyle(document.documentElement).getPropertyValue('--accent-color-bg').trim();
+const oppositeColor = getComputedStyle(document.documentElement).getPropertyValue('--opposite-color').trim();
+const oppositeColorDark = getComputedStyle(document.documentElement).getPropertyValue('--opposite-color-bg').trim();
+/* 
+TODO
+Use a fix width for the X axis, and when the data exceed this width, either remove the oldest data or use a sliding window to display only the last N data points.
+We could add some buttons between the log and the chart: copy to clipboard, all points or last 250 points, hide/show chart
+*/
 const PLOT_ELEMENT = new Chart(PLOT_CONTEXT, {
   type: 'line',
   data: {
     labels: PLOT_LABELS,
     datasets: [
-        { label: 'CPU Usage (%)', borderColor: 'rgba(255, 99, 132, 1)', backgroundColor: 'rgba(255, 99, 132, 0.2)', data: PLOT_CPU, fill: true, tension: 0.1 },
-        { label: 'RAM Usage (%)', borderColor: 'rgba(54, 162, 235, 1)', backgroundColor: 'rgba(54, 162, 235, 0.2)', data: PLOT_RAM, fill: true, tension: 0.1 }
-        // { label: 'CPU Usage (%)', borderColor: accentColor, backgroundColor: accentColorDark, data: PLOT_CPU, fill: true, tension: 0.25 },
-        // { label: 'RAM Usage (%)', borderColor: oppositeColor, backgroundColor: oppositeColorDark, data: PLOT_RAM, fill: true, tension: 0.25 }
+        { label: 'CPU Usage (%)', borderColor: accentColor, backgroundColor: accentColorDark, data: PLOT_CPU, fill: true, tension: 0.1 },
+        { label: 'RAM Usage (%)', borderColor: oppositeColor, backgroundColor: oppositeColorDark, data: PLOT_RAM, fill: true, tension: 0.1 }
     ]
   },
   options: {
-    responsive: true, animation: true,
+    responsive: true, maintainAspectRatio: false,
     scales: {
-      y: { min: 0, max: 100, title: { display: true, text: 'Usage (%)' }, ticks: { stepSize: 10 } },
-      x: { title: { display: true, text: 'Time' }, ticks: { display: false } }
+        y: { min: 0, max: 100, title: { display: false, text: 'Usage (%)' }, ticks: { stepSize: 50 } },
+        x: { title: { display: false, text: 'Time' }, ticks: { display: false } }
     },
     plugins: {
-      legend: { position: 'top' },
-    //   title: { display: true, text: 'CPU and RAM Usage Over Time' }
+      legend: { position: 'top', align: 'center' },
     }
   }
 });
@@ -97,7 +96,7 @@ function updateField(fieldId, value = null, display = null, display_of_parent = 
         field.classList.remove(cls);
     }
     if(disabled) field.disabled = disabled;
-    if(selectedIndex && field.tagName.toUpperCase() == "SELECT") field.selectedIndex = selectedIndex;
+    if(selectedIndex && field.tagName.toUpperCase() == "SELECT") field.value = selectedIndex;
     if(innerHTML) field.innerHTML = innerHTML;
 }
 
@@ -111,14 +110,11 @@ function cleanJob() {
     updateField("txtAppName", null, null, null, ["w3-hide"]);
     updateField("cmbStrategy", null, null, null, [], ["w3-hide"], false, 0);
     updateField("txtJobStrategy", null, null, null, ["w3-hide"]);
-    // updateField("txtSelectedHost", null, null, "none");
     updateField("txtJobDescription", "", null, null, [], [], false);
     updateField("divDates", null, "none");
     // clear the Parameters tab
     FORM.innerHTML = "";
     // clear the Log tab
-    // STD_OUT.textContent = "";
-    // STD_ERR.textContent = "";
     LOG_ELEMENT.innerHTML = "";
     PLOT_ELEMENT.data.datasets[0].data = [];
     PLOT_ELEMENT.data.datasets[1].data = [];
@@ -151,9 +147,6 @@ function createButtonBarCloneCancelDelete(parent_id, is_workflow, is_finished) {
     parent.appendChild(generateButton("Clone job", () => cloneJob(), "", `w3-button ${button_width} color-opposite`));
     // add a clone button for the workflow if applicable
     if(is_workflow) parent.appendChild(generateButton("Clone workflow", () => cloneWorkflow(), "", `w3-button ${button_width} color-opposite`)); // TODO write cloneWorkflow function
-    // // add a clone button whatever the status
-    // if(is_workflow) parent.appendChild(generateButton("Clone workflow", () => cloneWorkflow(), "", "w3-button w3-half color-opposite")); // TODO write cloneWorkflow function
-    // parent.appendChild(generateButton("Clone job", () => cloneJob(), "", "w3-button w3-half color-opposite"));
     // add a cancel button if the job is running or pending, otherwise add a delete button
     if(is_finished) parent.appendChild(generateButton(is_workflow ? "Delete workflow" : "Delete job", () => deleteJob(), "", `w3-button ${button_width} color-secondary`));
     else parent.appendChild(generateButton(is_workflow ? "Cancel workflow" : "Cancel job", () => cancelJob(), "", `w3-button ${button_width} color-secondary`));
@@ -170,7 +163,7 @@ function createButtonBarStartJob(parent_id, is_workflow) {
             if(i > 0) parent.children[i].style.marginLeft = "2px"; // add a margin to the right of the first button
         }
     } else {
-        parent.appendChild(generateButton("Start job", () => startJob(), "btnStart", "w3-bar-item w3-button w3-block w3-margin-top color-accent"));
+        parent.appendChild(generateButton("Start job", () => startJob(), "btnStart", "w3-bar-item w3-button w3-block color-accent"));
     }
 }
 
@@ -180,8 +173,8 @@ function generateButtonBars(status = "", isWorkflow = false) {
         createButtonBarGotoParameters("divSummaryButtonBar", document.getElementById("cmbAppName").value == "");
         createButtonBarStartJob("divParamsButtonBar", document.getElementById("txtWorkflowName").value != "");
     } else { // existing job
-        createButtonBarCloneCancelDelete("divSummaryButtonBar", isWorkflow, status != "RUNNING" && status != "PENDING");
-        createButtonBarCloneCancelDelete("divParamsButtonBar", isWorkflow, status != "RUNNING" && status != "PENDING");
+        createButtonBarCloneCancelDelete("divSummaryButtonBar", isWorkflow, status != "RUNNING" && status != "PENDING" && status != "PREPARING");
+        createButtonBarCloneCancelDelete("divParamsButtonBar", isWorkflow, status != "RUNNING" && status != "PENDING" && status != "PREPARING");
     }
 }
 
@@ -189,7 +182,7 @@ function describeJobDates(job) {
     var html = `<div class='w3-third'><img src='img/hg-create-alt.png'/><label>Created at ${utils.formatDate(job.creation_date)}</label></div>`;
     html += job.start_date ? `<div class="w3-third"><img src='img/hg-begin-alt.png'/><label>Started at ${utils.formatDate(job.start_date)}</label></div>` : "<div class='w3-third'>&nbsp;</div>";
     html += job.end_date ? `<div class="w3-third"><img src='img/hg-end-alt.png'/><label>Ended at ${utils.formatDate(job.end_date)}</label></div>` : "<div class='w3-third'>&nbsp;</div>";
-    if(job.status != "RUNNING" && job.status != "PENDING") {
+    if(job.status != "RUNNING" && job.status != "PENDING" && job.status != "PREPARING") {
         const days = settings.CONFIG.get("data.max.age.in.days") - Math.floor((new Date() - new Date(job.creation_date * 1000)) / 86400000);
         html += `<br/><span>This job will be archived in ${days} day${days > 1 ? "s" : ""}. You will still have access to the parameters and to the logs, but the output files will be deleted.</span>`;
     }
@@ -202,7 +195,7 @@ async function displayFileTransfers(job) {
     // handle the error, it's likely a connexion error from the rsync agent, display a popup?
     const map = error ? new Map() : new Map(Object.entries(data));
     // get the list of files
-    const files = getLocalFiles().concat(getSharedFiles());
+    const files = elements.getLocalFiles().concat(elements.getSharedFiles());
     // display the list of files
     var html = "";
     var nb = 0;
@@ -229,11 +222,12 @@ function updateJobPage(job, generateParametersTab = true) {
         updateField("cmbAppName", job.app_name, null, null, ["w3-hide"]);
         updateField("txtAppName", job.app_name, null, null, [], ["w3-hide"]);
         updateField("txtWorkflowName", job.workflow_name, null, null, [], ["w3-hide"]);
-        // updateField("cmbStrategy", job.strategy, null, null, ["w3-hide"]);
         updateField("cmbStrategy", null, null, null, ["w3-hide"], [], null, job.strategy)
-        // updateField("txtJobStrategy", job.strategy, null, null, [], ["w3-hide"]);
-        updateField("txtJobStrategy", document.getElementById("cmbStrategy").selectedOptions[0].textContent, null, null, [], ["w3-hide"]);
-        // updateField("txtSelectedHost", job.host, null, "block");
+        // TODO if the strategy is not in the list, just print it in the text field (it's an old strategy that has been removed from the list)
+        if(document.getElementById("cmbStrategy").value == "")
+            updateField("txtJobStrategy", job.strategy, null, null, [], ["w3-hide"]);
+        else
+            updateField("txtJobStrategy", document.getElementById("cmbStrategy").selectedOptions[0].textContent, null, null, [], ["w3-hide"]);
         updateField("txtJobDescription", job.description, null, null, [], [], true);
         updateField("divDates", null, "block", null, [], [], null, null, describeJobDates(job));
         // generate the button bar
@@ -246,20 +240,11 @@ function updateJobPage(job, generateParametersTab = true) {
             document.getElementById("tabLogs").children[1].classList.add("w3-hide");
             // display the progression for each file
             displayFileTransfers(job);
-        } else if(job.status == "RUNNING") {
+        } else if(job.status == "RUNNING" || job.status == "PREPARING") {
             document.getElementById("tabLogs").children[0].classList.add("w3-hide");
             document.getElementById("tabLogs").children[1].classList.remove("w3-hide");
-            // STD_OUT.textContent = utils.extractJobLog(job.stdout, "stdout");
-            // STD_OUT.scrollTop = STD_OUT.scrollHeight;
-            // STD_ERR.textContent = utils.extractJobLog(job.stderr, "stderr");
-            // STD_ERR.scrollTop = STD_ERR.scrollHeight;
-            // const logContent = job.log.split("\n").map(line => `[STDOUT] ${line}`).join("\n");
-            LOG_ELEMENT.innerHTML = utils.extractJobLog(job.log, true, true, false);
+            LOG_ELEMENT.innerHTML = utils.extractJobLog(job.log, true, true, true, false);
             LOG_ELEMENT.scrollTop = LOG_ELEMENT.scrollHeight;
-            // TODO get the data, normally we should use utils.extractJobLog(job.stdout, "info");
-            // PLOT_LABELS = ["2025-08-28 13:52:17 UTC", "2025-08-28 13:52:47 UTC", "2025-08-28 13:53:17 UTC", "2025-08-28 13:53:47 UTC", "2025-08-28 13:54:17 UTC", "2025-08-28 13:54:47 UTC", "2025-08-28 13:55:17 UTC", "2025-08-28 13:55:47 UTC", "2025-08-28 13:56:17 UTC", "2025-08-28 13:56:47 UTC", "2025-08-28 13:57:17 UTC", "2025-08-28 13:57:47 UTC", "2025-08-28 13:58:17 UTC", "2025-08-28 13:58:47 UTC", "2025-08-28 13:59:17 UTC", "2025-08-28 13:59:47 UTC", "2025-08-28 14:00:17 UTC", "2025-08-28 14:00:47 UTC", "2025-08-28 14:01:17 UTC", "2025-08-28 14:01:47 UTC", "2025-08-28 14:02:17 UTC", "2025-08-28 14:02:47 UTC", "2025-08-28 14:03:17 UTC", "2025-08-28 14:03:47 UTC", "2025-08-28 14:04:17 UTC", "2025-08-28 14:04:47 UTC", "2025-08-28 14:05:17 UTC", "2025-08-28 14:05:47 UTC", "2025-08-28 14:06:17 UTC", "2025-08-28 14:06:47 UTC", "2025-08-28 14:07:17 UTC", "2025-08-28 14:07:47 UTC", "2025-08-28 14:08:17 UTC", "2025-08-28 14:08:47 UTC", "2025-08-28 14:09:17 UTC", "2025-08-28 14:09:47 UTC", "2025-08-28 14:10:17 UTC", "2025-08-28 14:10:47 UTC", "2025-08-28 14:11:17 UTC"];
-            // PLOT_CPU = [86, 70, 99, 71, 94, 50, 54, 63, 67, 52, 52, 94, 80, 98, 99, 78, 54, 68, 60, 96, 60, 87, 65, 60, 55, 75, 65, 57, 99, 77, 64, 63, 57, 94, 80, 93, 93, 50, 65];
-            // PLOT_RAM = [70, 84, 50, 57, 97, 85, 94, 68, 78, 72, 63, 71, 74, 75, 87, 69, 54, 92, 77, 84, 61, 70, 52, 53, 80, 86, 83, 98, 79, 72, 97, 83, 76, 58, 64, 89, 58, 93, 73];
             [PLOT_LABELS, PLOT_CPU, PLOT_RAM] = utils.extractInfoFromJobLog(job.log);
             PLOT_ELEMENT.data.labels = PLOT_LABELS;
             PLOT_ELEMENT.data.datasets[0].data = PLOT_CPU;
@@ -269,13 +254,7 @@ function updateJobPage(job, generateParametersTab = true) {
             // do not reload the logs if the job is finished
             document.getElementById("tabLogs").children[0].classList.add("w3-hide");
             document.getElementById("tabLogs").children[1].classList.remove("w3-hide");
-            // if(STD_OUT.textContent == "") STD_OUT.textContent = utils.extractJobLog(job.stdout, "stdout");
-            // if(STD_ERR.textContent == "") STD_ERR.textContent = utils.extractJobLog(job.stderr, "stderr");
-            // const logContent = job.log.split("\n").map(line => line.startsWith("WARNING") ? "[STDERR] "+line : "[STDOUT] "+line).join("\n");
-            if(LOG_ELEMENT.innerHTML == "") LOG_ELEMENT.innerHTML = utils.extractJobLog(job.log, true, true, false);
-            // PLOT_LABELS = ["2025-08-28 13:52:17 UTC", "2025-08-28 13:52:47 UTC", "2025-08-28 13:53:17 UTC", "2025-08-28 13:53:47 UTC", "2025-08-28 13:54:17 UTC", "2025-08-28 13:54:47 UTC", "2025-08-28 13:55:17 UTC", "2025-08-28 13:55:47 UTC", "2025-08-28 13:56:17 UTC", "2025-08-28 13:56:47 UTC", "2025-08-28 13:57:17 UTC", "2025-08-28 13:57:47 UTC", "2025-08-28 13:58:17 UTC", "2025-08-28 13:58:47 UTC", "2025-08-28 13:59:17 UTC", "2025-08-28 13:59:47 UTC", "2025-08-28 14:00:17 UTC", "2025-08-28 14:00:47 UTC", "2025-08-28 14:01:17 UTC", "2025-08-28 14:01:47 UTC", "2025-08-28 14:02:17 UTC", "2025-08-28 14:02:47 UTC", "2025-08-28 14:03:17 UTC", "2025-08-28 14:03:47 UTC", "2025-08-28 14:04:17 UTC", "2025-08-28 14:04:47 UTC", "2025-08-28 14:05:17 UTC", "2025-08-28 14:05:47 UTC", "2025-08-28 14:06:17 UTC", "2025-08-28 14:06:47 UTC", "2025-08-28 14:07:17 UTC", "2025-08-28 14:07:47 UTC", "2025-08-28 14:08:17 UTC", "2025-08-28 14:08:47 UTC", "2025-08-28 14:09:17 UTC", "2025-08-28 14:09:47 UTC", "2025-08-28 14:10:17 UTC", "2025-08-28 14:10:47 UTC", "2025-08-28 14:11:17 UTC"];
-            // PLOT_CPU = [86, 70, 99, 71, 94, 50, 54, 63, 67, 52, 52, 94, 80, 98, 99, 78, 54, 68, 60, 96, 60, 87, 65, 60, 55, 75, 65, 57, 99, 77, 64, 63, 57, 94, 80, 93, 93, 50, 65];
-            // PLOT_RAM = [70, 84, 50, 57, 97, 85, 94, 68, 78, 72, 63, 71, 74, 75, 87, 69, 54, 92, 77, 84, 61, 70, 52, 53, 80, 86, 83, 98, 79, 72, 97, 83, 76, 58, 64, 89, 58, 93, 73];
+            if(LOG_ELEMENT.innerHTML == "") LOG_ELEMENT.innerHTML = utils.extractJobLog(job.log, true, true, true, false);
             [PLOT_LABELS, PLOT_CPU, PLOT_RAM] = utils.extractInfoFromJobLog(job.log);
             PLOT_ELEMENT.data.labels = PLOT_LABELS;
             PLOT_ELEMENT.data.datasets[0].data = PLOT_CPU;
@@ -286,6 +265,7 @@ function updateJobPage(job, generateParametersTab = true) {
         if(!job.status.startsWith("ARCHIVED_")) output.insertOutputFiles(job.files);
         // enable or disable tabs depending on the status
         document.getElementById("btnParameters").disabled = false;
+        // document.getElementById("btnTransfers").disabled = false;
         document.getElementById("btnLogs").disabled = false;
         document.getElementById("btnOutput").disabled = job.status.startsWith("ARCHIVED_"); // user can see and download files unless the job is archived and the folder is gone
         // highlight the job in the sidebar
@@ -304,6 +284,7 @@ function openNewJob() {
     document.getElementById("cmbStrategy").value = settings.CONFIG.get("default.strategy");
     // disable the other tabs
     document.getElementById("btnParameters").disabled = true;
+    // document.getElementById("btnTransfers").disabled = true;
     document.getElementById("btnLogs").disabled = true;
     document.getElementById("btnOutput").disabled = true;
     // generate the button bar
@@ -328,8 +309,6 @@ function setSettings(settings, disable_all_parameters = false) {
         // disable all parameters in the form
         apps.disableParameters(FORM, true);
     }
-    // always enable the "Save" button
-    // document.getElementById("btn_header-save").disabled = false;
 }
 
 function openCurrentJob(job) {
@@ -361,8 +340,6 @@ function cloneJob() {
     document.getElementById("txtJobDescription").disabled = false;
     document.getElementById("divDates").style.display = "none";
     generateButtonBars("PENDING", false);
-    // STD_OUT.textContent = "";
-    // STD_ERR.textContent = "";
     LOG_ELEMENT.innerHTML = "";
     PLOT_ELEMENT.data.datasets[0].data = [];
     PLOT_ELEMENT.data.datasets[1].data = [];
@@ -371,24 +348,20 @@ function cloneJob() {
     document.getElementById("btnLogs").disabled = true;
     document.getElementById("btnOutput").disabled = true;
     // enable all parameters in the form
-    for(let tagtype of ["input", "select", "button"]) {
-        for(let item of FORM.getElementsByTagName(tagtype)) {
-            item.disabled = false;
-        }
-    }
+    apps.disableParameters(FORM, false);
     // highlight the "New job" button to give the impression that a new job was opened
     jobs.highlightJobButton();
 }
 
 function cancelJob() {
     const owner = document.getElementById("txtJobOwner").value;
-    if(owner == utils.getUserName()) dialog.createDialogWarning("Operation impossible", "You are not the owner of this job, you cannot cancel it!");
+    if(owner != utils.getUserName()) dialog.createDialogWarning("Operation impossible", "You are not the owner of this job, you cannot cancel it!");
     else {
         dialog.createDialogQuestion("Warning", "Are you sure you want to cancel this job?", async () => {
             utils.toggleLoadingScreen();
             const [_, error] = await window.electronAPI.cancelJob(utils.getUserName(), utils.getCurrentJobId());
             if(error != "") dialog.createDialogWarning("The job could not be canceled", error);
-            jobs.reloadJobList();
+            jobs.refreshSidebar();
             utils.toggleLoadingScreen();
         });
     }
@@ -396,13 +369,13 @@ function cancelJob() {
 
 function deleteJob() {
     const owner = document.getElementById("txtJobOwner").value;
-    if(owner == utils.getUserName()) dialog.createDialogWarning("Operation impossible", "You are not the owner of this job, you cannot delete it!");
+    if(owner != utils.getUserName()) dialog.createDialogWarning("Operation impossible", "You are not the owner of this job, you cannot delete it!");
     else {
         dialog.createDialogQuestion("Warning", "Are you sure you want to delete this job?", async () => {
             utils.toggleLoadingScreen();
             const [_, error] = await window.electronAPI.deleteJob(utils.getUserName(), utils.getCurrentJobId());
             if(error != "") dialog.createDialogWarning("The job could not be deleted", error);
-            jobs.reloadJobList();
+            jobs.refreshSidebar();
             utils.toggleLoadingScreen();
         });
     }

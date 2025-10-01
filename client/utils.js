@@ -32,7 +32,6 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-// import * as jobs from "./joblist.js";
 import * as dialog from "./dialog.js";
 import * as settings from "./settings.js";
 import { updateFileList } from "./app_elements/filelist.js";
@@ -52,7 +51,6 @@ const LOADER = document.getElementById("loading");
 const UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
 
 function toggleClass(element, className) {
-    // console.log(element);
     if(element.classList.contains(className)) {
         element.classList.remove(className);
     } else {
@@ -161,19 +159,8 @@ async function browse(type, title, filter, properties, targetName) {
         }
         else target.value = output.join(", ");
     }
-    // console.log(target);
     if(target.tagName == "UL") updateFileList(target.parentElement.parentElement);
 }
-
-// function listBrowsedFiles(targetName) {
-//     // this function returns the list of files that where added by the browse() function above
-//     const files = [];
-//     const target = document.getElementById(targetName);
-//     for(let li of target.childNodes()) {
-//         files.push(convertToUncPath(li.textContent));
-//     }
-//     return files;
-// }
 
 function toggleLoadingScreen() {
     if(LOADER.style.display != "block") {
@@ -234,21 +221,16 @@ function updateSkipsBetweenRefreshs(reset = false) {
     // when the app is in sleep mode, we skip 11 calls to wait 60 seconds between 2 calls
     if(reset) {
         NB_SKIPS_BEFORE_REFRESH = 0;
-        // jobs.resetReloadBarTimer();
     } else if(NB_SKIPS_BEFORE_REFRESH <= 0) {
-        // if(!isActive() || IS_OFFLINE) NB_SKIPS_BEFORE_REFRESH = parseInt(600 / settings.CONFIG.get("refresh.rate")) - 1; // 11;
         if(!isActive() || IS_OFFLINE) {
             // update every 10 minute if asleep
             NB_SKIPS_BEFORE_REFRESH = parseInt(TIME_BETWEEN_REFRESHS_DURING_SLEEP_IN_SECONDS / settings.CONFIG.get("refresh.rate")) - 1; // 11;
-            // jobs.resetReloadBarTimer(TIME_BETWEEN_REFRESHS_DURING_SLEEP_IN_SECONDS);
         } else if(!isFocus()) {
             // update every 15 seconds if just blur
             NB_SKIPS_BEFORE_REFRESH = 2;
-            // jobs.resetReloadBarTimer(settings.CONFIG.get("refresh.rate") * (NB_SKIPS_BEFORE_REFRESH + 1));
         } else {
             // update every 5 seconds otherwise
             NB_SKIPS_BEFORE_REFRESH = 0;
-            // jobs.resetReloadBarTimer();
         }
         // set the timer with the new number of seconds to wait before refreshing the jobs
     } else NB_SKIPS_BEFORE_REFRESH -= 1; // decreasing the number of calls to skip, when we reach 0 we make the call again
@@ -365,40 +347,45 @@ function addCheckboxList(parent, label, items, allowZeroSelection, tooltiptext) 
     tooltip(parent.getElementsByTagName("label")[0], tooltiptext);
 }
 
-function extractJobLog(text, extract_stdout = true, extract_stderr = true, extract_info = false) {
+function extractJobLog(text, extract_stdout = true, extract_stderr = true, extract_server = true, extract_info = false) {
     // the jobs are logged in a single file, each line from stdout starts with [STDOUT], similarly for stderr
     // there are also [INFO] lines with date, cpu and memory usage
     // level can be "stdout", "stderr", "info" or "all"
     var output = "";
     for(let line of text.split("\n")) {
-        if(extract_stdout && line.startsWith("[STDOUT]")) output += line.replace("[STDOUT] ", "<span class='stdout'>") + "</span>\n";
-        if(extract_stderr && line.startsWith("[STDERR]")) output += line.replace("[STDERR] ", "<span class='stderr'>") + "</span>\n";
-        if(extract_info && line.startsWith("[INFO]")) output += line.replace("[INFO] ", "") + "\n";
+        if(line.startsWith("[INFO]")) {
+            if(extract_info) output += line.replace("[INFO] ", "") + "\n";
+        } else if(line.startsWith("[SERVER]")) {
+            if(extract_server) output += line.replace("[SERVER] ", "<span class='stdalt'>") + "</span>\n";
+        } else if(line.startsWith("[STDERR]")) {
+            if(extract_stderr) output += line.replace("[STDERR] ", "<span class='stderr'>") + "</span>\n";
+        } else { // STDOUT is not explicitly mentioned, it's just a normal line
+            if(extract_stdout) output += `<span class='stdout'>${line}</span>\n`;
+        }
     }
     return output;
 }
 
 function extractInfoFromJobLog(text) {
     // only extract lines starting with [INFO]
-    const data = extractJobLog(text, false, false, true);
+    const data = extractJobLog(text, false, false, false, true);
     // split each line and return arrays of dates, cpus and memories
     const dates = []; const cpus = []; const memories = [];
     for(let line of data.split("\n")) {
-        // prepare variables with default values
-        var date = ""; var cpu = 0; var ram = 0;
-        // each line should be like: 2025-08-28 13:52:17 UTC;CPU:86%;RAM:70%
-        for(let part of line.split(";")) {
-            if(part.startsWith("CPU:")) cpu = parseInt(part.replace("CPU:", "").replace("%", "").trim());
-            else if(part.startsWith("RAM:")) ram = parseInt(part.replace("RAM:", "").replace("%", "").trim());
-            else date = part.trim();
-        }
+        const parts = line.split(";");
+        // skip empty or misformed lines (should have 3 parts separated by ";")
+        if(parts.length != 3) continue;
+        // get the date, cpu and memory from the line
+        const date = parts[0].trim();
+        const cpu = parseInt(parts[1].replace("CPU:", "").replace("%", "").trim());
+        const ram = parseInt(parts[2].replace("RAM:", "").replace("%", "").trim());
         // store the values
         dates.push(date);
         cpus.push(cpu);
         memories.push(ram);
     }
+    // console.log(dates, cpus, memories);
     return [dates, cpus, memories];
 }
 
-// export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, convertToUncPath, doRefresh, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getUserName, isActive, isFocus, listBrowsedFiles, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };
 export { addBrowsedFiles, addCheckboxList, browse, checkSleepMode, doRefresh, extractJobLog, extractInfoFromJobLog, fixFilePath, formatDate, getBrowsedFiles, getCheckboxListSelection, getCurrentJobId, getLastActivity, getPreviousJobId, getUserName, isActive, isFocus, selectCheckboxListItem, setActive, setCurrentJobId, setDefaultCheckboxList, setFocus, setOffline, setUserName, sleep, toHumanReadable, toggleClass, toggleLoadingScreen, tooltip, updateCheckboxList };

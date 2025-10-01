@@ -1,5 +1,4 @@
 #txtSearchOwner {
-    /* margin: 10px 0; */
     display: inline;
     width: calc(100% - 110px);
 }
@@ -21,55 +20,12 @@
 
 #divSearchRow input {
     display: inline-flex;
-    /* margin-left: 16px; */
     width: 150px;
 }
 
 #divSearchRow span {
     margin: 8px 16px;
 }
-
-/* #divSearchStatusElement {
-    position: relative;
-}
-
-#txtSearchStatus {
-    position: relative;
-    cursor: default;
-    user-select: none;
-    height: 40px;
-}
-
-#txtSearchStatus label {
-    background-color: #eee;
-    border-radius: 5px;
-    border-color: transparent;
-    margin: 0 3px 3px 0;
-    padding: 5px;
-}
-
-#divSearchStatus {
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-top: 5px;
-    position: absolute;
-    padding: 5px 50px 5px 10px;
-    background-color: white;
-}
-
-#divSearchStatus label {
-    display: block;
-}
-
-#divSearchStatus label:hover {
-    background-color: #aaa;
-    cursor: pointer;
-}
-
-#divSearchStatus input {
-    margin: 5px 10px 5px 5px;
-} */
 
 #divButtonsSearch button {
     width: 200px;

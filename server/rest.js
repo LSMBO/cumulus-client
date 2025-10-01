@@ -55,19 +55,6 @@ async function sendGetRequest(url) {
     return [data, error];
 }
 
-// async function sendPostRequest(url, form) {
-//     var data = "";
-//     var is_ended = false;
-//     const request = net.request({ method: 'POST', url: url, headers: form.getHeaders() });
-//     form.pipe(request);
-//     request.on('response', (response) => {
-//         response.on('data', (chunk) => data += chunk);
-//         response.on('end', () => is_ended = true);
-//     });
-//     request.end();
-//     while(!is_ended) await wait(WAIT_TIME); // wait until the request ends before starting the next one
-//     return data;
-// }
 async function sendPostRequest(url, form) {
     var data = "";
     var error = "";

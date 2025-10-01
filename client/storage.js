@@ -114,10 +114,6 @@ async function refreshStorage() {
   for(const [file, size] of data) {
     const cls = size == -1 ? "rsync" : "";
     const fsize = size == -1 ? "Queued for transfer" : utils.toHumanReadable(size);
-    // if(file == "Human_pSP_CMO_20190213.fasta")
-    //   content += `<tr><td><label class="${cls}">${file}${file}${file}<label></td><td><label>${size}</label><span class="${cls}">${fsize}</span></td></tr>`;
-    // else 
-    //   content += `<tr><td><label class="${cls}">${file}<label></td><td><label>${size}</label><span class="${cls}">${fsize}</span></td></tr>`;
     content += `<tr><td><label class="${cls}">${file}<label></td><td><label>${size}</label><span class="${cls}">${fsize}</span></td></tr>`;
   }
   table.innerHTML = content;

@@ -33,7 +33,6 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 import { addBrowsedFiles, fixFilePath, getBrowsedFiles, tooltip } from "../utils.js";
-// import { isAdvancedParametersVisible } from "../applist.js";
 import { isAdvancedParametersVisible } from "../appmanager.js";
 
 const SHARED_FILES_IDS = new Array();
@@ -146,7 +145,6 @@ function createButton(id, label, event, tooltiptext = "") {
 function setSettingVisibility(item, param) {
     if(param.hasAttribute("visibility")) {
         if(param.getAttribute("visibility") == "hidden") item.classList.add("w3-hide");
-        // if(param.getAttribute("visibility") == "advanced") item.classList.add("advanced-off");
         else if(param.getAttribute("visibility") == "advanced") item.classList.add(isAdvancedParametersVisible() ? "advanced-on" : "advanced-off");
     }
 }

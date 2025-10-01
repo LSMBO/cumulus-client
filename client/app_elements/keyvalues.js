@@ -130,7 +130,6 @@ function getValue(item, map) {
         const key = row.getElementsByTagName("input")[0].value;
         const value = row.getElementsByTagName("input")[1].value;
         if(key != "" && value != "") {
-            // values.set(key, value);
             // if it's a list, store the values in an array, the key may have been already stored
             if(is_list) {
                 if(!values.has(key)) values.set(key, new Array());
@@ -180,8 +179,6 @@ function setValue(item, settings) {
         // console.log(map);
         // loop over the map and create a new row for each key-value pair
         for(let [key, value] of map) {
-            // console.log(typeof value);
-            // addRow(table, key, value);
             // if the value is an array, loop over the array and create a new row for each value
             if(Array.isArray(value)) {
                 for(let v of value) addRow(table, key, v);

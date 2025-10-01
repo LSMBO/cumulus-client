@@ -132,7 +132,6 @@ input::placeholder, textarea::placeholder {
     margin-left: 250px;
     border-width: 0px 0 0 0;
     border-style: solid;
-    /* height: 100%; */
     height: calc(100% - 3px);
     overflow: auto;
 }
@@ -150,6 +149,10 @@ input::placeholder, textarea::placeholder {
     width: 135px;
     line-height: 2em;
     font-size: 14px;
+}
+
+#detail header button:first-child {
+    border-left: 1px solid var(--primary-color-dark) !important;
 }
 
 #detail header button:hover {
@@ -176,7 +179,7 @@ input::placeholder, textarea::placeholder {
 }
 
 #tabs {
-    height: calc(100% - 42px);
+    height: calc(100% - 45px);
 }
 
 #btnStorage, #btnSettings, #btnSearch {
@@ -254,13 +257,45 @@ input::placeholder, textarea::placeholder {
     background-color: var(--opposite-color);
 }
 
-#tabLogs textarea {
-    height: 500px;
-    text-wrap: nowrap;
+#tabLogs #logMainContainer {
+    height: 100% !important;
+}
+
+#tabLogs #txtMergedLog {
+    overflow: auto;
+    height: 80%;
+}
+
+#tabLogs #txtMergedLog span {
+    display: block;
+    white-space: pre;
+}
+
+#tabLogs #txtMergedLog span.stderr {
+    color: var(--accent-color);
+}
+
+#tabLogs #txtMergedLog span.stdalt {
+    color: var(--primary-color-dark);
+}
+
+#tabLogs #chartContainer {
+    position: relative;
+    width: 100%;
+    height: 20% !important;
+}
+
+#tabLogs #pltJobUsage {
+    height: 100% !important;
+    width: 100% !important;
 }
 
 #tabOutput {
     position: relative;
+}
+
+#tabOutput #outputSummary:first-letter {
+    text-transform: capitalize;
 }
 
 #treeview {
@@ -295,39 +330,6 @@ input::placeholder, textarea::placeholder {
     font-style: italic;
     padding-left: 5px;
 }
-
-/* #diann181_main td.w3-half tr, #diann191_main td.w3-half tr {
-    display: flex;
-}
-
-#diann181_main td.w3-half td.full-width-col, #diann191_main td.w3-half td.full-width-col {
-    width: 100% !important;
-}
-
-#diann181_main td.w3-half td, #diann191_main td.w3-half td {
-    display: flex;
-    align-items: center;
-    width: 50% !important;
-    position: relative;
-    margin: 8px 0;
-}
-
-#diann181_main td.w3-half td label, #diann191_main td.w3-half td label {
-    margin-right: 4px;
-    float: left;
-}
-
-#diann181_main td.w3-half td input[type="number"], #diann191_main td.w3-half td input[type="number"] {
-    width: 65px;
-    float: right;
-    position: absolute;
-    right: 0%;
-}
-
-#diann181_main td.w3-half td input[type="checkbox"], #diann191_main td.w3-half td input[type="checkbox"] {
-    float: left;
-    margin-right: 8px;
-} */
 
 #tooltiptext {
     display: none;
@@ -514,19 +516,4 @@ input::placeholder, textarea::placeholder {
 @keyframes grow {
     0% { width: 0; }
     100% { width: 100%; }
-}
-
-#txtMergedLog {
-    overflow: auto;
-    height: calc(100% - 350px);
-}
-#txtMergedLog span {
-    display: block;
-}
-#txtMergedLog span.stderr {
-    color: var(--accent-color);
-}
-#pltJobUsage {
-    height: 350px;
-    /* height: 50%; */
 }

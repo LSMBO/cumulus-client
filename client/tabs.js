@@ -32,7 +32,6 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-import * as utils from "./utils.js";
 import { hideLicense } from "./settings.js";
 
 const TAB_NAMES = ["tabSummary", "tabParameters", "tabLogs", "tabOutput"];
@@ -53,20 +52,6 @@ function hideAllTabs() {
   hideLicense();
 }
 
-// function getCurrentTabName() {
-//   for(let tab of TAB_NAMES) {
-//     if(document.getElementById(tab).style.display == "block") {
-//       return tab;
-//     }
-//   }
-//   for(let tab of EXTRA_TAB_NAMES) {
-//     if(document.getElementById(tab).style.display == "block") {
-//       return tab;
-//     }
-//   }
-//   return "";
-// }
-
 function isParameterTabOpen() {
   return document.getElementById("tabParameters").classList.contains("visible");
 }
@@ -76,8 +61,6 @@ function openTab(tabName) {
   if(TAB_NAMES.includes(tabName)) {
     for(let i = 0; i < TAB_NAMES.length; i++) {
       if(TAB_NAMES[i] == tabName) {
-        // console.log(tabName);
-        // document.getElementById(TAB_NAMES[i]).style.display = "block";
         document.getElementById(TAB_NAMES[i]).classList.add("visible");
         document.getElementById(TAB_BUTTONS[i]).classList.replace("color-secondary", "color-accent");
       }
@@ -85,7 +68,6 @@ function openTab(tabName) {
   } else {
     for(let i = 0; i < EXTRA_TAB_NAMES.length; i++) {
       if(EXTRA_TAB_NAMES[i] == tabName) {
-        // document.getElementById(EXTRA_TAB_NAMES[i]).style.display = "block";
         document.getElementById(EXTRA_TAB_NAMES[i]).classList.add("visible");
         document.getElementById(EXTRA_BUTTONS[i]).classList.replace("color-secondary", "color-accent");
       }
@@ -135,20 +117,4 @@ function goToPreviousTab() {
     openTab(nextTabId);
 }
 
-function resizeLogAreas() {
-    // document.getElementById("stdout").style.height = `${window.innerHeight - 130}px`;
-    // document.getElementById("stderr").style.height = `${window.innerHeight - 130}px`;
-    // document.getElementById("txtMergedLog").style.height = `${window.innerHeight - 180}px`;
-    // document.getElementById("pltJobUsage").style.height = "300px";
-}
-
-async function copyToClipboard(sourceName, target) {
-    navigator.clipboard.writeText(target.textContent);
-    target.select();
-    const source = document.getElementById(sourceName);
-    source.classList.add("copied");
-    await utils.sleep(1000);
-    source.classList.remove("copied");
-}
-
-export { copyToClipboard, goToNextTab, goToPreviousTab, isParameterTabOpen, openTab, resizeLogAreas };
+export { goToNextTab, goToPreviousTab, isParameterTabOpen, openTab };

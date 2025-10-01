@@ -33,11 +33,9 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 import * as tabs from "./tabs.js";
-// import * as jobs from "./joblist.js";
 import * as sidebar from "./sidebar.js";
 import * as settings from "./settings.js";
 import * as utils from "./utils.js";
-// import * as apps from "./applist.js";
 import * as apps from "./appmanager.js";
 
 var IS_SEARCH = false;
@@ -109,27 +107,22 @@ function getCurrentSearchSettings() {
 }
 
 function initialize() {
-  utils.addCheckboxList(mainSearchStatus, "Status", {"pending": "Pending", "running": "Running", "done": "Done", "failed": "Failed", "cancelled": "Cancelled", "archived": "Archived"}, false, "Restrict the search to specific statuses (if no status is selected then the filter will be disabled).");
+  utils.addCheckboxList(mainSearchStatus, "Status", {"pending": "Pending", "preparing": "Preparing", "running": "Running", "done": "Done", "failed": "Failed", "cancelled": "Cancelled", "archived": "Archived"}, false, "Restrict the search to specific statuses (if no status is selected then the filter will be disabled).");
 
   document.getElementById("btnSearchMe").addEventListener("click", (e) => { e.preventDefault(); document.getElementById("txtSearchOwner").value = utils.getUserName(); });
   document.getElementById("btnSearchOk").addEventListener("click", async (e) => {
       e.preventDefault();
-      // jobs.setSearchMode(true);
       setSearchMode(true);
-      // jobs.reloadJobList(false);
       sidebar.refreshSidebar(false);
   });
   document.getElementById("btnSearchReset").addEventListener("click", (e) => {
       e.preventDefault();
       setDefaultValues();
-      // jobs.setSearchMode(false);
       setSearchMode(false);
-      // jobs.reloadJobList();
       sidebar.refreshSidebar();
   });
 
   // initialize on first opening
-  // txtSearchAppName.innerHTML = "<option value='all' selected></option>" + apps.getOptionList();
   txtSearchAppName.innerHTML = "<option value='all' selected></option>" + apps.getAppsAsOptionList();
 }
 
@@ -142,6 +135,4 @@ async function searchJobs(reloadPreviousSettings = true) {
   return await window.electronAPI.searchJobs(utils.getCurrentJobId(), owner, app, file, desc, statuses, date, from, to, number);
 }
 
-// export { getCurrentSearchSettings, getPreviousSearchSettings, initialize, openSearch, searchJobs, setDefaultValues, storeSearchSettings, setSearchMode };
 export { getCurrentSearchSettings, getPreviousSearchSettings, initialize, isSearchMode, openSearch, searchJobs, setDefaultValues, storeSearchSettings, setSearchMode };
-// export { initialize, isSearchMode, openSearch, searchJobs, setDefaultValues, setSearchMode };

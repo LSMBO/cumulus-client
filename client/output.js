@@ -153,7 +153,6 @@ function getOutputFileItem(level, name, size) {
     item.appendChild(icon);
     const chk = document.createElement("input");
     chk.type = "checkbox";
-    // chk.checked = true;
     chk.checked = false;
     chk.addEventListener("change", (event) => toggleCheckbox(event.target.parentNode));
     item.appendChild(chk);
@@ -235,17 +234,25 @@ function insertOutputFiles(files) {
     children.push(getOutputFileItem(items.length - 1, items.pop(), size));
     totalSize += size
   }
+  // update the summary
+  var summary = "";
+  if(directories.size == 1) summary += "one directory, ";
+  else if(directories.size > 1) summary += `${directories.size} directories, `;
+  if(files.length == 1) summary += "one file, ";
+  else if(files.length > 1) summary += `${files.length} files, `;
+  summary += `${utils.toHumanReadable(totalSize)} in total`;
+  document.getElementById("outputSummary").textContent = summary;
   // add all the items to the treeview
   TREE_VIEW.innerHTML = "";
   for(let child of children) { TREE_VIEW.appendChild(child); }
-  document.getElementById("outputSummary").textContent = `${directories.size} directories, ${files.length} files, ${utils.toHumanReadable(totalSize)} in total`;
   document.getElementById("tabOutput").getElementsByTagName("button")[0].disabled = false;
   // trigger some specific events
   for(let child of TREE_VIEW.childNodes) {
-    // an "output" folder is created on server-side, it should be checked by default
-    if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("output.folder")) child.getElementsByTagName("input")[0].click();
-    // a "temp" folder is created on server-side, it should be closed by default
-    if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("temp.folder")) child.getElementsByTagName("i")[0].click();
+    // the following is not needed anymore, we only return the content of the output folder
+    // // an "output" folder is created on server-side, it should be checked by default
+    // if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("output.folder")) child.getElementsByTagName("input")[0].click();
+    // // a "temp" folder is created on server-side, it should be closed by default
+    // if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("temp.folder")) child.getElementsByTagName("i")[0].click();
   }
 }
 

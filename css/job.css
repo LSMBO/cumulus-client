@@ -47,7 +47,7 @@ button.cm-disabled {
     color: var(--primary-color-link);
     padding-top: 5px;
 }
-#formParameters .tool_header a::after {
+#formParameters .tool_header a::after, #formParameters .param-url a::after {
     content: "";
     background: url("../img/external-link.png") center right no-repeat;
     background-size: 100%;
@@ -179,7 +179,6 @@ button.cm-disabled {
 
 #formParameters .param-checklist > div > div > label {
     display: inline-block;
-    /* float: unset; */
     width: 100%;
     padding: 5px;
 }
@@ -316,22 +315,17 @@ button.cm-disabled {
 #formParameters .param-file-list li label {
     display: inline;
     float: none;
-    /* padding-left: 36px; */
 }
 
 #formParameters .param-file-input input {
     width: auto;
-    /* min-width: 250px; */
     min-width: 259px;
-    /* float: right; */
     float: left;
     margin-right: 5px;
 }
 
 #formParameters .param-file-input button {
-    /* width: 50px; */
     width: 36px;
-    /* float: right; */
     float: left;
     font-size: 16px;
     padding: 5px 8px;
@@ -451,3 +445,13 @@ button.cm-disabled {
 .cumulus-checkbox input:checked + .slider:before { transform: translateX(30px); }
 .cumulus-checkbox .slider.round { border-radius: 34px; }
 .cumulus-checkbox .slider.round:before { border-radius: 50%; }
+
+#formParameters .param-url label {
+    width: auto;
+    margin-right: 5px;
+}
+
+#formParameters .param-url a {
+    display: block;
+    padding: 10px 0 6px 5px;
+}

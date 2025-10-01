@@ -12,12 +12,14 @@
     --accent-color-light: #ED457D;
     --accent-color-dark: #A71143;
     --accent-color-text: #FFFFFF;
+    --accent-color-bg: #E91E6333;
     --opposite-color: #0CBABA;
     /* --opposite-color-light: #00CCB8;
     --opposite-color-dark: #0e8b7d; */
     --opposite-color-light: #75BAB7;
     --opposite-color-dark: #00717E;
     --opposite-color-text: #FFFFFF;
+    --opposite-color-bg: #0CBABA33;
 }
 
 .color-primary { color: var(--primary-color-text) !important; background-color: var(--primary-color) !important; border-color: var(--primary-color) !important; }

@@ -10,6 +10,8 @@
         <xs:attribute name="command" type="xs:string" use="optional" />
         <xs:attribute name="config_path" type="xs:string" use="optional" /> <!-- deprecated, use the name as the full path -->
         <xs:attribute name="visibility" type="xs:string" use="optional" /> <!-- if 'advanced', the parameter will be hidden in the gui, and a button will turn them visible, if 'hidden' it will be there but not be displayed -->
+        <xs:attribute name="url" type="xs:string" use="optional" /> <!-- a url to display, usually to redirect to a documentation page or to download a file -->
+        <xs:attribute name="url_label" type="xs:string" use="optional" /> <!-- The text to print before the url. If no url is given, this will not be displayed -->
     </xs:attributeGroup>
 
     <xs:element name="param" abstract="true" />
@@ -196,7 +198,7 @@
         <xs:attribute name="end_tag_location" type="xs:string" use="optional" /> <!-- name of the file where the end_tag is written, in case it's not in stdout (use %stderr% if it's in stderr) -->
         <xs:attribute name="command" type="xs:string" use="required" /> <!-- will be used to start the command line, it's possible to set default arguments already there -->
         <xs:attribute name="convert_config_to" type="xs:string" use="optional" /> <!-- creates a file with the given format (yaml/json) in the job folder. Must be added in the 'command' with the variable %config-file% -->
-        <xs:attribute name="url" type="xs:string" use="optional" /> <!-- a url to display, the user may find documentation and  -->
+        <xs:attribute name="url" type="xs:string" use="optional" /> <!-- a url to display, for instance a website or documentation page -->
         <xs:attribute name="description" type="xs:string" use="optional" />
         <xs:attribute name="category" type="xs:string" use="optional" /> <!-- not used for now, may help if there are many apps in the future; first category should be for apps currently in development -->
         <xs:attribute name="hidden" type="xs:boolean" use="optional" /> <!-- used to tell if an app is still displayed or not -->

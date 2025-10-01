@@ -46,6 +46,11 @@
     overflow-y: auto;
 }
 
+.dialog input[type="text"] {
+    width: 480px !important;
+    margin: 10px 30px 0px 70px;
+}
+
 .dialog button {
     float: right !important;
     margin: 15px 15px 0 0;

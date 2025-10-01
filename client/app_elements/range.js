@@ -51,9 +51,6 @@ function getValue(item, map) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return;
     // get the value of the first two inputs
-    // for(let input of item.getElementsByTagName("input")) {
-    //     if(input.value != "" || isDefaultValue(item)) map.set(input.name, input.value);
-    // }
     const inputs = item.getElementsByTagName("input");
     if(inputs[0].value != "" && inputs[1].value != "") { // if one value is empty, do not set the value (user is made aware of this with checkValue)
         map.set(inputs[0].name, inputs[0].value);
@@ -74,7 +71,6 @@ function checkValue(item, errors) {
 }
 
 function setValue(item, settings) {
-    // console.log("ABUrange: "+item.id);
     for(let input of item.getElementsByTagName("input")) {
         if(settings.has(input.name)) {
             input.value = settings.get(input.name);

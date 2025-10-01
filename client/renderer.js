@@ -32,7 +32,6 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-// import other modules
 import * as tabs from "./tabs.js";
 import * as jc from "./jobcontent.js";
 import * as sidebar from "./sidebar.js";
@@ -49,7 +48,6 @@ var DEBUG_MODE = false;
 function loadAppList() {
   // list all the available apps and add them to the list
   // WARNING, this list has to match the list of available apps on the server!!
-  // document.getElementById("cmbAppName").innerHTML = "<option value='' disabled></option>" + apps.getOptionList("", true);
   document.getElementById("cmbAppName").innerHTML = "<option value='' disabled></option>" + apps.getAppsAsOptionList("", true);
 }
 
@@ -59,7 +57,6 @@ document.getElementById("btnLogs").addEventListener("click", () => tabs.openTab(
 document.getElementById("btnOutput").addEventListener("click", () => tabs.openTab("tabOutput"));
 document.getElementById("cmbAppName").addEventListener("change", () => {
   document.getElementById("btnParameters").disabled = false;
-  // document.getElementById("btnNext").disabled = false;
   if(apps.isWorkflow(document.getElementById("cmbAppName").value)) {
     document.getElementById("txtWorkflowName").value = document.getElementById("cmbAppName").value;
   } else {
@@ -72,8 +69,6 @@ document.getElementById("aSelect").addEventListener("click", () => output.select
 document.getElementById("aUnselect").addEventListener("click", () => output.unselectAllCheckboxes());
 document.getElementById("aExpand").addEventListener("click", () => output.expandAllFolders());
 document.getElementById("aCollapse").addEventListener("click", () => output.collapseAllFolders());
-// document.getElementById("copyStdout").addEventListener("click", async () => await tabs.copyToClipboard("copyStdout", document.getElementById("stdout")));
-// document.getElementById("copyStderr").addEventListener("click", async () => await tabs.copyToClipboard("copyStderr", document.getElementById("stderr")));
 document.getElementById("btnOutputDownload").addEventListener("click", async() => await output.downloadOutput());
 document.getElementById("txtStorageSearch").addEventListener("keyup", storage.searchStorage);
 // settings tab
@@ -139,7 +134,6 @@ async function keyupEvent(event) {
   else if(event.ctrlKey && (event.shiftKey && event.code === 'Tab' || event.code === 'PageUp')) tabs.goToPreviousTab();
   // Ctrl+N: new job (end search if search mode)
   else if(event.ctrlKey && event.key === 'n') {
-    // if(jobs.isSearchMode()) document.getElementById("clear_search").click();
     if(search.isSearchMode()) document.getElementById("clear_search").click();
     document.getElementById("new_job").click();
   }
@@ -174,7 +168,7 @@ async function keyupEvent(event) {
 }
 // window.addEventListener('keydown', keydownEvent, true);
 window.addEventListener('keyup', keyupEvent, true);
-window.addEventListener("resize", tabs.resizeLogAreas);
+// window.addEventListener("resize", tabs.resizeLogAreas);
 window.addEventListener("click", e => {
   if(utils.isFocus()) utils.setActive(true);
 });
@@ -182,7 +176,6 @@ window.addEventListener("click", e => {
 async function loadRemoteFlavors() {
   // load the host list
   const [flavors] = await window.electronAPI.listFlavors();
-  // const [flavors] = {"m1.4xlarge":{"weight":1,"cpu":32,"ram":64},"m1.8xlarge-16xmem":{"weight":2,"cpu":64,"ram":256},"m1.16xlarge-32xmem":{"weight":4,"cpu":128,"ram":512}};
   // generate the combo content
   var content = "";
   for(let flavor in flavors) {
@@ -204,7 +197,8 @@ function addTooltips() {
   utils.tooltip(document.getElementById("btnSettings"), "Cumulus configuration");
   // job summary
   utils.tooltip(document.getElementById("txtJobOwner").previousElementSibling, "This field shows the name of the user who created the job, it cannot be modified.");
-  utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, RUNNING, DONE or FAILED or CANCELED. It will also be archived later."); // PENDING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
+  // utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, RUNNING, DONE or FAILED or CANCELLED. It will also be archived later."); // PENDING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
+  utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, PREPARING, RUNNING, DONE or FAILED or CANCELLED. It will also be archived later."); // PENDING, PREPARING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
   utils.tooltip(document.getElementById("cmbAppName").previousElementSibling, "Select the software to run, with its corresponding version.");
   utils.tooltip(document.getElementById("cmbStrategy").previousElementSibling, "The strategy to create the virtual machine. WARNING: the heavier the strategy the longer it may take to start your job.");
   // utils.tooltip(document.getElementById("txtSelectedHost").previousElementSibling, "The host is the virtual machine (VM) where the job has been sent. Each VM has its own resources.");
@@ -227,17 +221,20 @@ function addTooltips() {
 }
 
 async function initialize() {
+  // load the settings
+  await settings.loadSettings();
   // check that the client have the same version number as the server
-  const error = await window.electronAPI.checkServer();
-  if(error != "") dialog.createDialogWarning("Connection error", error + "<br /><br />Warn the admin and restart later.", async () => await window.electronAPI.exitApp(), "Quit");
-  else {
+  var error = await window.electronAPI.checkServer();
+  const message = error + "<br/><br/>Check the server address and retry. <br/>If it does not work, warn the administrator and retry later.";
+  const value = settings.CONFIG.get("cumulus.controller");
+  const onYes = () => { settings.updateSetting("cumulus.controller", dialog.getLastDialog().getElementsByTagName("input")[0].value); }
+  if(error != "") {
+    dialog.createDialogForBootCheck("Connection error", message, value, onYes, initialize);
+  } else {
     // get the username and the configuration
     DEBUG_MODE = await window.electronAPI.getDebugMode();
     utils.setUserName(await window.electronAPI.getUserName())
-    await settings.loadSettings();
     document.getElementsByTagName("title")[0].textContent = `Cumulus [${settings.CONFIG.get("cumulus.version")}]`;
-    // adjust the size of the elements
-    tabs.resizeLogAreas();
     // list all the available flavors
     await loadRemoteFlavors();
     // load the list of available apps
@@ -248,22 +245,12 @@ async function initialize() {
     search.setDefaultValues();
     // add the tooltip texts
     addTooltips();
-    window.addEventListener("focus", (_) => {
-      utils.setFocus(true);
-    });
-    // when the app is not in focus, set the interval to 5 minutes
-    window.addEventListener("blur", (_) => {
-      // if(!DEBUG_MODE) dialog.openDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
-      utils.setFocus(false);
-    });
-    // jobs.reloadJobList();
+    window.addEventListener("focus", (_) => utils.setFocus(true));
+    window.addEventListener("blur", (_) => utils.setFocus(false)); // when the app is not in focus, set the interval to 5 minutes
     sidebar.refreshSidebar();
     // window does not have focus at startup when devtools are open
     // load the first job on the list
-    // job.createJob();
     jc.openNewJob();
-    // jobs.initializeReloadBar();
-    // jobs.resetInterval();
     sidebar.resetInterval();
     // remove the splash screen when all is ready
     document.getElementById("detail").getElementsByTagName("header")[0].style.display = "block";

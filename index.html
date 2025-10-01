@@ -12,7 +12,6 @@
     <link href="css/dialog.css" rel="stylesheet">
     <link href="css/loader.css" rel="stylesheet">
     <title>Cumulus</title>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
     <script src="client/chart.js"></script>
 
   </head>
@@ -58,10 +57,6 @@
             <select id="cmbStrategy" class="w3-select w3-border w3-rest"></select>
             <input id="txtJobStrategy" type="text" disabled class="w3-input w3-border w3-rest w3-hide" />
           </div>
-          <!-- <div class="w3-row w3-section">
-            <label for="txtSelectedHost" class="w3-col">Selected host</label>
-            <input id="txtSelectedHost" type="text" disabled class="w3-input w3-border w3-rest" />
-          </div> -->
           <div class="w3-row w3-section">
             <label for="txtJobDescription" class="w3-col">Description</label>
             <textarea id="txtJobDescription" class="w3-input w3-border w3-rest" rows="5" placeholder="Optional text to give some context to the job, to prevent users from confusing jobs."></textarea>
@@ -81,19 +76,9 @@
             <label>Your job will begin once all the files listed below will be completely transferred.</label>
             <ul></ul>
           </div>
-          <!-- <div class="w3-row-padding">
-            <div class="w3-half">
-              <label for="stdout">Output log (stdout)</label>
-              <textarea id="stdout" class="w3-input w3-border color-opposite-border" readonly></textarea>
-              <a id="copyStdout" class="w3-center" href="#">Copy to clipboard</a><label>✔</label>
-            </div>
-            <div class="w3-half">
-              <label for="stderr">Error log (stderr)</label>
-              <textarea id="stderr" class="w3-input w3-border color-accent-border" readonly></textarea>
-              <a id="copyStderr" class="w3-center" href="#">Copy to clipboard</a><label>✔</label>
-            </div> -->
+          <div id="logMainContainer" class="w3-row-padding">
             <div id="txtMergedLog" class="w3-input w3-border"></div>
-            <canvas id="pltJobUsage"></canvas>
+            <div id="chartContainer"><canvas id="pltJobUsage"></canvas></div>
           </div>
         </div>
         <!-- Tab 4: list of output files, users should be able to download the files they want -->
@@ -148,15 +133,11 @@
             <label for="txtSettingsRsyncPort" class="w3-col">RSync agent port (do not change this value unless you are certain!)</label>
             <input id="txtSettingsRsyncPort" type="text" class="w3-input w3-border w3-rest" value="" placeholder="Port of the RSync agent, do not change this value unless you are certain!" />
           </div>
-          <!-- <div class="w3-center"> -->
-            <!-- <div id="divButtonsSummary" class="w3-bar"> -->
-            <!-- <div class="w3-bar"> -->
-            <div id="divButtonsSettings" class="w3-row w3-center">
-              <button id="btnSettingsOk" class="w3-button w3-third color-opposite">Save settings</button>
-              <button id="btnSettingsReset" class="w3-button w3-third color-secondary">Reset settings</button>
-              <button id="btnSettingsLicense" class="w3-button w3-third color-primary color-primary-border">Display the license</button>
-            </div>
-          <!-- </div> -->
+          <div id="divButtonsSettings" class="w3-row w3-center">
+            <button id="btnSettingsOk" class="w3-button w3-third color-opposite">Save settings</button>
+            <button id="btnSettingsReset" class="w3-button w3-third color-secondary">Reset settings</button>
+            <button id="btnSettingsLicense" class="w3-button w3-third color-primary color-primary-border">Display the license</button>
+          </div>
           <div class="w3-row w3-section w3-hide"><textarea id="txtSettingsLicense" class="w3-input w3-border" readonly rows="25"></textarea></div>
         </div>
         <div id="tabStorage">
@@ -177,18 +158,6 @@
               <button id="btnSearchMe" class="w3-button color-opposite">Just me</button>
             </div>
             <div id="divSearchStatusElement"></div>
-            <!-- <div id="divSearchStatusElement" class="w3-row w3-section selector">
-              <label for="txtSearchStatus" class="w3-col">Status</label>
-              <div id="txtSearchStatus" class="w3-input w3-border w3-rest"></div>
-              <div id="divSearchStatus" class="w3-hide selector-items">
-                <label><input type="checkbox" name="pending" checked />Pending</label>
-                <label><input type="checkbox" name="running" checked />Running</label>
-                <label><input type="checkbox" name="done" checked />Done</label>
-                <label><input type="checkbox" name="failed" checked />Failed</label>
-                <label><input type="checkbox" name="cancelled" checked />Cancelled</label>
-                <label><input type="checkbox" name="archived" checked />Archived</label>
-              </div>
-            </div> -->
             <div class="w3-row w3-section">
               <label for="txtSearchAppName" class="w3-col">Software</label>
               <select id="txtSearchAppName" name="app" class="w3-select w3-border w3-rest"></select>

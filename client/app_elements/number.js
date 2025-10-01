@@ -49,8 +49,6 @@ function getValue(item, map) {
     if(!elements.hasVisibleWhenParent(item)) return;
     // get the value of the first input
     const input = item.getElementsByTagName("input")[0];
-    // if(input != null && (input.value != "" || isDefaultValue(item))) map.set(input.name, input.value);
-    // if(input != null && !isDefaultValue(item)) map.set(input.name, input.value);
     if(input != null) map.set(input.name, input.value);
 }
 
