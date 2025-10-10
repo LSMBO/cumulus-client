@@ -33,6 +33,7 @@ knowledge of the CeCILL license and that you accept its terms.
 */
 
 import * as utils from "./utils.js";
+import * as settings from "./settings.js";
 
 const PARENT = document.getElementById("dialogs");
 var ID = 0;
@@ -160,12 +161,23 @@ function createDialogWarning(title, message, action = undefined, label = "Close"
 }
 
 // specific dialog that can be displayed at the beginning of the app, if the server cannot be reached
-function createDialogForBootCheck(title, message, value = "", onRetryBeforeClosingDialog, onRetryAfterClosingDialog) {
-    const dialog = createDialog(title, message, ICON_WARNING, value, "Cumulus Server address");
-    dialog.innerHTML += `<div class="w3-bar"><button class="w3-bar-item w3-button color-primary-border">Quit</button><button class="w3-bar-item w3-button color-accent">Retry</button></div>`
+// function createDialogForBootCheck(title, message, value = "", onRetryBeforeClosingDialog, onRetryAfterClosingDialog) {
+//     const dialog = createDialog(title, message, ICON_WARNING, value, "Cumulus Server address");
+//     dialog.innerHTML += `<div class="w3-bar"><button class="w3-bar-item w3-button color-primary-border">Quit</button><button class="w3-bar-item w3-button color-accent">Retry</button></div>`;
+//     const buttons = dialog.getElementsByTagName("button");
+//     buttons[0].addEventListener("click", async () => { closeDialog(dialog.id); await window.electronAPI.exitApp(); } , { once: true });
+//     buttons[1].addEventListener("click", async () => { onRetryBeforeClosingDialog(); closeDialog(dialog.id); onRetryAfterClosingDialog(); } , { once: true });
+//     PARENT.appendChild(dialog);
+// }
+// specific dialog that can be displayed at the beginning of the app, if the server cannot be reached
+function createDialogForBootCheck(title, message, onRetry) {
+    // this dialog should have 3 buttons: open settings, retry, quit
+    const dialog = createDialog(title, message, ICON_WARNING, "", "Cumulus Server address");
+    dialog.innerHTML += `<div class="w3-bar"><button class="w3-bar-item w3-button color-primary-border">Quit</button><button class="w3-bar-item w3-button color-opposite">Retry</button><button class="w3-bar-item w3-button color-accent">Change settings</button></div>`
     const buttons = dialog.getElementsByTagName("button");
     buttons[0].addEventListener("click", async () => { closeDialog(dialog.id); await window.electronAPI.exitApp(); } , { once: true });
-    buttons[1].addEventListener("click", async () => { onRetryBeforeClosingDialog(); closeDialog(dialog.id); onRetryAfterClosingDialog(); } , { once: true });
+    buttons[1].addEventListener("click", async () => { onRetry(); closeDialog(dialog.id); } , { once: true });
+    buttons[2].addEventListener("click", async () => { settings.openSettings(true); closeDialog(dialog.id); } , { once: true });
     PARENT.appendChild(dialog);
 }
 
