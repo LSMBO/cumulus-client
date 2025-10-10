@@ -47,6 +47,9 @@ button.cm-disabled {
     color: var(--primary-color-link);
     padding-top: 5px;
 }
+#formParameters .param-url a {
+    position: relative;
+}
 #formParameters .tool_header a::after, #formParameters .param-url a::after {
     content: "";
     background: url("../img/external-link.png") center right no-repeat;
