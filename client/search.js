@@ -39,6 +39,7 @@ import * as utils from "./utils.js";
 import * as apps from "./appmanager.js";
 
 var IS_SEARCH = false;
+var TOOLTIPS_ADDED = false;
 const LAST_SEARCH_SETTINGS = new Map();
 const mainSearchStatus = document.getElementById("divSearchStatusElement");
 const txtSearchAppName = document.getElementById("txtSearchAppName");
@@ -51,20 +52,34 @@ function setSearchMode(value) {
   IS_SEARCH = value;
 }
 
+function addTooltips() {
+  if(TOOLTIPS_ADDED) return;
+  utils.tooltip(document.getElementById("cmbSearchDate").parentElement.previousElementSibling, "Add a date criteria to the search.");
+  utils.tooltip(document.getElementById("txtSearchDate1").previousElementSibling, "Restrict the search to jobs with a date after...");
+  utils.tooltip(document.getElementById("txtSearchDate2").previousElementSibling, "Restrict the search to jobs with a date before...");
+  utils.tooltip(document.getElementById("txtSearchNbJobs").previousElementSibling, "By default Cumulus will only display the 100 last jobs; use -1 to show all the jobs.");
+  utils.tooltip(document.getElementById("txtSearchOwner").previousElementSibling, "Display the jobs for which the owner contains the given tag (case insensitive).");
+  utils.tooltip(document.getElementById("txtSearchAppName").previousElementSibling, "Restrict the search to a specific software.");
+  utils.tooltip(document.getElementById("txtSearchFile").previousElementSibling, "Display the jobs for which at least one input file contains the given tag (case insensitive).");
+  utils.tooltip(document.getElementById("txtSearchTag").previousElementSibling, "Search jobs containing a given tag in their description (case insensitive).");
+  TOOLTIPS_ADDED = true;
+}
+
 function openSearch() {
-    tabs.openTab("tabSearch");
+  addTooltips()
+  tabs.openTab("tabSearch");
 }
 
 function setDefaultValues() {
-    document.getElementById("txtSearchOwner").value = "";
-    utils.setDefaultCheckboxList(mainSearchStatus);
-    txtSearchAppName.selectedIndex = 0;
-    document.getElementById("txtSearchFile").value = "";
-    document.getElementById("txtSearchTag").value = "";
-    document.getElementById("cmbSearchDate").selectedIndex = 0;
-    document.getElementById("txtSearchDate1").value = "";
-    document.getElementById("txtSearchDate2").value = "";
-    document.getElementById("txtSearchNbJobs").value = settings.CONFIG.get("max.nb.jobs");
+  document.getElementById("txtSearchOwner").value = "";
+  utils.setDefaultCheckboxList(mainSearchStatus);
+  txtSearchAppName.selectedIndex = 0;
+  document.getElementById("txtSearchFile").value = "";
+  document.getElementById("txtSearchTag").value = "";
+  document.getElementById("cmbSearchDate").selectedIndex = 0;
+  document.getElementById("txtSearchDate1").value = "";
+  document.getElementById("txtSearchDate2").value = "";
+  document.getElementById("txtSearchNbJobs").value = settings.CONFIG.get("max.nb.jobs");
 }
 
 function storeSearchSettings(owner, app, file, desc, statuses, date, from, to, number) {
@@ -111,15 +126,15 @@ function initialize() {
 
   document.getElementById("btnSearchMe").addEventListener("click", (e) => { e.preventDefault(); document.getElementById("txtSearchOwner").value = utils.getUserName(); });
   document.getElementById("btnSearchOk").addEventListener("click", async (e) => {
-      e.preventDefault();
-      setSearchMode(true);
-      sidebar.refreshSidebar(false);
+    e.preventDefault();
+    setSearchMode(true);
+    sidebar.refreshSidebar(false);
   });
   document.getElementById("btnSearchReset").addEventListener("click", (e) => {
-      e.preventDefault();
-      setDefaultValues();
-      setSearchMode(false);
-      sidebar.refreshSidebar();
+    e.preventDefault();
+    setDefaultValues();
+    setSearchMode(false);
+    sidebar.refreshSidebar();
   });
 
   // initialize on first opening
