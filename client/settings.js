@@ -38,6 +38,7 @@ import * as utils from "./utils.js";
 
 const CONFIG = new Map();
 const jobLabels = document.getElementById("divSettingsJobLabelElement");
+var TOOLTIPS_ADDED = false;
 
 async function loadSettings() {
     CONFIG.clear();
@@ -48,7 +49,23 @@ async function loadSettings() {
     }
 }
 
-function openSettings() {
+function addTooltips() {
+    if(TOOLTIPS_ADDED) return;
+    utils.tooltip(document.getElementById("txtSettingsServerAddress").previousElementSibling, "Warning: do not change this value unless you are certain!");
+    utils.tooltip(document.getElementById("txtSettingsNbJobs").previousElementSibling, "By default Cumulus will only display the 100 last jobs; use -1 to show all the jobs");
+    utils.tooltip(document.getElementById("txtSettingsRefreshRate").previousElementSibling, "Number of seconds between each refresh of the job list and job status; minimal value is 5 seconds");
+    utils.tooltip(document.getElementById("cmbSettingsDefaultStrategy").previousElementSibling, "The strategy will automatically be selected when you create a new job, you can always change it then");
+    utils.tooltip(document.getElementById("txtSettingsDefaultRawFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
+    utils.tooltip(document.getElementById("txtSettingsDefaultFastaFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
+    utils.tooltip(document.getElementById("txtSettingsServerPort").previousElementSibling, "Warning: do not change it unless you are certain!");
+    utils.tooltip(document.getElementById("txtSettingsRsyncAddress").previousElementSibling, "Warning: do not change it unless you are certain!");
+    utils.tooltip(document.getElementById("txtSettingsRsyncPort").previousElementSibling, "Warning: do not change it unless you are certain!");
+    TOOLTIPS_ADDED = true;
+}
+
+function openSettings(disable_everything_else = false) {
+    // add the tooltips if not already done
+    addTooltips();
     // reload the config, in case the user changed it earlier without saving
     if(CONFIG.has("cumulus.controller")) document.getElementById("txtSettingsServerAddress").value = CONFIG.get("cumulus.controller");
     if(CONFIG.has("cumulus.port")) document.getElementById("txtSettingsServerPort").value = CONFIG.get("cumulus.port");
@@ -65,6 +82,26 @@ function openSettings() {
     }
     utils.updateCheckboxList(jobLabels);
     tabs.openTab("tabSettings");
+    // special case when server is not reachable, user should be able to change the settings to fix the problem
+    if(disable_everything_else) {
+        // all other tabs should be disabled
+        document.getElementById("btnSummary").disabled = true;
+        document.getElementById("btnParameters").disabled = true;
+        document.getElementById("btnLogs").disabled = true;
+        document.getElementById("btnOutput").disabled = true;
+        // search and storage tabs should also be disabled
+        document.getElementById("btnSearch").classList.add("w3-disabled");
+        document.getElementById("btnSearch").disabled = true;
+        document.getElementById("btnStorage").classList.add("w3-disabled");
+        document.getElementById("btnStorage").disabled = true;
+        // job list should be empty
+        // document.getElementById("jobs").innerHTML = "";
+        document.getElementById("jobs").style.width = "0px";
+        document.getElementById("detail").style.marginLeft = "0px";
+        // remove the splash screen if it is still here
+        document.getElementById("detail").getElementsByTagName("header")[0].style.display = "block";
+        document.getElementById("splash").style.display = "none";
+    }
 }
 
 async function saveSettings() {
@@ -83,8 +120,9 @@ async function saveSettings() {
         CONFIG.set(option, selectedOptions.includes(option));
     }
     await window.electronAPI.setConfig(CONFIG);
-    sidebar.resetInterval();
-    sidebar.setJobListDisplay();
+    // sidebar.resetInterval();
+    // sidebar.setJobListDisplay();
+    await window.electronAPI.restartApp();
 }
 
 async function updateSetting(key, value) {
