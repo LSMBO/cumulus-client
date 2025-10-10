@@ -276,7 +276,8 @@ input::placeholder, textarea::placeholder {
 }
 
 #tabLogs #txtMergedLog span.stdalt {
-    color: var(--primary-color-dark);
+    /* color: var(--primary-color-dark); */
+    color: var(--opposite-color);
 }
 
 #tabLogs #chartContainer {
