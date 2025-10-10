@@ -185,6 +185,7 @@ app.whenReady().then(() => {
   ipcMain.handle('save-file', saveFile);
   ipcMain.handle('set-config', config.saveConfig);
   ipcMain.handle('start-job', srv.createJob);
+  ipcMain.handle('restart-app', () => { app.relaunch(); app.exit(); });
   
   createWindow()
 

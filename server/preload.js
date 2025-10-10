@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openUrl: (url) => ipcRenderer.invoke('open-url', url),
     exitApp: () => ipcRenderer.invoke('close-app'),
     showFilePath: (file) => { return webUtils.getPathForFile(file); },
+    restartApp: () => ipcRenderer.invoke('restart-app'),
 })
 
 window.addEventListener('DOMContentLoaded', () => {
