@@ -47,10 +47,11 @@ var DEBUG_MODE = false;
 
 function loadAppList() {
   // list all the available apps and add them to the list
-  // WARNING, this list has to match the list of available apps on the server!!
+  // the list of apps is retrieved from the server at startup
   document.getElementById("cmbAppName").innerHTML = "<option value='' disabled></option>" + apps.getAppsAsOptionList("", true);
 }
 
+// add the event listeners to the various items of the interface
 document.getElementById("btnSummary").addEventListener("click", () => tabs.openTab("tabSummary"));
 document.getElementById("btnParameters").addEventListener("click", () => tabs.openTab("tabParameters"));
 document.getElementById("btnLogs").addEventListener("click", () => tabs.openTab("tabLogs"));
@@ -147,6 +148,8 @@ async function keyupEvent(event) {
     LAST_TYPED_KEYS = "";
   }
 
+  // DEBUG shortcuts, using Ctrl+T can trigger something we want to test
+  // at the moment, it's just used to pause/unpause the refresh of the job list
   if(DEBUG_MODE && event.ctrlKey && event.key === 't') {
     // utils.toggleLoadingScreen();
     // console.log(utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
@@ -158,17 +161,15 @@ async function keyupEvent(event) {
     // apps.loadXmlFile();
     // console.log(apps.getLocalFiles());
     // console.log(apps.getSharedFiles());
-  } else if(DEBUG_MODE && event.ctrlKey && event.key === 'K') {
-    dialog.createDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
-  } else if(DEBUG_MODE && event.ctrlKey && event.key === 'L') {
-    dialog.createDialogQuestion("Title", "This will restore the default settings, are you sure about that?");
-  } else if(DEBUG_MODE && event.ctrlKey && event.key === 'M') {
-    dialog.createDialogWarning("Lorem Ipsum", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+  // } else if(DEBUG_MODE && event.ctrlKey && event.key === 'K') {
+  //   dialog.createDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
+  // } else if(DEBUG_MODE && event.ctrlKey && event.key === 'L') {
+  //   dialog.createDialogQuestion("Title", "This will restore the default settings, are you sure about that?");
+  // } else if(DEBUG_MODE && event.ctrlKey && event.key === 'M') {
+  //   dialog.createDialogWarning("Lorem Ipsum", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
   }
 }
-// window.addEventListener('keydown', keydownEvent, true);
 window.addEventListener('keyup', keyupEvent, true);
-// window.addEventListener("resize", tabs.resizeLogAreas);
 window.addEventListener("click", e => {
   if(utils.isFocus()) utils.setActive(true);
 });
@@ -220,6 +221,29 @@ function addTooltips() {
   utils.tooltip(document.getElementById("txtSearchTag").previousElementSibling, "Search jobs containing a given tag in their description (case insensitive).");
 }
 
+/**
+ * Initializes the Cumulus client application.
+ * 
+ * This async function performs the following steps:
+ * 1. Loads application settings.
+ * 2. Checks if the client version matches the server version.
+ *    - If there is a connection error, displays a dialog for the user to update the server address and retry.
+ *    - If successful, continues initialization.
+ * 3. Retrieves and sets the debug mode and username.
+ * 4. Updates the document title with the current version.
+ * 5. Loads available flavors and applications.
+ * 6. Initializes the search tab with default settings.
+ * 7. Adds tooltips to the UI.
+ * 8. Sets up window focus/blur event listeners.
+ * 9. Refreshes the sidebar and resets its interval.
+ * 10. Opens the first job in the list.
+ * 11. Removes the splash screen and displays the main UI.
+ * 12. Sets the application as active (mainly for debug mode).
+ * 
+ * @async
+ * @function initialize
+ * @returns {Promise<void>} Resolves when initialization is complete.
+ */
 async function initialize() {
   // load the settings
   await settings.loadSettings();
