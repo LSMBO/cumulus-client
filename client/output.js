@@ -247,12 +247,22 @@ function insertOutputFiles(files) {
   for(let child of children) { TREE_VIEW.appendChild(child); }
   document.getElementById("tabOutput").getElementsByTagName("button")[0].disabled = false;
   // trigger some specific events
-  for(let child of TREE_VIEW.childNodes) {
+  // for(let child of TREE_VIEW.childNodes) {
     // the following is not needed anymore, we only return the content of the output folder
     // // an "output" folder is created on server-side, it should be checked by default
     // if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("output.folder")) child.getElementsByTagName("input")[0].click();
     // // a "temp" folder is created on server-side, it should be closed by default
     // if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("temp.folder")) child.getElementsByTagName("i")[0].click();
+  // }
+  // by default, select all the output files
+  selectAllCheckboxes();
+  // do not display the expand/collapse links if there is no folder
+  if(directories.size == 0) {
+    document.getElementById("aExpand").style.display = "none";
+    document.getElementById("aCollapse").style.display = "none";
+  } else {
+    document.getElementById("aExpand").style.display = "";
+    document.getElementById("aCollapse").style.display = "";
   }
 }
 
