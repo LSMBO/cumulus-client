@@ -240,21 +240,17 @@ function updateJobPage(job, generateParametersTab = true) {
             document.getElementById("tabLogs").children[1].classList.add("w3-hide");
             // display the progression for each file
             displayFileTransfers(job);
-        } else if(job.status == "RUNNING" || job.status == "PREPARING") {
-            document.getElementById("tabLogs").children[0].classList.add("w3-hide");
-            document.getElementById("tabLogs").children[1].classList.remove("w3-hide");
-            LOG_ELEMENT.innerHTML = utils.extractJobLog(job.log, true, true, true, false);
-            LOG_ELEMENT.scrollTop = LOG_ELEMENT.scrollHeight;
-            [PLOT_LABELS, PLOT_CPU, PLOT_RAM] = utils.extractInfoFromJobLog(job.log);
-            PLOT_ELEMENT.data.labels = PLOT_LABELS;
-            PLOT_ELEMENT.data.datasets[0].data = PLOT_CPU;
-            PLOT_ELEMENT.data.datasets[1].data = PLOT_RAM;
-            PLOT_ELEMENT.update();
         } else {
-            // do not reload the logs if the job is finished
+            // hide the file transfer info
             document.getElementById("tabLogs").children[0].classList.add("w3-hide");
             document.getElementById("tabLogs").children[1].classList.remove("w3-hide");
-            if(LOG_ELEMENT.innerHTML == "") LOG_ELEMENT.innerHTML = utils.extractJobLog(job.log, true, true, true, false);
+            // do not reload the logs if the content is the same (especially if the job is finished)
+            const logContent = utils.extractJobLog(job.log, true, true, true, false);
+            if(LOG_ELEMENT.innerHTML == "" || LOG_ELEMENT.innerHTML != logContent) {
+                LOG_ELEMENT.innerHTML = logContent;
+                LOG_ELEMENT.scrollTop = LOG_ELEMENT.scrollHeight;
+            }
+            // update the CPU/RAM usage plot
             [PLOT_LABELS, PLOT_CPU, PLOT_RAM] = utils.extractInfoFromJobLog(job.log);
             PLOT_ELEMENT.data.labels = PLOT_LABELS;
             PLOT_ELEMENT.data.datasets[0].data = PLOT_CPU;
@@ -299,6 +295,13 @@ function setSettings(settings, disable_all_parameters = false) {
     // call the events if there are any (only the WHEN cases!)
     for(let item of FORM.getElementsByClassName("cond")) {
         apps.conditionalEvent(item);
+    }
+    // for all WHEN cases that are not selected, unset the parameters (when cloning a job, it's confusing to see parameters set with unmatched conditions)
+    for(let item of FORM.getElementsByClassName("when")) {
+        if(!item.classList.contains("visible")) {
+            // search all parameters and unset them
+            apps.resetParamValues(item);
+        }
     }
     // on file lists, display the number of files that are in the list (search for class "param-file-list")
     for(let item of FORM.getElementsByClassName("param-file-list")) {
