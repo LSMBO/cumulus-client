@@ -54,5 +54,5 @@
 .dialog button {
     float: right !important;
     margin: 15px 15px 0 0;
-    width: 100px !important;
+    min-width: 100px !important;
 }
