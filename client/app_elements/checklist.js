@@ -161,6 +161,17 @@ function copyFrom(source, destination) {
     }
 }
 
+function resetToDefault(item) {
+    // default value is stored in the <a> tag
+    const defaultValues = item.getElementsByTagName("a")[0].textContent.split("-");
+    const inputs = item.getElementsByTagName("input");
+    for(let i = 0; i < inputs.length; i++) {
+        if(i < defaultValues.length && defaultValues[i] == "true") inputs[i].checked = true;
+        else inputs[i].checked = false;
+    }
+    updateLabel(item.children[1]);
+}
+
 function isDefaultValue(item) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -182,4 +193,4 @@ function isDirty() {
     return false;
 }
 
-export { copyFrom, create, getValue, isDirty, setValue, setValueTo };
+export { copyFrom, create, getValue, isDirty, resetToDefault, setValue, setValueTo };

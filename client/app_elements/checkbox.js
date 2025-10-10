@@ -76,6 +76,12 @@ function copyFrom(source, destination) {
     destination.getElementsByTagName("input")[0].checked = value;
 }
 
+function resetToDefault(item) {
+    // default value is stored in the <a> tag
+    const defaultValue = item.getElementsByTagName("a")[0].textContent == "true";
+    item.getElementsByTagName("input")[0].checked = defaultValue;
+}
+
 function isDefaultValue(item) {
     // do not check the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -92,4 +98,4 @@ function isDirty() {
     return false;
 }
 
-export { copyFrom, create, getValue, isDirty, setValue, setValueTo };
+export { copyFrom, create, getValue, isDirty, resetToDefault, setValue, setValueTo };

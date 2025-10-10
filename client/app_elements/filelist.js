@@ -53,12 +53,13 @@ function create(id, param, input_class, useFolder) {
     const parent = elements.createDiv("", "param-row param-file-list w3-hover-light-grey");
     parent.name = param.getAttribute("name");
     const header = elements.createDiv("", "param-row");
-    const ext = param.getAttribute("format");
+    const ext = param.getAttribute("format") ? param.getAttribute("format") : null;
     const type = param.getAttribute("is_raw_input") == "true" ? "RAW" : "FASTA";
     header.appendChild(elements.createLabel(param));
     header.appendChild(elements.createButton(input_id+"-browse", "Browse...", (event) => {
         event.preventDefault();
-        browse(type, param.getAttribute("label"), [ { name: useFolder ? `.${ext} folders` : `.${ext} files`, extensions: [ext] }], [useFolder ? 'openDirectory' : 'openFile', 'multiSelections'], input_id);
+        const label = ext ? (useFolder ? `.${ext} folders` : `.${ext} files`) : (useFolder ? "Folders" : "Files");
+        browse(type, param.getAttribute("label"), [ { name: label, extensions: [ext] }], [useFolder ? 'openDirectory' : 'openFile', 'multiSelections'], input_id);
     }));
     header.appendChild(elements.createButton(input_id+"-clear", "🗙", (event) => {
         event.preventDefault();
@@ -112,6 +113,12 @@ function copyFrom(source, destination) {
     addBrowsedFiles(ul, files);
 }
 
+function resetToDefault(item) {
+    // default is an empty list
+    item.getElementsByTagName("ul")[0].innerHTML = "";
+    updateFileList(item);
+}
+
 function isDefaultValue(item) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -126,4 +133,4 @@ function isDirty() {
     return false;
 }
 
-export { copyFrom, create, getValue, isDirty, setValue, setValueTo, updateFileList };
+export { copyFrom, create, getValue, isDirty, resetToDefault, setValue, setValueTo, updateFileList };

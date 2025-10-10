@@ -402,6 +402,18 @@ function setParamValues(settingsMap) {
     }
 }
 
+function resetParamValues(parent) {
+    for(let item of parent.getElementsByClassName("param-select")) select.resetToDefault(item);
+    for(let item of parent.getElementsByClassName("param-checklist")) checklist.resetToDefault(item);
+    for(let item of parent.getElementsByClassName("param-keyvalue")) keyvalues.resetToDefault(item);
+    for(let item of parent.getElementsByClassName("param-checkbox")) checkbox.resetToDefault(item);
+    for(let item of parent.getElementsByClassName("param-text")) textfield.resetToDefault(item);
+    for(let item of parent.getElementsByClassName("param-number")) number.resetToDefault(item);
+    for(let item of parent.getElementsByClassName("param-range")) range.resetToDefault(item);
+    for(let item of parent.getElementsByClassName("param-file-input")) fileinput.resetToDefault(item);
+    for(let item of parent.getElementsByClassName("param-file-list")) filelist.resetToDefault(item);
+}
+
 function isFormDirty() {
     if(select.isDirty()) return true;
     if(checklist.isDirty()) return true;
@@ -692,4 +704,4 @@ function createAppPage(parent, index = 0, total = 1) {
     return div;
 }
 
-export { checkParamValues, conditionalEvent, disableParameters, generate_parameters_page, getFullName, getAppsAsOptionList, getParamValuesAsString, getSettingsSets, isAdvancedParametersVisible, isFormDirty, isWorkflow, setParamValues, switchWorkflowApp, updateAppList };
+export { checkParamValues, conditionalEvent, disableParameters, generate_parameters_page, getFullName, getAppsAsOptionList, getParamValuesAsString, getSettingsSets, isAdvancedParametersVisible, isFormDirty, isWorkflow, resetParamValues, setParamValues, switchWorkflowApp, updateAppList };

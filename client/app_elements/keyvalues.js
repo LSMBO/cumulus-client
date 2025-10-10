@@ -109,12 +109,14 @@ function create(id, param, input_class) {
     const defaultValues = new Array();
     for(let option of param.children) {
         addRow(table, option.getAttribute("key"), option.getAttribute("value"));
-        defaultValues.push(option.getAttribute("key")+"-"+option.getAttribute("value"));
+        // defaultValues.push(option.getAttribute("key")+"-"+option.getAttribute("value"));
+        defaultValues.push(option.getAttribute("key")+"^"+option.getAttribute("value")); // key and value are separated by ^ (unlikely to be used in keys or values)
     }
     // make sure to display at least one row
     if(table.rows.length == 1) addRow(table, "", "");
     parent.appendChild(table);
-    elements.addDefaultValue(parent, defaultValues.join("-"));
+    // elements.addDefaultValue(parent, defaultValues.join("-"));
+    elements.addDefaultValue(parent, defaultValues.join("`")); // key-value pairs are separated by ` (also unlikely to be used in keys or values)
     return parent;
 }
 
@@ -212,6 +214,24 @@ function copyFrom(source, destination) {
     }
 }
 
+function resetToDefault(item) {
+    // default value is stored in the <a> tag
+    const defaultValue = item.getElementsByTagName("a")[0].textContent;
+    const table = item.getElementsByTagName("table")[0];
+    // remove all rows except for the header row
+    while(table.rows.length > 1) table.deleteRow(1);
+    // if there is a default value, split it and add the rows
+    if(defaultValue != "") {
+        const pairs = defaultValue.split("`"); // key-value pairs are separated by `
+        for(let pair of pairs) {
+            const kv = pair.split("^"); // key and value are separated by ^
+            if(kv.length == 2) addRow(table, kv[0], kv[1]);
+        }
+    }
+    // make sure to display at least one row
+    if(table.rows.length == 1) addRow(table, "", "");
+}
+
 function isDefaultValue(item) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -223,10 +243,12 @@ function isDefaultValue(item) {
         if(row.getElementsByTagName("th").length > 0) continue; // skip the header row
         const key = row.getElementsByTagName("input")[0].value;
         const value = row.getElementsByTagName("input")[1].value;
-        if(key != "" && value != "") selectedValues.push(key+"-"+value);
+        // if(key != "" && value != "") selectedValues.push(key+"-"+value);
+        if(key != "" && value != "") selectedValues.push(key+"^"+value); // key and value are separated by ^
     }
     // compare the default value to the selected values
-    return defaultValue == selectedValues.join("-");
+    // return defaultValue == selectedValues.join("-");
+    return defaultValue == selectedValues.join("`"); // key-value pairs are separated by `
 }
 
 function isDirty() {
@@ -236,4 +258,4 @@ function isDirty() {
     return false;
 }
 
-export { copyFrom, checkValue, create, getValue, isDirty, setValue, setValueTo };
+export { copyFrom, checkValue, create, getValue, isDirty, resetToDefault, setValue, setValueTo };

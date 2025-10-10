@@ -46,11 +46,11 @@ function addDefaultValue(param, defaultValue) {
 
 function hasAdvancedParent(param) {
     var parent = param;
-    console.log(param);
+    // console.log(param);
     while(parent != null && parent.tagName.toUpperCase() != "FORM") {
         // stop if we reach the the first element containing a class "when"
         if(parent.classList.contains("advanced-off")) {
-            console.log("This is an advanced parameter!");
+            // console.log("This is an advanced parameter!");
             return true;
         }
         // continue with the next parent

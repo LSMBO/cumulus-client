@@ -40,7 +40,7 @@ function create(id, param, input_class, useFolder) {
     const parent = elements.createDiv("", "param-row param-file-input w3-hover-light-grey");
     parent.appendChild(elements.createLabel(param, input_id));
     const input = elements.createElement("input", new Map([["type", "text"], ["id", input_id], ["name", param.getAttribute("name")], ["class", `w3-input w3-border ${input_class}`]]));
-    const ext = param.getAttribute("format").toUpperCase().split(";"); // allow multiple extensions
+    const ext = param.getAttribute("format") ? param.getAttribute("format").toUpperCase().split(";") : null; // allow multiple extensions
     const type = param.getAttribute("is_raw_input") == "true" ? "RAW" : "FASTA"; // TODO rename RAW and FASTA to SHARED and LOCAL
     if(param.hasAttribute("value")) input.value = param.getAttribute("value");
     elements.addFileDragAndDropEvents(input, useFolder, false, ext);
@@ -86,6 +86,11 @@ function copyFrom(source, destination) {
     destination.getElementsByTagName("input")[0].value = value;
 }
 
+function resetToDefault(item) {
+    // default value is stored in the <a> tag
+    item.getElementsByTagName("input")[0].value = item.getElementsByTagName("a")[0].textContent;
+}
+
 function isDefaultValue(item) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -100,4 +105,4 @@ function isDirty() {
     return false;
 }
 
-export { copyFrom, create, getValue, isDirty, setValue, setValueTo };
+export { copyFrom, create, getValue, isDirty, resetToDefault, setValue, setValueTo };

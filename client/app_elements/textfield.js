@@ -73,6 +73,11 @@ function copyFrom(source, destination) {
     destination.getElementsByTagName("input")[0].value = value;
 }
 
+function resetToDefault(item) {
+    // default value is stored in the <a> tag
+    item.getElementsByTagName("input")[0].value = item.getElementsByTagName("a")[0].textContent;
+}
+
 function isDefaultValue(item) {
     // do not get the value if the element is not visible
     if(!elements.hasVisibleWhenParent(item)) return true;
@@ -87,4 +92,4 @@ function isDirty() {
     return false;
 }
 
-export { copyFrom, create, getValue, isDirty, setValue, setValueTo };
+export { copyFrom, create, getValue, isDirty, resetToDefault, setValue, setValueTo };
