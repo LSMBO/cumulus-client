@@ -15,20 +15,7 @@
     "make": "electron-forge make"
   },
   "config": {
-    "forge": {
-      "packagerConfig": {
-        "icon": "img/cumulus.ico"
-      },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "win32"
-          ]
-        }
-      ],
-      "publishers": []
-    }
+    "forge": "./forge.config.js"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.8.1",
