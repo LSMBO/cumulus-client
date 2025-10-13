@@ -36,6 +36,14 @@ import * as tabs from "./tabs.js";
 import * as utils from "./utils.js";
 import * as settings from "./settings.js";
 
+var INITIALIZED = false;
+
+function initialize() {
+  if(INITIALIZED) return;
+  document.getElementById("txtStorageSearch").addEventListener("keyup", searchStorage);
+  INITIALIZED = true;
+}
+
 function localSort(a, b, asc = true) {
   if(isNaN(a)) {
     if(asc) {
@@ -97,6 +105,7 @@ function searchStorage(_) {
 }
 
 async function refreshStorage() {
+  initialize();
   utils.toggleLoadingScreen();
   // get disk usage
   const disk = await window.electronAPI.getDiskUsage();

@@ -51,86 +51,14 @@ function loadAppList() {
   document.getElementById("cmbAppName").innerHTML = "<option value='' disabled></option>" + apps.getAppsAsOptionList("", true);
 }
 
-// add the event listeners to the various items of the interface
-document.getElementById("btnSummary").addEventListener("click", () => tabs.openTab("tabSummary"));
-document.getElementById("btnParameters").addEventListener("click", () => tabs.openTab("tabParameters"));
-document.getElementById("btnLogs").addEventListener("click", () => tabs.openTab("tabLogs"));
-document.getElementById("btnOutput").addEventListener("click", () => tabs.openTab("tabOutput"));
-document.getElementById("cmbAppName").addEventListener("change", () => {
-  document.getElementById("btnParameters").disabled = false;
-  if(apps.isWorkflow(document.getElementById("cmbAppName").value)) {
-    document.getElementById("txtWorkflowName").value = document.getElementById("cmbAppName").value;
-  } else {
-    document.getElementById("txtWorkflowName").value = "";
-  }
-  jc.generateButtonBars();
-  apps.generate_parameters_page();
-});
-document.getElementById("aSelect").addEventListener("click", () => output.selectAllCheckboxes());
-document.getElementById("aUnselect").addEventListener("click", () => output.unselectAllCheckboxes());
-document.getElementById("aExpand").addEventListener("click", () => output.expandAllFolders());
-document.getElementById("aCollapse").addEventListener("click", () => output.collapseAllFolders());
-document.getElementById("btnOutputDownload").addEventListener("click", async() => await output.downloadOutput());
-document.getElementById("txtStorageSearch").addEventListener("keyup", storage.searchStorage);
-// settings tab
-const btnSettings = document.getElementById("btnSettings");
-btnSettings.addEventListener("click", async () => await settings.openSettings());
-btnSettings.addEventListener("mouseover", () => {
-  const images = btnSettings.getElementsByTagName("img");
-  images[0].classList.add("w3-hide");
-  images[1].classList.remove("w3-hide");
-});
-btnSettings.addEventListener("mouseout", () => {
-  const images = btnSettings.getElementsByTagName("img");
-  images[0].classList.remove("w3-hide");
-  images[1].classList.add("w3-hide");
-});
-document.getElementById("btnSettingsLicense").addEventListener("click", () => settings.toggleLicense());
-document.getElementById("btnSettingsOk").addEventListener("click", () => dialog.createDialogQuestion("Save settings", "Are you sure that the new settings are valid?", settings.saveSettings));
-document.getElementById("btnSettingsReset").addEventListener("click", () => dialog.createDialogQuestion("Reset settings", "This will restore the default settings, are you sure about that?", settings.resetSettings));
-// storage tab
-const btnStorage = document.getElementById("btnStorage");
-btnStorage.addEventListener("click", async () => storage.openStorage());
-btnStorage.addEventListener("mouseover", () => {
-  const images = btnStorage.getElementsByTagName("img");
-  images[0].classList.add("w3-hide");
-  images[1].classList.remove("w3-hide");
-});
-btnStorage.addEventListener("mouseout", () => {
-  const images = btnStorage.getElementsByTagName("img");
-  images[0].classList.remove("w3-hide");
-  images[1].classList.add("w3-hide");
-});
-document.getElementById("btnStorageRefresh").addEventListener("click", async () => await storage.refreshStorage());
-// search tab
-const btnSearch = document.getElementById("btnSearch");
-btnSearch.addEventListener("click", async () => search.openSearch());
-btnSearch.addEventListener("mouseover", () => {
-  const images = btnSearch.getElementsByTagName("img");
-  images[0].classList.add("w3-hide");
-  images[1].classList.remove("w3-hide");
-});
-btnSearch.addEventListener("mouseout", () => {
-  const images = btnSearch.getElementsByTagName("img");
-  images[0].classList.remove("w3-hide");
-  images[1].classList.add("w3-hide");
-});
-
-// function keydownEvent(event) {
-  // if (event.key === 'Control' || event.key === 'Shift') return; // do nothing
-  // if(event.ctrlKey && ((!event.shiftKey && event.code === 'Tab') || event.code === 'PageDown')) tabs.goToNextTab();
-  // else if(event.ctrlKey && (event.shiftKey && event.code === 'Tab' || event.code === 'PageUp')) tabs.goToPreviousTab();
-  // else if(event.ctrlKey && event.key === 'n') { // Ctrl+N: new job (end search if search mode)
-  //   if(jobs.isSearchMode()) document.getElementById("clear_search").click();
-  //   document.getElementById("new_job").click();
-  // } else if(event.ctrlKey && event.key === 'f') btnSearch.click(); // Ctrl+F: search tab
-// }
-
+// initialize the tabs
+tabs.initialize();
+jc.initialize();
+output.initialize();
 var LAST_TYPED_KEYS = "";
 async function keyupEvent(event) {
   // console.log(event);
   // Change tab
-  // if(event.key === 'Control' || event.key === 'Shift') return; // do nothing
   if(event.ctrlKey && ((!event.shiftKey && event.code === 'Tab') || event.code === 'PageDown')) tabs.goToNextTab();
   else if(event.ctrlKey && (event.shiftKey && event.code === 'Tab' || event.code === 'PageUp')) tabs.goToPreviousTab();
   // Ctrl+N: new job (end search if search mode)
@@ -152,21 +80,8 @@ async function keyupEvent(event) {
   // at the moment, it's just used to pause/unpause the refresh of the job list
   if(DEBUG_MODE && event.ctrlKey && event.key === 't') {
     // utils.toggleLoadingScreen();
-    // console.log(utils.getBrowsedFiles(document.getElementsByClassName("raw-file")[0]));
-    // console.log(utils.fixFilePath(document.getElementById("diann191_txtFasta").value));
     __electronLog.info("TEST KEY!");
-    // jobs.pauseRefresh();
     sidebar.pauseRefresh();
-    // console.log(apps.getSettingsSets());
-    // apps.loadXmlFile();
-    // console.log(apps.getLocalFiles());
-    // console.log(apps.getSharedFiles());
-  // } else if(DEBUG_MODE && event.ctrlKey && event.key === 'K') {
-  //   dialog.createDialogInfo("Sleeping mode", "Don't worry your jobs are still running");
-  // } else if(DEBUG_MODE && event.ctrlKey && event.key === 'L') {
-  //   dialog.createDialogQuestion("Title", "This will restore the default settings, are you sure about that?");
-  // } else if(DEBUG_MODE && event.ctrlKey && event.key === 'M') {
-  //   dialog.createDialogWarning("Lorem Ipsum", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
   }
 }
 window.addEventListener('keyup', keyupEvent, true);
@@ -187,38 +102,6 @@ async function loadRemoteFlavors() {
   document.getElementById("cmbStrategy").innerHTML = content;
   // also set the max weight for the OpenStack strategy
   document.getElementById("txtStrategy").textContent = `Strategy (maximum weight on the server: ${settings.CONFIG.get("openstack.max.flavor")})`;
-}
-
-function addTooltips() {
-  // TODO probably should move these in each module?
-  // Note: the tooltips for the job parameters must be added directly in the apps/*.js files
-  // menu buttons
-  utils.tooltip(document.getElementById("btnSearch"), "Job search");
-  utils.tooltip(document.getElementById("btnStorage"), "Remote storage viewer");
-  utils.tooltip(document.getElementById("btnSettings"), "Cumulus configuration");
-  // job summary
-  utils.tooltip(document.getElementById("txtJobOwner").previousElementSibling, "This field shows the name of the user who created the job, it cannot be modified.");
-  // utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, RUNNING, DONE or FAILED or CANCELLED. It will also be archived later."); // PENDING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
-  utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, PREPARING, RUNNING, DONE or FAILED or CANCELLED. It will also be archived later."); // PENDING, PREPARING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
-  utils.tooltip(document.getElementById("cmbAppName").previousElementSibling, "Select the software to run, with its corresponding version.");
-  utils.tooltip(document.getElementById("cmbStrategy").previousElementSibling, "The strategy to create the virtual machine. WARNING: the heavier the strategy the longer it may take to start your job.");
-  // utils.tooltip(document.getElementById("txtSelectedHost").previousElementSibling, "The host is the virtual machine (VM) where the job has been sent. Each VM has its own resources.");
-  utils.tooltip(document.getElementById("txtJobDescription").previousElementSibling, "Add a description to your job, it can help you or others to distinguish a job without reviewing the set of parameters.");
-  // settings tab
-  utils.tooltip(document.getElementById("txtSettingsServerAddress").previousElementSibling, "Warning: do not change this value unless you are certain!");
-  utils.tooltip(document.getElementById("txtSettingsNbJobs").previousElementSibling, "By default Cumulus will only display the 100 last jobs; use -1 to show all the jobs");
-  utils.tooltip(document.getElementById("txtSettingsRefreshRate").previousElementSibling, "Number of seconds between each refresh of the job list and job status; minimal value is 5 seconds");
-  utils.tooltip(document.getElementById("cmbSettingsDefaultStrategy").previousElementSibling, "The strategy will automatically be selected when you create a new job, you can always change it then");
-  utils.tooltip(document.getElementById("txtSettingsDefaultRawFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
-  utils.tooltip(document.getElementById("txtSettingsDefaultFastaFilesPath").previousElementSibling, "Warning: do not change it unless you are certain!");
-  utils.tooltip(document.getElementById("txtSettingsServerPort").previousElementSibling, "Warning: do not change it unless you are certain!");
-  utils.tooltip(document.getElementById("txtSettingsRsyncAddress").previousElementSibling, "Warning: do not change it unless you are certain!");
-  utils.tooltip(document.getElementById("txtSettingsRsyncPort").previousElementSibling, "Warning: do not change it unless you are certain!");
-  // search tab
-  utils.tooltip(document.getElementById("txtSearchOwner").previousElementSibling, "Display the jobs for which the owner contains the given tag (case insensitive).");
-  utils.tooltip(document.getElementById("txtSearchAppName").previousElementSibling, "Restrict the search to a specific software.");
-  utils.tooltip(document.getElementById("txtSearchFile").previousElementSibling, "Display the jobs for which at least one input file contains the given tag (case insensitive).");
-  utils.tooltip(document.getElementById("txtSearchTag").previousElementSibling, "Search jobs containing a given tag in their description (case insensitive).");
 }
 
 /**
@@ -249,11 +132,10 @@ async function initialize() {
   await settings.loadSettings();
   // check that the client have the same version number as the server
   var error = await window.electronAPI.checkServer();
-  const message = error + "<br/><br/>Check the server address and retry. <br/>If it does not work, warn the administrator and retry later.";
-  const value = settings.CONFIG.get("cumulus.controller");
-  const onYes = () => { settings.updateSetting("cumulus.controller", dialog.getLastDialog().getElementsByTagName("input")[0].value); }
+  // if there is a connection error, open a dialog allowing to open settings, retry or quit
+  const message = error + "<br/><br/>Maybe you have a wrong parameter. Click on the button below to access your settings.<br/>If it does not work, warn the administrator and retry later.";
   if(error != "") {
-    dialog.createDialogForBootCheck("Connection error", message, value, onYes, initialize);
+    dialog.createDialogForBootCheck("Connection error", message, initialize);
   } else {
     // get the username and the configuration
     DEBUG_MODE = await window.electronAPI.getDebugMode();
@@ -267,8 +149,7 @@ async function initialize() {
     // set default settings to the search tab
     search.initialize();
     search.setDefaultValues();
-    // add the tooltip texts
-    addTooltips();
+    // set event listeners for the main window
     window.addEventListener("focus", (_) => utils.setFocus(true));
     window.addEventListener("blur", (_) => utils.setFocus(false)); // when the app is not in focus, set the interval to 5 minutes
     sidebar.refreshSidebar();

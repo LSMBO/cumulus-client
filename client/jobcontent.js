@@ -42,6 +42,7 @@ import * as apps from "./appmanager.js";
 import * as settings from "./settings.js";
 import * as filelist from "./app_elements/filelist.js";
 
+var INITIALIZED = false;
 const FORM = document.getElementById("formParameters");
 const LOG_ELEMENT = document.getElementById("txtMergedLog");
 // Create the chart once
@@ -79,6 +80,24 @@ const PLOT_ELEMENT = new Chart(PLOT_CONTEXT, {
   }
 });
 
+function initialize() {
+    if(INITIALIZED) return;
+    document.getElementById("cmbAppName").addEventListener("change", () => {
+      document.getElementById("btnParameters").disabled = false;
+      if(apps.isWorkflow(document.getElementById("cmbAppName").value)) {
+        document.getElementById("txtWorkflowName").value = document.getElementById("cmbAppName").value;
+      } else {
+        document.getElementById("txtWorkflowName").value = "";
+      }
+      generateButtonBars();
+      apps.generate_parameters_page();
+    });
+    utils.tooltip(document.getElementById("txtJobOwner").previousElementSibling, "This field shows the name of the user who created the job, it cannot be modified.");
+    utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, PREPARING, RUNNING, DONE or FAILED or CANCELLED. It will also be archived later."); // PENDING, PREPARING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
+    utils.tooltip(document.getElementById("cmbAppName").previousElementSibling, "Select the software to run, with its corresponding version.");
+    utils.tooltip(document.getElementById("cmbStrategy").previousElementSibling, "The strategy to create the virtual machine. WARNING: the heavier the strategy the longer it may take to start your job.");
+    utils.tooltip(document.getElementById("txtJobDescription").previousElementSibling, "Add a description to your job, it can help you or others to distinguish a job without reviewing the set of parameters.");
+}
 
 function updateField(fieldId, value = null, display = null, display_of_parent = null, classes_to_add = [], classes_to_remove = [], disabled = null, selectedIndex = null, innerHTML = null) {
     const field = document.getElementById(fieldId);
@@ -429,4 +448,4 @@ async function startJob() {
     }
 }
 
-export { generateButtonBars, openNewJob, openCurrentJob, updateJobPage, setSettings, startJob };
+export { generateButtonBars, initialize, openNewJob, openCurrentJob, updateJobPage, setSettings, startJob };

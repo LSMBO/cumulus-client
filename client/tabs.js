@@ -32,12 +32,70 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
-import { hideLicense } from "./settings.js";
+// import { initialize } from "./search.js";
+// import { hideLicense } from "./settings.js";
+import * as search from "./search.js";
+import * as settings from "./settings.js";
+import * as storage from "./storage.js";
+import * as utils from "./utils.js";
 
 const TAB_NAMES = ["tabSummary", "tabParameters", "tabLogs", "tabOutput"];
 const TAB_BUTTONS = ["btnSummary", "btnParameters", "btnLogs", "btnOutput"];
 const EXTRA_TAB_NAMES = ["tabSettings", "tabStorage", "tabSearch"];
 const EXTRA_BUTTONS = ["btnSettings", "btnStorage", "btnSearch"];
+
+// initialize events on the tab buttons
+function initialize() {
+  document.getElementById("btnSummary").addEventListener("click", () => openTab("tabSummary"));
+  document.getElementById("btnParameters").addEventListener("click", () => openTab("tabParameters"));
+  document.getElementById("btnLogs").addEventListener("click", () => openTab("tabLogs"));
+  document.getElementById("btnOutput").addEventListener("click", () => openTab("tabOutput"));
+  // settings
+  const btnSettings = document.getElementById("btnSettings");
+  btnSettings.addEventListener("click", async () => await settings.openSettings());
+  btnSettings.addEventListener("mouseover", () => {
+    const images = btnSettings.getElementsByTagName("img");
+    images[0].classList.add("w3-hide");
+    images[1].classList.remove("w3-hide");
+  });
+  btnSettings.addEventListener("mouseout", () => {
+    const images = btnSettings.getElementsByTagName("img");
+    images[0].classList.remove("w3-hide");
+    images[1].classList.add("w3-hide");
+  });
+  // storage tab
+  const btnStorage = document.getElementById("btnStorage");
+  btnStorage.addEventListener("click", async () => storage.openStorage());
+  btnStorage.addEventListener("mouseover", () => {
+    const images = btnStorage.getElementsByTagName("img");
+    images[0].classList.add("w3-hide");
+    images[1].classList.remove("w3-hide");
+  });
+  btnStorage.addEventListener("mouseout", () => {
+    const images = btnStorage.getElementsByTagName("img");
+    images[0].classList.remove("w3-hide");
+    images[1].classList.add("w3-hide");
+  });
+  document.getElementById("btnStorageRefresh").addEventListener("click", async () => await storage.refreshStorage());
+  // search tab
+  const btnSearch = document.getElementById("btnSearch");
+  btnSearch.addEventListener("click", async () => search.openSearch());
+  btnSearch.addEventListener("mouseover", () => {
+    const images = btnSearch.getElementsByTagName("img");
+    images[0].classList.add("w3-hide");
+    images[1].classList.remove("w3-hide");
+  });
+  btnSearch.addEventListener("mouseout", () => {
+    const images = btnSearch.getElementsByTagName("img");
+    images[0].classList.remove("w3-hide");
+    images[1].classList.add("w3-hide");
+  });
+  // tooltips
+  utils.tooltip(document.getElementById("btnSearch"), "Job search");
+  utils.tooltip(document.getElementById("btnStorage"), "Remote storage viewer");
+  utils.tooltip(document.getElementById("btnSettings"), "Cumulus configuration");
+}
+
 
 function hideAllTabs() {
   for(let i = 0; i < TAB_NAMES.length; i++) {
@@ -49,7 +107,7 @@ function hideAllTabs() {
     document.getElementById(EXTRA_TAB_NAMES[i]).classList.remove("visible");
     document.getElementById(EXTRA_BUTTONS[i]).classList.replace("color-accent", "color-secondary");
   }
-  hideLicense();
+  settings.hideLicense();
 }
 
 function isParameterTabOpen() {
@@ -117,4 +175,4 @@ function goToPreviousTab() {
     openTab(nextTabId);
 }
 
-export { goToNextTab, goToPreviousTab, isParameterTabOpen, openTab };
+export { goToNextTab, goToPreviousTab, initialize, isParameterTabOpen, openTab };

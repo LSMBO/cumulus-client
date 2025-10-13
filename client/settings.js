@@ -38,7 +38,7 @@ import * as utils from "./utils.js";
 
 const CONFIG = new Map();
 const jobLabels = document.getElementById("divSettingsJobLabelElement");
-var TOOLTIPS_ADDED = false;
+var INITIALIZED = false;
 
 async function loadSettings() {
     CONFIG.clear();
@@ -49,8 +49,13 @@ async function loadSettings() {
     }
 }
 
-function addTooltips() {
-    if(TOOLTIPS_ADDED) return;
+function initialize() {
+    if(INITIALIZED) return;
+    // add events
+    document.getElementById("btnSettingsLicense").addEventListener("click", () => toggleLicense());
+    document.getElementById("btnSettingsOk").addEventListener("click", () => dialog.createDialogQuestion("Save settings", "Are you sure that the new settings are valid?<br/>Cumulus will be restarted after confirmation.", saveSettings));
+    document.getElementById("btnSettingsReset").addEventListener("click", () => dialog.createDialogQuestion("Reset settings", "This will restore the default settings, are you sure about that?", resetSettings));
+    // add tooltips
     utils.tooltip(document.getElementById("txtSettingsServerAddress").previousElementSibling, "Warning: do not change this value unless you are certain!");
     utils.tooltip(document.getElementById("txtSettingsNbJobs").previousElementSibling, "By default Cumulus will only display the 100 last jobs; use -1 to show all the jobs");
     utils.tooltip(document.getElementById("txtSettingsRefreshRate").previousElementSibling, "Number of seconds between each refresh of the job list and job status; minimal value is 5 seconds");
@@ -60,12 +65,12 @@ function addTooltips() {
     utils.tooltip(document.getElementById("txtSettingsServerPort").previousElementSibling, "Warning: do not change it unless you are certain!");
     utils.tooltip(document.getElementById("txtSettingsRsyncAddress").previousElementSibling, "Warning: do not change it unless you are certain!");
     utils.tooltip(document.getElementById("txtSettingsRsyncPort").previousElementSibling, "Warning: do not change it unless you are certain!");
-    TOOLTIPS_ADDED = true;
+    INITIALIZED = true;
 }
 
 function openSettings(disable_everything_else = false) {
     // add the tooltips if not already done
-    addTooltips();
+    initialize();
     // reload the config, in case the user changed it earlier without saving
     if(CONFIG.has("cumulus.controller")) document.getElementById("txtSettingsServerAddress").value = CONFIG.get("cumulus.controller");
     if(CONFIG.has("cumulus.port")) document.getElementById("txtSettingsServerPort").value = CONFIG.get("cumulus.port");

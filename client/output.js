@@ -37,6 +37,17 @@ import * as utils from "./utils.js";
 import * as settings from "./settings.js";
 
 const TREE_VIEW = document.getElementById("treeview");
+var INITIALIZED = false;
+
+function initialize() {
+  if(INITIALIZED) return;
+  document.getElementById("aSelect").addEventListener("click", () => selectAllCheckboxes());
+  document.getElementById("aUnselect").addEventListener("click", () => unselectAllCheckboxes());
+  document.getElementById("aExpand").addEventListener("click", () => expandAllFolders());
+  document.getElementById("aCollapse").addEventListener("click", () => collapseAllFolders());
+  document.getElementById("btnOutputDownload").addEventListener("click", async() => await downloadOutput());
+  INITIALIZED = true;
+}
 
 function toggleFolder(node, forceExpand = false, forceCollapse = false) {
     // show/hide the content of the node
@@ -329,4 +340,4 @@ async function downloadOutput() {
     }
 }
 
-export { collapseAllFolders, downloadOutput, expandAllFolders, insertOutputFiles, removeOutputFiles, selectAllCheckboxes, unselectAllCheckboxes };
+export { collapseAllFolders, downloadOutput, expandAllFolders, initialize, insertOutputFiles, removeOutputFiles, selectAllCheckboxes, unselectAllCheckboxes };
