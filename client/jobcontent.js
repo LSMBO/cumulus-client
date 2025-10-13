@@ -267,7 +267,8 @@ function updateJobPage(job, generateParametersTab = true) {
             const logContent = utils.extractJobLog(job.log, true, true, true, false);
             if(LOG_ELEMENT.innerHTML == "" || LOG_ELEMENT.innerHTML != logContent) {
                 LOG_ELEMENT.innerHTML = logContent;
-                LOG_ELEMENT.scrollTop = LOG_ELEMENT.scrollHeight;
+                // scroll to the bottom of the log if the job is running
+                if(job.status == "RUNNING" || job.status == "PREPARING") LOG_ELEMENT.scrollTop = LOG_ELEMENT.scrollHeight;
             }
             // update the CPU/RAM usage plot
             [PLOT_LABELS, PLOT_CPU, PLOT_RAM] = utils.extractInfoFromJobLog(job.log);
