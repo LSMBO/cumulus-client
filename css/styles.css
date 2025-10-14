@@ -299,6 +299,13 @@ input::placeholder, textarea::placeholder {
     text-transform: capitalize;
 }
 
+#tabOutput a.disabled {
+    pointer-events: none;
+    cursor: not-allowed;
+    color: var(--primary-color-dark) !important;
+    opacity: 0.6;
+}
+
 #treeview {
     border-width: 1px;
     border-style: solid;

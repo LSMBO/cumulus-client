@@ -220,7 +220,18 @@ function getOutputFiles() {
   return files;
 }
 
+function resetOutputContent() {
+  document.getElementById("aCollapse").classList.add("disabled");
+  document.getElementById("aExpand").classList.add("disabled");
+  document.getElementById("aSelect").classList.add("disabled");
+  document.getElementById("aUnselect").classList.add("disabled");
+  document.getElementById("btnOutputDownload").disabled = true;
+  document.getElementById("outputSummary").textContent = "No output files available.";
+  TREE_VIEW.innerHTML = "";
+}
+
 function insertOutputFiles(files) {
+  resetOutputContent();
   // sort the files to have the most nested folders first
   const sortedFiles = sortOutputFiles(files)
   // check that the current list of files is not the same as the new one
@@ -257,24 +268,18 @@ function insertOutputFiles(files) {
   TREE_VIEW.innerHTML = "";
   for(let child of children) { TREE_VIEW.appendChild(child); }
   document.getElementById("tabOutput").getElementsByTagName("button")[0].disabled = false;
-  // trigger some specific events
-  // for(let child of TREE_VIEW.childNodes) {
-    // the following is not needed anymore, we only return the content of the output folder
-    // // an "output" folder is created on server-side, it should be checked by default
-    // if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("output.folder")) child.getElementsByTagName("input")[0].click();
-    // // a "temp" folder is created on server-side, it should be closed by default
-    // if(child.classList.contains("lvl0") && child.getElementsByTagName("label")[0].textContent == settings.CONFIG.get("temp.folder")) child.getElementsByTagName("i")[0].click();
-  // }
   // by default, select all the output files
   selectAllCheckboxes();
-  // do not display the expand/collapse links if there is no folder
-  if(directories.size == 0) {
-    document.getElementById("aExpand").style.display = "none";
-    document.getElementById("aCollapse").style.display = "none";
-  } else {
-    document.getElementById("aExpand").style.display = "";
-    document.getElementById("aCollapse").style.display = "";
+  // disable the select/unselect links
+  document.getElementById("aSelect").classList.remove("disabled");
+  document.getElementById("aUnselect").classList.remove("disabled");
+  // display the expand/collapse links if there is at least one folder
+  if(directories.size > 0) {
+    document.getElementById("aExpand").classList.remove("disabled");
+    document.getElementById("aCollapse").classList.remove("disabled");
   }
+  // enable the download button (this can only be reached if there is at least one file)
+  document.getElementById("btnOutputDownload").disabled = false;
 }
 
 function getTreeName(item) { return item.getElementsByTagName("label")[0].textContent; }
