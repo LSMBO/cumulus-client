@@ -100,6 +100,8 @@ function setJobListDisplay() {
 }
 
 async function openJob(a) {
+    // store the scroll position of the sidebar
+    const scroll = SIDEBAR.scrollTop;
     // set the flag to true, the refreshSidebar function will set the parameters only once
     OPEN_JOB = true;
     // store the current job id in the utils module
@@ -110,6 +112,8 @@ async function openJob(a) {
     utils.toggleLoadingScreen();
     // refresh the job list
     await refreshSidebar();
+    // restore the scroll position of the sidebar
+    SIDEBAR.scrollTop = scroll;
     // remove the loading screen
     utils.toggleLoadingScreen();
 }
