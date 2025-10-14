@@ -171,20 +171,39 @@ function checkValue(item, errors) {
 
 function setValue(item, settings) {
     const table = item.getElementsByTagName("table")[0];
-    // console.log(table);
     // remove all rows except for the header row
     while(table.rows.length > 1) table.deleteRow(1);
     // add the new rows eventually
     if(settings.has(item.name)) {
+        /* 
+        this block can manage two types of maps, because format is slightly different when loaded from a file
+        this could be improved in the future but it works for now
+        */
         // the setting is a map of key-value pairs
         const map = settings.get(item.name);
-        // console.log(map);
         // loop over the map and create a new row for each key-value pair
-        for(let [key, value] of map) {
-            // if the value is an array, loop over the array and create a new row for each value
-            if(Array.isArray(value)) {
-                for(let v of value) addRow(table, key, v);
-            } else addRow(table, key, value);
+        // for(let [key, value] of map) {
+        //     // if the value is an array, loop over the array and create a new row for each value
+        //     if(Array.isArray(value)) {
+        //         for(let v of value) addRow(table, key, v);
+        //     } else addRow(table, key, value);
+        // }
+        if(map.keys === undefined) {
+            for(let kv of Object.entries(map)) {
+                // if the value is an array, loop over the array and create a new row for each value
+                const key = kv[0];
+                const value = kv[1];
+                if(Array.isArray(value)) {
+                    for(let v of value) addRow(table, key, v);
+                } else addRow(table, key, value);
+            }
+        } else {
+            for(let [key, value] of map) {
+                // if the value is an array, loop over the array and create a new row for each value
+                if(Array.isArray(value)) {
+                    for(let v of value) addRow(table, key, v);
+                } else addRow(table, key, value);
+            }
         }
     }
     // make sure to display at least one row

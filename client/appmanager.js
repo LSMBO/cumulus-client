@@ -35,7 +35,7 @@ knowledge of the CeCILL license and that you accept its terms.
 import { setSettings } from "./jobcontent.js";
 import { CONFIG } from "./settings.js";
 import { createDialogWarning } from "./dialog.js";
-import { tooltip } from "./utils.js";
+import { getCurrentJobId, tooltip } from "./utils.js";
 import * as elements from "./app_elements/elements.js";
 import * as checkbox from "./app_elements/checkbox.js";
 import * as checklist from "./app_elements/checklist.js";
@@ -319,7 +319,7 @@ function createParam(id, base_param, input_class) {
     return param;
 }
 
-function getParamValues(parent) {
+function getParamValues(parent, prependJobId = false) {
     const settings = new Map();
     for(let item of parent.getElementsByClassName("param-select")) select.getValue(item, settings);
     for(let item of parent.getElementsByClassName("param-checklist")) checklist.getValue(item, settings);
@@ -341,26 +341,51 @@ function checkParamValues() {
      return errors;
 }
 
-function getParamValuesAsString(parent = document) {
+function mapToObjectDeep(value) {
+  if (value instanceof Map) {
+    const obj = {};
+    for (const [key, val] of value.entries()) {
+      obj[key] = mapToObjectDeep(val); // recursively convert nested Maps
+    }
+    return obj;
+  } else if (Array.isArray(value)) {
+    return value.map(mapToObjectDeep); // recursively handle arrays
+  } else {
+    return value; // primitives and plain objects stay the same
+  }
+}
+
+function getParamValuesAsString(prependJobId, parent = document) {
     const json = getParamValues(parent);
     // add the app id to the json object
     json.set("app_id", document.getElementById("cmbAppName").value);
     json.set("advanced_parameters_visible", document.getElementById("btn_header-advanced").classList.contains("advanced-visible"));
     if(document.getElementById("txtWorkflowName").value != "") json.set("workflow_id", document.getElementById("txtWorkflowName").value);
-    // convert the json object to a string, using pretty print
-    return JSON.stringify(Object.fromEntries(json), (_, value) => {
-        if (value instanceof Map) {
-            return [...value.entries()];
-        }
-        return value;
-    }, 2);
+    // make the settings correspond to the current job id (if boolean is true)
+    if(prependJobId) {
+        const job_id = getCurrentJobId();
+        const main_settings = new Map();
+        main_settings.set(job_id, json);
+        // stringify the map, taking care of nested maps
+        const plainObject = mapToObjectDeep(main_settings);
+        const text = JSON.stringify(plainObject, null, 2);
+        return text;
+    } else {
+        // convert the json object to a string, using pretty print
+        return JSON.stringify(Object.fromEntries(json), (_, value) => {
+            if (value instanceof Map) {
+                return [...value.entries()];
+            }
+            return value;
+        }, 2);
+    }
 }
 
 function getSettingsSets() {
     // do the same as getParamValues, but separate the settings by app id
     const settings = new Map();
     for(let tool of document.getElementById("formParameters").children) {
-        settings.set(tool.id.replace("-main", ""), getParamValuesAsString(tool));
+        settings.set(tool.id.replace("-main", ""), getParamValuesAsString(false, tool));
     }
     // return the map as a string (this should work with workflows and jobs)
     return settings
@@ -379,6 +404,7 @@ function setParamValue(param, value) {
 }
 
 function setParamValues(settingsMap) {
+    // TODO this does not seem to work when loading params from a file
     // settings is a map of [job_id, settings]
     // the job_id is not used here, but the order of the settings is important
     // the first settings is for the first child of formParameters, the second for the second child, etc.
@@ -528,6 +554,13 @@ function createSection(id, section) {
     return parent;
 }
 
+function getParamFileName() {
+    const app_id = document.getElementById("cmbAppName").value;
+    const job_id = getCurrentJobId();
+    // return `Cumulus-${app_id}.par`;
+    return job_id > 0 ? `Cumulus-Job${job_id}-${app_id}.par` : `Cumulus-${app_id}.par`;
+}
+
 async function saveParameters(event) {
     event.preventDefault();
     // check the parameters first
@@ -537,9 +570,12 @@ async function saveParameters(event) {
         createDialogWarning("Invalid parameters", errors.join("<br/>"));
     } else {
         // ask user where to save the file
-        const output = await window.electronAPI.saveDialog("Save the parameters", "parameters.txt", []);
+        // const output = await window.electronAPI.saveDialog("Save the parameters", "parameters.txt", []);
+        const filename = getParamFileName();
+        const output = await window.electronAPI.saveDialog("Save the parameters", filename, []);
         if(output != "") {
-            const settings = getParamValuesAsString();
+            // TODO this should be tested in order to support workflows
+            const settings = getParamValuesAsString(true);
             // ask the server to save the file
             await window.electronAPI.saveFile(output, settings);
         }
@@ -549,19 +585,21 @@ async function saveParameters(event) {
 function loadSettingsFromContent(content) {
     // convert the content to a Map
     const json = JSON.parse(content);
-    // old versions were not made for workflows, check and adjust the content
-    if(json.app_id != undefined) {
-        // if the app_id is set at this level, it means that the file was created before workflows were implemented
-        // we need to include the content into a Map with the app_id as key
-        return new Map([[json.app_id, content]]);
-    } else return new Map(Object.entries(json));
+    // the commented code below was meant to handle workflows
+    // // old versions were not made for workflows, check and adjust the content
+    // if(json.app_id != undefined) {
+    //     // if the app_id is set at this level, it means that the file was created before workflows were implemented
+    //     // we need to include the content into a Map with the app_id as key
+    //     return new Map([[json.app_id, content]]);
+    // } else return new Map(Object.entries(json));
+    return new Map(Object.entries(json));
 }
 
 async function loadParameters(event) {
     event.preventDefault();
     // ask user to select a file
-    const app_id = document.getElementById("f").value;
-    const output = await window.electronAPI.browseServer("", "Load the parameters", `Cumulus-${app_id}.txt`, [{name: `.txt files`, extensions: ["txt"]}], ['openFile']);
+    const filename = getParamFileName();
+    const output = await window.electronAPI.browseServer("", "Load the parameters", filename, [{name: `.par files`, extensions: ["par", "txt"]}], ['openFile']);
     if(output != "") {
         // read the file
         const content = await window.electronAPI.loadFile(output[0]);
