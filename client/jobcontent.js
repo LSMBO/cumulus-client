@@ -430,8 +430,11 @@ async function startJob() {
         const strategy = document.getElementById("cmbStrategy").value;
         const description = document.getElementById("txtJobDescription").value;
         // also get the files, make sure that UNC paths are replaced by the network path
-        const sharedFiles = JSON.stringify(elements.getSharedFiles());
-        const localFiles = JSON.stringify(elements.getLocalFiles());
+        // const sharedFiles = JSON.stringify(elements.getSharedFiles());
+        // const localFiles = JSON.stringify(elements.getLocalFiles());
+        // also get the files, the UNC paths will be replaced by the network paths on server side
+        const sharedFiles = elements.getSharedFiles();
+        const localFiles = elements.getLocalFiles();
         // get the settings from the form, one by one (in case of a workflow, there would be one settings set per job)
         var first_job_id = null; // in case of a workflow, the first job will be displayed later
         var previous_job_id = null;

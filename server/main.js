@@ -35,7 +35,7 @@ knowledge of the CeCILL license and that you accept its terms.
 // Modules to control application life and create native browser window
 const log = require('electron-log/main');
 const { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } = require('electron')
-const { execSync } = require('child_process');
+// const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path')
 const config = require('./config.js');
@@ -54,17 +54,24 @@ for(let arg of process.argv) {
   }
 }
 
-function getUncPaths() {
-  const paths = new Map();
-  for(let line of execSync(`net use`).toString().split(/\r?\n/)) {
-    const items = line.split(/\s+/);
-    if(items.length > 4 && items[0] == "OK") {
-      const letter = items[1];
-      const uncPath = execSync(`net use ${letter}`).toString().split(/\r?\n/)[1].replace(/[^\\\/]+[\s\t]+/, "");
-      paths.set(letter, uncPath);
-    }
-  }
-  return paths;
+// function getUncPaths() {
+//   const paths = new Map();
+//   for(let line of execSync(`net use`).toString().split(/\r?\n/)) {
+//     const items = line.split(/\s+/);
+//     if(items.length > 4 && items[0] == "OK") {
+//       const letter = items[1];
+//       const uncPath = execSync(`net use ${letter}`).toString().split(/\r?\n/)[1].replace(/[^\\\/]+[\s\t]+/, "");
+//       paths.set(letter, uncPath);
+//     }
+//   }
+//   return paths;
+// }
+
+function testStuff(_, params) {
+  console.log(`Type of params: ${typeof(params)}`);
+  console.log(`Params: ${params}`);
+  const values = config.convertToUncPath(params);
+  console.log(`Values: ${values}`);
 }
 
 function getUserName() {
@@ -172,7 +179,7 @@ app.whenReady().then(() => {
   ipcMain.handle('get-disk-usage', srv.getDiskUsage);
   ipcMain.handle('get-last-jobs', srv.getLastJobs);
   ipcMain.handle('get-transfer-progress', srv.transferProgress);
-  ipcMain.handle('get-unc-paths', getUncPaths);
+  // ipcMain.handle('get-unc-paths', getUncPaths);
   ipcMain.handle('get-user-name', getUserName);
   ipcMain.handle('list-apps', srv.listApps);
   ipcMain.handle('list-flavors', srv.listFlavors);
@@ -186,6 +193,7 @@ app.whenReady().then(() => {
   ipcMain.handle('set-config', config.saveConfig);
   ipcMain.handle('start-job', srv.createJob);
   ipcMain.handle('restart-app', () => { app.relaunch(); app.exit(); });
+  ipcMain.handle('test-stuff', testStuff);
   
   createWindow()
 

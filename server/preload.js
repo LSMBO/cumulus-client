@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron')
 contextBridge.exposeInMainWorld('electronAPI', {
     checkRsyncAgent: () => ipcRenderer.invoke('check-rsync'),
     checkServer: () => ipcRenderer.invoke('check-server'),
-    getUncPaths: () => ipcRenderer.invoke('get-unc-paths'),
+    // getUncPaths: () => ipcRenderer.invoke('get-unc-paths'),
     getConfig: () => ipcRenderer.invoke('get-config'),
     setConfig: (map) => ipcRenderer.invoke('set-config', map),
     resetConfig: () => ipcRenderer.invoke('reset-config'),
@@ -29,6 +29,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     exitApp: () => ipcRenderer.invoke('close-app'),
     showFilePath: (file) => { return webUtils.getPathForFile(file); },
     restartApp: () => ipcRenderer.invoke('restart-app'),
+    testStuff: (params) => ipcRenderer.invoke('test-stuff', params),
 })
 
 window.addEventListener('DOMContentLoaded', () => {
