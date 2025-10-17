@@ -92,6 +92,15 @@ function initialize() {
       generateButtonBars();
       apps.generate_parameters_page();
     });
+    document.getElementById("cmbStrategy").addEventListener("change", () => {
+        // extract the associated weight from the selected strategy (what is between "Weight: "and "]")
+        const weightMatch = document.getElementById("cmbStrategy").selectedOptions[0].textContent.match(/Weight:\s*(\d+)\]/);
+        const weight = weightMatch ? parseInt(weightMatch[1]) : 0;
+        // get the max allowed weight
+        const maxWeight = settings.CONFIG.get("openstack.max.flavor");
+        // display a warning if the weight is over the max allowed weight divided by 2
+        document.getElementById("txtStrategyWarning").parentElement.style.display = (weight > maxWeight / 2) ? "block" : "none";
+    });
     utils.tooltip(document.getElementById("txtJobOwner").previousElementSibling, "This field shows the name of the user who created the job, it cannot be modified.");
     utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, PREPARING, RUNNING, DONE or FAILED or CANCELLED. It will also be archived later."); // PENDING, PREPARING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
     utils.tooltip(document.getElementById("cmbAppName").previousElementSibling, "Select the software to run, with its corresponding version.");
@@ -359,6 +368,9 @@ function cloneJob() {
     document.getElementById("cmbStrategy").disabled = false;
     document.getElementById("cmbStrategy").classList.remove("w3-hide");
     document.getElementById("txtJobStrategy").classList.add("w3-hide");
+    // if the strategy is unset (because it was an old strategy), set it to the default one
+    if(document.getElementById("cmbStrategy").value == "")
+        document.getElementById("cmbStrategy").value = settings.CONFIG.get("default.strategy");
     // document.getElementById("txtSelectedHost").parentNode.style.display = "none";
     document.getElementById("txtJobDescription").disabled = false;
     document.getElementById("divDates").style.display = "none";

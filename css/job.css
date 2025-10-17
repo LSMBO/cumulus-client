@@ -12,6 +12,11 @@ button.cm-disabled {
     opacity: 0.5;
 }
 
+#txtStrategyWarning {
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
 #formParameters .tool_header div {
     display: inline-block;
 }
