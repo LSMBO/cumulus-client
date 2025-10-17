@@ -97,27 +97,6 @@
         <div id="tabSettings">
           <h3>Cumulus configuration</h3>
           <div class="w3-row w3-section">
-            <label for="txtSettingsNbJobs" class="w3-col">Number of jobs to display: By default Cumulus will only display the 100 last jobs</label>
-            <input id="txtSettingsNbJobs" type="number" class="w3-input w3-border w3-rest" value="" min="-1" step="1" placeholder="Default is 100; use -1 to show all the jobs" />
-          </div>
-          <div class="w3-row w3-section">
-            <label for="txtSettingsRefreshRate" class="w3-col">Refresh rate: Number of seconds between each refresh of the job list and job status (minimal value is 5 seconds)</label>
-            <input id="txtSettingsRefreshRate" type="number" class="w3-input w3-border w3-rest" value="" min="5" step="1" placeholder="Number of seconds between each refresh of the job list and job status (minimal value is 5 seconds)" />
-          </div>
-          <div id="divSettingsJobLabelElement"></div>
-          <div class="w3-row w3-section">
-            <label for="cmbSettingsDefaultStrategy" class="w3-col">Default strategy</label>
-            <select id="cmbSettingsDefaultStrategy" class="w3-select w3-border w3-rest"></select>
-          </div>
-          <div class="w3-row w3-section">
-            <label for="txtSettingsDefaultRawFilesPath" class="w3-col">Default path for RAW files</label>
-            <input id="txtSettingsDefaultRawFilesPath" type="text" class="w3-input w3-border w3-rest" value="" placeholder="" />
-          </div>
-          <div class="w3-row w3-section">
-            <label for="txtSettingsDefaultFastaFilesPath" class="w3-col">Default path for FASTA files</label>
-            <input id="txtSettingsDefaultFastaFilesPath" type="text" class="w3-input w3-border w3-rest" value="" placeholder="" />
-          </div>
-          <div class="w3-row w3-section">
             <label for="txtSettingsServerAddress" class="w3-col">Cumulus server IP address (do not change this value unless you are certain!)</label>
             <input id="txtSettingsServerAddress" type="text" class="w3-input w3-border w3-rest" value="" placeholder="Address of the server, do not change this value unless you are certain!" />
           </div>
@@ -132,6 +111,27 @@
           <div class="w3-row w3-section">
             <label for="txtSettingsRsyncPort" class="w3-col">RSync agent port (do not change this value unless you are certain!)</label>
             <input id="txtSettingsRsyncPort" type="text" class="w3-input w3-border w3-rest" value="" placeholder="Port of the RSync agent, do not change this value unless you are certain!" />
+          </div>
+          <div class="w3-row w3-section">
+            <label for="txtSettingsDefaultRawFilesPath" class="w3-col">Default path for RAW files</label>
+            <input id="txtSettingsDefaultRawFilesPath" type="text" class="w3-input w3-border w3-rest" value="" placeholder="" />
+          </div>
+          <div class="w3-row w3-section">
+            <label for="txtSettingsDefaultFastaFilesPath" class="w3-col">Default path for FASTA files</label>
+            <input id="txtSettingsDefaultFastaFilesPath" type="text" class="w3-input w3-border w3-rest" value="" placeholder="" />
+          </div>
+          <div id="divSettingsJobLabelElement"></div>
+          <div class="w3-row w3-section">
+            <label for="txtSettingsRefreshRate" class="w3-col">Refresh rate: Number of seconds between each refresh of the job list and job status (minimal value is 5 seconds)</label>
+            <input id="txtSettingsRefreshRate" type="number" class="w3-input w3-border w3-rest" value="" min="5" step="1" placeholder="Number of seconds between each refresh of the job list and job status (minimal value is 5 seconds)" />
+          </div>
+          <div class="w3-row w3-section">
+            <label for="txtSettingsNbJobs" class="w3-col">Number of jobs to display: By default Cumulus will only display the 100 last jobs</label>
+            <input id="txtSettingsNbJobs" type="number" class="w3-input w3-border w3-rest" value="" min="-1" step="1" placeholder="Default is 100; use -1 to show all the jobs" />
+          </div>
+          <div class="w3-row w3-section">
+            <label for="cmbSettingsDefaultStrategy" class="w3-col">Default strategy</label>
+            <select id="cmbSettingsDefaultStrategy" class="w3-select w3-border w3-rest"></select>
           </div>
           <div id="divButtonsSettings" class="w3-row w3-center">
             <button id="btnSettingsOk" class="w3-button w3-third color-opposite">Save settings</button>
