@@ -404,7 +404,6 @@ function setParamValue(param, value) {
 }
 
 function setParamValues(settingsMap) {
-    // TODO this does not seem to work when loading params from a file
     // settings is a map of [job_id, settings]
     // the job_id is not used here, but the order of the settings is important
     // the first settings is for the first child of formParameters, the second for the second child, etc.
