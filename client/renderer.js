@@ -39,7 +39,8 @@ import * as output from "./output.js";
 import * as dialog from "./dialog.js";
 import * as search from "./search.js";
 import * as settings from "./settings.js";
-import * as storage from "./storage.js";
+// import * as storage from "./storage.js";
+import * as elements from "./app_elements/elements.js";
 import * as utils from "./utils.js";
 import * as apps from "./appmanager.js";
 
