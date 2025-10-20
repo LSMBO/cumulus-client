@@ -413,10 +413,20 @@ input::placeholder, textarea::placeholder {
 
 #tabStorage tr td:first-of-type label {
     overflow-wrap: anywhere;
+    vertical-align: text-top;
 }
 
 #tabStorage tr td:last-of-type label {
     display: none;
+}
+
+#tabStorage tr td:last-of-type span {
+    vertical-align: text-top;
+}
+
+#tabStorage tr td input {
+    margin-right: 5px;
+    vertical-align: middle;
 }
 
 #tabStorage .rsync {
@@ -431,11 +441,11 @@ input::placeholder, textarea::placeholder {
     float: right;
 }
 
-#downloadProgress {
+#downloadProgress, #storageDownloadProgress {
     height: 1em;
 }
 
-#downloadProgressBar {
+#downloadProgressBar, #storageDownloadProgressBar {
     height: 1em;
     background-color: var(--accent-color) !important;
     text-wrap: nowrap;

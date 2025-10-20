@@ -71,7 +71,7 @@ function formatDate(timestamp) {
     return formattedDate;
 }
 
-function tooltip(element, text) {
+function tooltip(element, text, disableMouseEvents = false) {
     element.addEventListener("mouseover", () => {
         TOOLTIPTEXT.textContent = text;
         TOOLTIPTEXT.style.display = "block";
@@ -84,11 +84,15 @@ function tooltip(element, text) {
             TOOLTIPTEXT.style.left = `${window.outerWidth - TOOLTIPTEXT.clientWidth - 35}px`;
             TOOLTIPTEXT.style.maxWidth = "";
         }
-        });
-    element.addEventListener("mouseout", () => {
-        TOOLTIPTEXT.textContent = ""
-        TOOLTIPTEXT.style.display = "none";
+        TOOLTIPTEXT.style.whiteSpace = "pre-wrap"; // allows to have multiple lines with \n
     });
+    // the disableMouseEvents option is used only to let the tooltip visible when testing
+    if(!disableMouseEvents) {
+        element.addEventListener("mouseout", () => {
+            TOOLTIPTEXT.textContent = ""
+            TOOLTIPTEXT.style.display = "none";
+        });
+    }
 }
 
 function fixFilePath(file) {

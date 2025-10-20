@@ -32,6 +32,7 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 */
 
+import * as dialog from "./dialog.js";
 import * as tabs from "./tabs.js";
 import * as utils from "./utils.js";
 import * as settings from "./settings.js";
@@ -41,6 +42,8 @@ var INITIALIZED = false;
 function initialize() {
   if(INITIALIZED) return;
   document.getElementById("txtStorageSearch").addEventListener("keyup", searchStorage);
+  utils.tooltip(document.getElementById("txtStorageSearch"), "You can use the following wildcards:\n    '*' matches any number of characters\n    '?' matches exactly one character\n    '^' indicate the beginning of the file name\n    '$' indicate the end of the file name\nThe search is case insensitive");
+  document.getElementById("btnStorageDownload").addEventListener("click", async () => await downloadSelectedFiles());
   INITIALIZED = true;
 }
 
@@ -96,11 +99,25 @@ function sortStorageEvent(event) {
   sortStorage(byName, asc);
 }
 
+function wildcardToRegex(pattern) {
+  // Escape regex special characters except for * and ?
+  // let escaped = pattern.replace(/([.+^=!:${}()|\[\]\/\\])/g, "\\$1");
+  let escaped = pattern.replace(/([.+=!:{}()|\[\]\/\\])/g, "\\$1");
+  // Replace * with .*, ? with .
+  let regexString = escaped.replace(/\*/g, ".*").replace(/\?/g, ".");
+  return new RegExp(regexString);
+}
+
 function searchStorage(_) {
   const tag = document.getElementById("txtStorageSearch").value.toLowerCase();
   const table = document.getElementById("tabStorage").getElementsByTagName("table")[0];
+  // const regex = new RegExp(tag);
+  const regex = wildcardToRegex(tag);
   for(let row of table.rows) {
-    row.style.display = row.cells[0].childNodes[0].textContent.toLowerCase().includes(tag) ? "" : "none";
+    // first row is the header
+    if(row.rowIndex == 0) continue;
+    // use the search tag as a regex
+    row.style.display = regex.test(row.cells[0].childNodes[1].textContent.toLowerCase()) ? "" : "none";
   }
 }
 
@@ -120,10 +137,19 @@ async function refreshStorage() {
   const table = document.getElementById("tabStorage").getElementsByTagName("table")[0];
   const [data, _] = await window.electronAPI.listStorage();
   var content = "<tr class='color-secondary'><th>File name<i></i></th><th>Size<i></i></th></tr>";
+  var i = 1;
   for(const [file, size] of data) {
-    const cls = size == -1 ? "rsync" : "";
-    const fsize = size == -1 ? "Queued for transfer" : utils.toHumanReadable(size);
-    content += `<tr><td><label class="${cls}">${file}<label></td><td><label>${size}</label><span class="${cls}">${fsize}</span></td></tr>`;
+    // const cls = size == -1 ? "rsync" : "";
+    // const fsize = size == -1 ? "Queued for transfer" : utils.toHumanReadable(size);
+    // content += `<tr><td><label class="${cls}">${file}<label></td><td><label>${size}</label><span class="${cls}">${fsize}</span></td></tr>`;
+    if(size == -1) {
+      // file is being transferred
+      content += `<tr><td><label for="chk_${i}" class="${rsync}">${file}<label></td><td><label>${size}</label><span class="${rsync}">Queued for transfer</span></td></tr>`;
+    } else {
+      // normal file
+      content += `<tr><td><input type="checkbox" id="chk_${i}"><label for="chk_${i}">${file}<label></td><td><label>${size}</label><span>${utils.toHumanReadable(size)}</span></td></tr>`;
+    }
+    i++;
   }
   table.innerHTML = content;
   sortStorage();
@@ -134,6 +160,51 @@ function openStorage() {
   // ask the server for the list of files
   refreshStorage();
   tabs.openTab("tabStorage");
+}
+
+async function downloadFiles(path, files) {
+  const btn = document.getElementById("btnStorageDownload");
+  const label = btn.textContent;
+  btn.disabled = true;
+  var i = 1;
+  const total = files.length;
+  for(let file of files) {
+    btn.textContent = `Downloading file ${file}`;
+    await window.electronAPI.downloadFile(utils.getUserName(), null, file, path + "/" + file);
+    document.getElementById("storageDownloadProgressBar").style.width = Math.floor((i * 100)/total) + "%";
+    i += 1;
+  }
+  btn.textContent = `${files.length} have been downloaded`;
+  document.getElementById("storageDownloadProgressBar").style.width = "100%";
+  await utils.sleep(2000);
+  document.getElementById("storageDownloadProgressBar").style.width = "0%";
+  btn.textContent = label;
+  btn.disabled = false;
+}
+
+async function downloadSelectedFiles() {
+  // get the list of files
+  const files = [];
+  const table = document.getElementById("tabStorage").getElementsByTagName("table")[0];
+  for(let row of table.rows) {
+    // first row is the header
+    if(row.rowIndex == 0) continue;
+    // check if the checkbox is selected
+    const checkbox = row.cells[0].getElementsByTagName("input")[0];
+    if(checkbox.checked) {
+      const filename = row.cells[0].getElementsByTagName("label")[0].textContent;
+      files.push(filename);
+    }
+  }
+  // ask the user for the download path
+  if(files.length > 0) {
+    const path = await window.electronAPI.browseServer("OUT", "Select where the files will be downloaded", "", [{ name: 'All files', extensions: ['*'] }], ['openDirectory']);
+    if(path != "") {
+      if(await window.electronAPI.countExistingFiles(path[0], files) > 0)
+        dialog.createDialogQuestion("Warning", "Some files will be overwritten, do you want to continue?", async () => downloadFiles(path[0], files));
+      else await downloadFiles(path[0], files);
+    }
+  }
 }
 
 export { openStorage, refreshStorage, searchStorage };

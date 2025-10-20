@@ -341,9 +341,10 @@ async function deleteJob(_, owner, job_id) {
 }
 
 async function downloadFile(_, owner, job_id, file_name, target) {
-    log.info(`Start downloading Job ${job_id}'s file '${file_name}'`);
+    log.info(`Start downloading Job ${job_id}'s file '${file_name}', DEMO_MODE=${DEMO_MODE}`);
     if(!DEMO_MODE) {
-        const url = rest.getUrl("getresults", [owner, job_id, file_name]);
+        console.log(`Downloading file '${file_name}' from job ${job_id} for user '${owner}' to target '${target}'`);
+        const url = job_id == null ? rest.getUrl("getfile", [owner, file_name]) : rest.getUrl("getresults", [owner, job_id, file_name]);
         await rest.download(url, target);
     }
 }

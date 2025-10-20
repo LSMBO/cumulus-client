@@ -390,7 +390,7 @@ button.cm-disabled {
     content: "• ";
 }
 
-#divSummaryButtonBar, #divParamsButtonBar, #divButtonsSettings {
+#divSummaryButtonBar, #divParamsButtonBar, #divButtonsSettings, #divButtonsStorageDownload {
     position: sticky;
     margin-top: 30px;
     padding-bottom: 15px;
@@ -405,7 +405,7 @@ button.cm-disabled {
 }
 
 
-#divSummaryButtonBar button:focus, #divParamsButtonBar button:focus, #divButtonsSettings button:focus {
+#divSummaryButtonBar button:focus, #divParamsButtonBar button:focus, #divButtonsSettings button:focus, #divButtonsStorageDownload button:focus {
     outline: none !important;
 }
 

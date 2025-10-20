@@ -34,7 +34,7 @@ knowledge of the CeCILL license and that you accept its terms.
 
 import * as dialog from "./dialog.js";
 import * as utils from "./utils.js";
-import * as settings from "./settings.js";
+// import * as settings from "./settings.js";
 
 const TREE_VIEW = document.getElementById("treeview");
 var INITIALIZED = false;
