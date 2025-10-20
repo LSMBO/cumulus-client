@@ -344,6 +344,7 @@ function setSettings(settings, disable_all_parameters = false) {
 }
 
 function openCurrentJob(job) {
+    document.getElementById("txtJobDescription").value = job.description; // clear the description to avoid showing old data while loading
     // the job has been loaded, except for the parameters (this allows to load the parameters once, while the other tabs can be refreshed)
     setSettings(new Map(Object.entries(job.settings)), true);
     // open the Summary tab once the job is loaded
@@ -356,6 +357,8 @@ function cloneJob() {
     // the parameters will remain as they are, so the user can modify them if needed
     // if the job is part of a workflow, all the parameters are already set, but not displayed
 
+    // get the original job id
+    const original_job_id = utils.getCurrentJobId();
     // set the new job id
     utils.setCurrentJobId(0);
     // update some of the fields
@@ -372,7 +375,11 @@ function cloneJob() {
     if(document.getElementById("cmbStrategy").value == "")
         document.getElementById("cmbStrategy").value = settings.CONFIG.get("default.strategy");
     // document.getElementById("txtSelectedHost").parentNode.style.display = "none";
-    document.getElementById("txtJobDescription").disabled = false;
+    // document.getElementById("txtJobDescription").disabled = false;
+    const txtJobDescription = document.getElementById("txtJobDescription");
+    txtJobDescription.disabled = false;
+    txtJobDescription.value = `# This job was initially a clone of job #${original_job_id}\n\n${txtJobDescription.value}`;
+    
     document.getElementById("divDates").style.display = "none";
     generateButtonBars("PENDING", false);
     LOG_ELEMENT.innerHTML = "";
