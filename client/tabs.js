@@ -44,58 +44,43 @@ const TAB_BUTTONS = ["btnSummary", "btnParameters", "btnLogs", "btnOutput"];
 const EXTRA_TAB_NAMES = ["tabSettings", "tabStorage", "tabSearch"];
 const EXTRA_BUTTONS = ["btnSettings", "btnStorage", "btnSearch"];
 
+// function switchToSecondaryImage(buttonId) {
+//   const button = document.getElementById(buttonId);
+//   button.addEventListener("mouseover", () => {
+//     const images = button.getElementsByTagName("img");
+//     images[0].classList.add("w3-hide");
+//     images[1].classList.remove("w3-hide");
+//   });
+//   button.addEventListener("mouseout", () => {
+//     const images = button.getElementsByTagName("img");
+//     images[0].classList.remove("w3-hide");
+//     images[1].classList.add("w3-hide");
+//   });
+// }
+
 // initialize events on the tab buttons
 function initialize() {
+  // job tabs
   document.getElementById("btnSummary").addEventListener("click", () => openTab("tabSummary"));
   document.getElementById("btnParameters").addEventListener("click", () => openTab("tabParameters"));
   document.getElementById("btnLogs").addEventListener("click", () => openTab("tabLogs"));
   document.getElementById("btnOutput").addEventListener("click", () => openTab("tabOutput"));
-  // settings
-  const btnSettings = document.getElementById("btnSettings");
-  btnSettings.addEventListener("click", async () => await settings.openSettings());
-  btnSettings.addEventListener("mouseover", () => {
-    const images = btnSettings.getElementsByTagName("img");
-    images[0].classList.add("w3-hide");
-    images[1].classList.remove("w3-hide");
-  });
-  btnSettings.addEventListener("mouseout", () => {
-    const images = btnSettings.getElementsByTagName("img");
-    images[0].classList.remove("w3-hide");
-    images[1].classList.add("w3-hide");
-  });
-  // storage tab
-  const btnStorage = document.getElementById("btnStorage");
-  btnStorage.addEventListener("click", async () => storage.openStorage());
-  btnStorage.addEventListener("mouseover", () => {
-    const images = btnStorage.getElementsByTagName("img");
-    images[0].classList.add("w3-hide");
-    images[1].classList.remove("w3-hide");
-  });
-  btnStorage.addEventListener("mouseout", () => {
-    const images = btnStorage.getElementsByTagName("img");
-    images[0].classList.remove("w3-hide");
-    images[1].classList.add("w3-hide");
-  });
+  // general tabs
+  document.getElementById("btnSettings").addEventListener("click", async () => await settings.openSettings());
+  // switchToSecondaryImage("btnSettings");
+  document.getElementById("btnStorage").addEventListener("click", async () => storage.openStorage());
+  // switchToSecondaryImage("btnStorage");
   document.getElementById("btnStorageRefresh").addEventListener("click", async () => await storage.refreshStorage());
-  // search tab
-  const btnSearch = document.getElementById("btnSearch");
-  btnSearch.addEventListener("click", async () => search.openSearch());
-  btnSearch.addEventListener("mouseover", () => {
-    const images = btnSearch.getElementsByTagName("img");
-    images[0].classList.add("w3-hide");
-    images[1].classList.remove("w3-hide");
-  });
-  btnSearch.addEventListener("mouseout", () => {
-    const images = btnSearch.getElementsByTagName("img");
-    images[0].classList.remove("w3-hide");
-    images[1].classList.add("w3-hide");
-  });
+  document.getElementById("btnSearch").addEventListener("click", async () => search.openSearch());
+  // switchToSecondaryImage("btnSearch");
+  document.getElementById("btnHelp").addEventListener("click", async () => await window.electronAPI.openProjectUrl());
+  // switchToSecondaryImage("btnHelp");
   // tooltips
+  utils.tooltip(document.getElementById("btnHelp"), "Open help page");
   utils.tooltip(document.getElementById("btnSearch"), "Job search");
   utils.tooltip(document.getElementById("btnStorage"), "Remote storage viewer");
   utils.tooltip(document.getElementById("btnSettings"), "Cumulus configuration");
 }
-
 
 function hideAllTabs() {
   for(let i = 0; i < TAB_NAMES.length; i++) {

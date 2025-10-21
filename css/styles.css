@@ -182,12 +182,12 @@ input::placeholder, textarea::placeholder {
     height: calc(100% - 45px);
 }
 
-#btnStorage, #btnSettings, #btnSearch {
+#btnStorage, #btnSettings, #btnSearch, #btnHelp {
     border-right-width: 0 !important;
     width: 60px !important;
 }
 
-#btnStorage img, #btnSettings img, #btnSearch img {
+#btnStorage img, #btnSettings img, #btnSearch img, #btnHelp img {
     width: 25px;
 }
 

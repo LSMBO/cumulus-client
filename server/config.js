@@ -4,6 +4,7 @@ const log = require('electron-log/main');
 const path = require('path');
 const semver = require('semver');
 const { execSync } = require('child_process');
+const package = require('../package.json');
 
 const CONFIG = new Map();
 // original config file is read from the application folder, it contains the default settings
@@ -11,6 +12,7 @@ const CONFIG_FILE = path.join(__dirname, "../application.conf");
 const LICENSE_FILE = path.join(__dirname, "../LICENSE.txt");
 // user's config file is saved in the user data folder, this allows multiple users to execute the same client
 const USER_CONFIG_FILE = path.join(app.getPath('userData'), "cumulus.conf");
+const CUMULUS_HOMEPAGE = package.mainProjectHomepage;
 
 var DEBUG_MODE = false; // when true, allows some code to be executed or some extra logs to be displayed
 const UNC_PATHS = getUncPaths(); // map of drive letters to UNC paths
@@ -151,4 +153,4 @@ function convertToUncPath(filePaths) {
   return convertedPaths;
 }
 
-module.exports = { DEBUG_MODE, checkVersion, convertToUncPath, get, getConfig, resetConfig, saveConfig, set }
+module.exports = { CUMULUS_HOMEPAGE, DEBUG_MODE, checkVersion, convertToUncPath, get, getConfig, resetConfig, saveConfig, set }
