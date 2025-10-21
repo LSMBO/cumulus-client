@@ -133,6 +133,10 @@ function openUrl(_, url) {
   shell.openExternal(encoded);
 }
 
+function openProjectUrl(_) {
+  shell.openExternal(config.CUMULUS_HOMEPAGE);
+}
+
 function createWindow () {
   // Create the browser window
   // const appIcon = nativeImage.createFromPath("img/icon.png");
@@ -177,6 +181,7 @@ app.whenReady().then(() => {
   ipcMain.handle('get-config', config.getConfig);
   ipcMain.handle('get-debug-mode', getDebugMode);
   ipcMain.handle('get-disk-usage', srv.getDiskUsage);
+  ipcMain.handle('get-file-content', srv.getFileContent);
   ipcMain.handle('get-last-jobs', srv.getLastJobs);
   ipcMain.handle('get-transfer-progress', srv.transferProgress);
   // ipcMain.handle('get-unc-paths', getUncPaths);
@@ -186,6 +191,7 @@ app.whenReady().then(() => {
   ipcMain.handle('list-storage', srv.listStorage);
   ipcMain.handle('load-file', loadFile);
   ipcMain.handle('open-url', openUrl);
+  ipcMain.handle('open-project-url', openProjectUrl);
   ipcMain.handle('reset-config', config.resetConfig);
   ipcMain.handle('search-jobs', srv.searchJobs);
   ipcMain.handle('save-dialog', saveDialog);

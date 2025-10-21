@@ -38,6 +38,7 @@ import * as utils from "./utils.js";
 
 const TREE_VIEW = document.getElementById("treeview");
 var INITIALIZED = false;
+var DOWNLOAD_CANCELLED = false;
 
 function initialize() {
   if(INITIALIZED) return;
@@ -46,6 +47,7 @@ function initialize() {
   document.getElementById("aExpand").addEventListener("click", () => expandAllFolders());
   document.getElementById("aCollapse").addEventListener("click", () => collapseAllFolders());
   document.getElementById("btnOutputDownload").addEventListener("click", async() => await downloadOutput());
+  document.getElementById("btnOutputDownloadCancel").addEventListener("click", () => cancelDownload());
   INITIALIZED = true;
 }
 
@@ -305,24 +307,32 @@ function getTreePath(item) {
 	}
 }
 
+// TODO add cancel download functionality
 async function downloadFiles(path, files) {
+  document.getElementById("btnOutputDownloadCancel").style.display = "block";
   const btn = document.getElementById("btnOutputDownload");
   const label = btn.textContent;
   btn.disabled = true;
   var i = 0;
   const total = files.length;
   for(let file of files) {
+    if(DOWNLOAD_CANCELLED) break; // stop the download if requested
     btn.textContent = `Downloading file ${file}`;
     await window.electronAPI.downloadFile(utils.getUserName(), utils.getCurrentJobId(), file, path + "/" + file);
     document.getElementById("downloadProgressBar").style.width = Math.floor((i * 100)/total) + "%";
     i += 1;
   }
-  btn.textContent = `${files.length} have been downloaded`;
-  document.getElementById("downloadProgressBar").style.width = "100%";
-  await utils.sleep(2000);
+  // finalize and reset (if cancelled, it's done in the cancel function)
+  if(!DOWNLOAD_CANCELLED) {
+    btn.textContent = `${files.length} have been downloaded`;
+    document.getElementById("downloadProgressBar").style.width = "100%";
+    await utils.sleep(2000);
+  }
   document.getElementById("downloadProgressBar").style.width = "0%";
   btn.textContent = label;
   btn.disabled = false;
+  // hide the cancel button
+  document.getElementById("btnOutputDownloadCancel").style.display = "none";
 }
 
 async function downloadOutput() {
@@ -343,6 +353,11 @@ async function downloadOutput() {
           else await downloadFiles(path[0], files);
         }
     }
+}
+
+function cancelDownload() {
+  DOWNLOAD_CANCELLED = true;
+  document.getElementById("btnOutputDownload").textContent = `Cancelling download...`;
 }
 
 export { collapseAllFolders, downloadOutput, expandAllFolders, initialize, insertOutputFiles, removeOutputFiles, selectAllCheckboxes, unselectAllCheckboxes };

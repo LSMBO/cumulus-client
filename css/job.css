@@ -400,6 +400,20 @@ button.cm-disabled {
     transform: scale(1.02, 1.2);
 }
 
+#btnOutputDownloadCancel, #btnStorageDownloadCancel {
+    float: right;
+    position: relative;
+    top: -52px;
+    right: -1px;
+    border-width: 0 !important;
+    display: none;
+}
+
+#btnOutputDownloadCancel img, #btnStorageDownloadCancel img {
+    width: 20px;
+    height: 20px;
+}
+
 #btnGotoPrev, #btnGotoNext, #btnStart {
     float: left;
 }

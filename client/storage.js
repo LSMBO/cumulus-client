@@ -38,12 +38,14 @@ import * as utils from "./utils.js";
 import * as settings from "./settings.js";
 
 var INITIALIZED = false;
+var DOWNLOAD_CANCELLED = false;
 
 function initialize() {
   if(INITIALIZED) return;
   document.getElementById("txtStorageSearch").addEventListener("keyup", searchStorage);
   utils.tooltip(document.getElementById("txtStorageSearch"), "You can use the following wildcards:\n    '*' matches any number of characters\n    '?' matches exactly one character\n    '^' indicate the beginning of the file name\n    '$' indicate the end of the file name\nThe search is case insensitive");
   document.getElementById("btnStorageDownload").addEventListener("click", async () => await downloadSelectedFiles());
+  document.getElementById("btnStorageDownloadCancel").addEventListener("click", () => cancelDownload());
   INITIALIZED = true;
 }
 
@@ -162,24 +164,35 @@ function openStorage() {
   tabs.openTab("tabStorage");
 }
 
-async function downloadFiles(path, files) {
+async function downloadFiles(path, filelist) {
+  document.getElementById("btnStorageDownloadCancel").style.display = "block";
   const btn = document.getElementById("btnStorageDownload");
   const label = btn.textContent;
   btn.disabled = true;
+  // first part is to download the full list of files (some raw files are folders)
+  const [files, _] = await window.electronAPI.getFileContent(utils.getUserName(), filelist);
+  // download each file one by one
   var i = 1;
   const total = files.length;
   for(let file of files) {
+    if(DOWNLOAD_CANCELLED) break; // stop the download if requested
     btn.textContent = `Downloading file ${file}`;
+    // console.log("Downloading file " + file);
     await window.electronAPI.downloadFile(utils.getUserName(), null, file, path + "/" + file);
     document.getElementById("storageDownloadProgressBar").style.width = Math.floor((i * 100)/total) + "%";
     i += 1;
   }
-  btn.textContent = `${files.length} have been downloaded`;
-  document.getElementById("storageDownloadProgressBar").style.width = "100%";
-  await utils.sleep(2000);
+  // finalize and reset (if cancelled, it's done in the cancel function)
+  if(!DOWNLOAD_CANCELLED) {
+    btn.textContent = `${files.length} have been downloaded`;
+    document.getElementById("storageDownloadProgressBar").style.width = "100%";
+    await utils.sleep(2000);
+  }
   document.getElementById("storageDownloadProgressBar").style.width = "0%";
   btn.textContent = label;
   btn.disabled = false;
+  // hide the cancel button
+  document.getElementById("btnStorageDownloadCancel").style.display = "none";
 }
 
 async function downloadSelectedFiles() {
@@ -191,7 +204,7 @@ async function downloadSelectedFiles() {
     if(row.rowIndex == 0) continue;
     // check if the checkbox is selected
     const checkbox = row.cells[0].getElementsByTagName("input")[0];
-    if(checkbox.checked) {
+    if(checkbox.checked && row.style.display != "none") { // do not download hidden files
       const filename = row.cells[0].getElementsByTagName("label")[0].textContent;
       files.push(filename);
     }
@@ -201,10 +214,16 @@ async function downloadSelectedFiles() {
     const path = await window.electronAPI.browseServer("OUT", "Select where the files will be downloaded", "", [{ name: 'All files', extensions: ['*'] }], ['openDirectory']);
     if(path != "") {
       if(await window.electronAPI.countExistingFiles(path[0], files) > 0)
+        // ask for confirmation if some files will be overwritten
         dialog.createDialogQuestion("Warning", "Some files will be overwritten, do you want to continue?", async () => downloadFiles(path[0], files));
       else await downloadFiles(path[0], files);
     }
   }
+}
+
+function cancelDownload() {
+  DOWNLOAD_CANCELLED = true;
+  document.getElementById("btnStorageDownload").textContent = `Cancelling download...`;
 }
 
 export { openStorage, refreshStorage, searchStorage };

@@ -340,13 +340,30 @@ async function deleteJob(_, owner, job_id) {
     }
 }
 
+async function getFileContent(_, owner, filenames) {
+    log.info(`Request by user '${owner}' to get file content of '${filenames.length}' files`);
+    if(DEMO_MODE) {
+        const data = ["File 1.raw", "File 2.raw", "File 3.raw", "File 4.raw"];
+        return [data, ""];
+    } else {
+        const form = new FormData({ maxDataSize: 20971520 });
+        form.append("username", owner);
+        form.append("names", JSON.stringify(filenames));
+        // send the request
+        const url = rest.getUrl("getfilecontent");
+        const [data, error] = await rest.sendPostRequest(url, form);
+        return [error ? data : JSON.parse(data), error];
+    }
+}
+
 async function downloadFile(_, owner, job_id, file_name, target) {
     log.info(`Start downloading Job ${job_id}'s file '${file_name}', DEMO_MODE=${DEMO_MODE}`);
     if(!DEMO_MODE) {
-        console.log(`Downloading file '${file_name}' from job ${job_id} for user '${owner}' to target '${target}'`);
+        // console.log(`Downloading file '${file_name}' from job ${job_id} for user '${owner}' to target '${target}'`);
         const url = job_id == null ? rest.getUrl("getfile", [owner, file_name]) : rest.getUrl("getresults", [owner, job_id, file_name]);
+        // console.log(`Downloading from URL: ${url}`);
         await rest.download(url, target);
     }
 }
 
-module.exports = { cancelJob, checkRsyncAgent, checkServerVersion, createJob, deleteJob, downloadFile, getDiskUsage, getLastJobs, listApps, listFlavors, listStorage, searchJobs, setDemoMode, transferProgress }
+module.exports = { cancelJob, checkRsyncAgent, checkServerVersion, createJob, deleteJob, downloadFile, getDiskUsage, getFileContent, getLastJobs, listApps, listFlavors, listStorage, searchJobs, setDemoMode, transferProgress }
