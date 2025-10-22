@@ -312,6 +312,9 @@ function openNewJob() {
     // document.getElementById("btnTransfers").disabled = true;
     document.getElementById("btnLogs").disabled = true;
     document.getElementById("btnOutput").disabled = true;
+    // enable the description
+    document.getElementById("txtJobDescription").disabled = false;
+    document.getElementById("txtJobDescription").value = "";
     // generate the button bar
     generateButtonBars();
     // open the first tab
@@ -378,6 +381,11 @@ function cloneJob() {
     // document.getElementById("txtJobDescription").disabled = false;
     const txtJobDescription = document.getElementById("txtJobDescription");
     txtJobDescription.disabled = false;
+    if(txtJobDescription.value.startsWith("# This job was initially a clone of job #")) {
+        // remove the first line
+        const firstLineEnd = txtJobDescription.value.indexOf("\n");
+        txtJobDescription.value = txtJobDescription.value.substring(firstLineEnd + 1);
+    }
     txtJobDescription.value = `# This job was initially a clone of job #${original_job_id}\n\n${txtJobDescription.value}`;
     
     document.getElementById("divDates").style.display = "none";
@@ -393,6 +401,8 @@ function cloneJob() {
     apps.disableParameters(FORM, false);
     // highlight the "New job" button to give the impression that a new job was opened
     jobs.highlightJobButton();
+    // open the first tab
+    tabs.openTab("tabSummary");
 }
 
 function cancelJob() {
