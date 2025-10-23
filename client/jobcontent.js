@@ -80,18 +80,29 @@ const PLOT_ELEMENT = new Chart(PLOT_CONTEXT, {
   }
 });
 
+function displayStrategyWarning() {
+    // extract the associated weight from the selected strategy (what is between "Weight: "and "]")
+    const weightMatch = document.getElementById("cmbStrategy").selectedOptions[0].textContent.match(/Weight:\s*(\d+)\]/);
+    const weight = weightMatch ? parseInt(weightMatch[1]) : 0;
+    // get the max allowed weight
+    const maxWeight = settings.CONFIG.get("openstack.max.flavor");
+    // display a warning if the weight is over the max allowed weight divided by 2
+    document.getElementById("txtStrategyWarning").parentElement.style.display = (weight > maxWeight / 2) ? "block" : "none";
+}
+
 function initialize() {
     if(INITIALIZED) return;
-    document.getElementById("cmbAppName").addEventListener("change", () => {
-      document.getElementById("btnParameters").disabled = false;
-      if(apps.isWorkflow(document.getElementById("cmbAppName").value)) {
-        document.getElementById("txtWorkflowName").value = document.getElementById("cmbAppName").value;
-      } else {
-        document.getElementById("txtWorkflowName").value = "";
-      }
-      generateButtonBars();
-      apps.generate_parameters_page();
-    });
+    // document.getElementById("cmbAppName").addEventListener("change", () => {
+    //   document.getElementById("btnParameters").disabled = false;
+    //   if(apps.isWorkflow(document.getElementById("cmbAppName").value)) {
+    //     document.getElementById("txtWorkflowName").value = document.getElementById("cmbAppName").value;
+    //   } else {
+    //     document.getElementById("txtWorkflowName").value = "";
+    //   }
+    //   generateButtonBars();
+    //   apps.generate_parameters_page();
+    // });
+    document.getElementById("cmbAppName").addEventListener("change", () => displayStrategyWarning());
     document.getElementById("cmbStrategy").addEventListener("change", () => {
         // extract the associated weight from the selected strategy (what is between "Weight: "and "]")
         const weightMatch = document.getElementById("cmbStrategy").selectedOptions[0].textContent.match(/Weight:\s*(\d+)\]/);
@@ -256,6 +267,7 @@ function updateJobPage(job, generateParametersTab = true) {
             updateField("txtJobStrategy", job.strategy, null, null, [], ["w3-hide"]);
         else
             updateField("txtJobStrategy", document.getElementById("cmbStrategy").selectedOptions[0].textContent, null, null, [], ["w3-hide"]);
+        displayStrategyWarning();
         updateField("txtJobDescription", job.description, null, null, [], [], true);
         updateField("divDates", null, "block", null, [], [], null, null, describeJobDates(job));
         // generate the button bar
@@ -311,6 +323,7 @@ function openNewJob() {
     cleanJob();
     // set the default strategy
     document.getElementById("cmbStrategy").value = settings.CONFIG.get("default.strategy");
+    displayStrategyWarning();
     // disable the other tabs
     document.getElementById("btnParameters").disabled = true;
     // document.getElementById("btnTransfers").disabled = true;
@@ -383,6 +396,7 @@ function cloneJob() {
         document.getElementById("cmbStrategy").value = settings.CONFIG.get("default.strategy");
     // document.getElementById("txtSelectedHost").parentNode.style.display = "none";
     // document.getElementById("txtJobDescription").disabled = false;
+    displayStrategyWarning();
     const txtJobDescription = document.getElementById("txtJobDescription");
     txtJobDescription.disabled = false;
     if(txtJobDescription.value.startsWith("# This job was initially a clone of job #")) {
