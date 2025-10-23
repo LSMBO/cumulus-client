@@ -17,6 +17,13 @@ button.cm-disabled {
     color: var(--accent-color);
 }
 
+#txtStrategyWarning img {
+    width: 55px;
+    height: 55px;
+    float: left;
+    margin-right: 5px;
+}
+
 #formParameters .tool_header div {
     display: inline-block;
 }

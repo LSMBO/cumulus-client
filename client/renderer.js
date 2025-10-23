@@ -102,7 +102,7 @@ async function loadRemoteFlavors() {
   document.getElementById("cmbSettingsDefaultStrategy").innerHTML = content;
   document.getElementById("cmbStrategy").innerHTML = content;
   // also set the max weight for the OpenStack strategy
-  document.getElementById("txtStrategy").textContent = `Strategy (maximum weight on the server: ${settings.CONFIG.get("openstack.max.flavor")})`;
+  document.getElementById("txtStrategy").textContent = `Strategy (maximum weight: ${settings.CONFIG.get("openstack.max.flavor")}, you will not be able to start your job if the total weight of all jobs exceed this limit)`;
 }
 
 /**
