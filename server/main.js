@@ -156,7 +156,7 @@ function createWindow () {
   mainWindow.loadFile('index.html')
 
   // uncomment the next line to open the app in full screen mode
-  // mainWindow.maximize();
+  mainWindow.maximize();
 
   // Open the DevTools.
   if(config.DEBUG_MODE) mainWindow.webContents.openDevTools()
