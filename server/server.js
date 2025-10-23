@@ -92,7 +92,6 @@ async function checkServerVersion() {
 
 async function isValidXml(id, xml) {
     // only validate xml in debug mode, because it is slow
-    // TODO the call for this function has disappeared from listApps()
     if(config.DEBUG_MODE) {
         var xsd = JXSD;
         if(xml.startsWith("<workflow")) xsd = WXSD; // use the workflow XSD
@@ -127,8 +126,8 @@ async function listApps() {
             const output = Object.entries(JSON.parse(data));
             for(let [id, xml] of output) {
                 // validate the xml in debug mode
-                // if(await isValidXml(id, xml)) apps.push([id, xml]);
-                apps.push([id, xml]);
+                if(await isValidXml(id, xml)) apps.push([id, xml]);
+                // apps.push([id, xml]);
             }
         }
         return apps;
@@ -247,9 +246,7 @@ async function createJob(_, owner, app, strategy, description, settings, sharedF
         form2.append("job_id", job_id);
         form2.append("job_dir", job_dir);
         form2.append("owner", owner);
-        // TODO convert file paths to UNC paths on Windows
-        // form2.append("files", sharedFiles);
-        // form2.append("local_files", localFiles);
+        // convert file paths to UNC paths on Windows
         const sharedFilesText = JSON.stringify(config.convertToUncPath(sharedFiles));
         const localFilesText = JSON.stringify(config.convertToUncPath(localFiles));
         form2.append("files", sharedFilesText);
