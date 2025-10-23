@@ -275,9 +275,13 @@ function updateJobPage(job, generateParametersTab = true) {
             // do not reload the logs if the content is the same (especially if the job is finished)
             const logContent = utils.extractJobLog(job.log, true, true, true, false);
             if(LOG_ELEMENT.innerHTML == "" || LOG_ELEMENT.innerHTML != logContent) {
+                // look at the current scroll position before updating the log
+                const isAtTop = LOG_ELEMENT.scrollTop === 0;
+                const isAtBottom = LOG_ELEMENT.scrollHeight - LOG_ELEMENT.scrollTop === LOG_ELEMENT.clientHeight;
+                // update the log content
                 LOG_ELEMENT.innerHTML = logContent;
-                // scroll to the bottom of the log if the job is running
-                if(job.status == "RUNNING" || job.status == "PREPARING") LOG_ELEMENT.scrollTop = LOG_ELEMENT.scrollHeight;
+                // scroll to the bottom of the log if the job is running and the previous position was at the bottom (or was at the top)
+                if((job.status == "RUNNING" || job.status == "PREPARING") && (isAtTop || isAtBottom)) LOG_ELEMENT.scrollTop = LOG_ELEMENT.scrollHeight;
             }
             // update the CPU/RAM usage plot
             [PLOT_LABELS, PLOT_CPU, PLOT_RAM] = utils.extractInfoFromJobLog(job.log);
