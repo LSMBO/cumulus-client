@@ -69,7 +69,7 @@ const PLOT_ELEMENT = new Chart(PLOT_CONTEXT, {
     ]
   },
   options: {
-    responsive: true, maintainAspectRatio: false,
+    responsive: true, maintainAspectRatio: false, radius: 1,
     scales: {
         y: { min: 0, max: 100, title: { display: false, text: 'Usage (%)' }, ticks: { stepSize: 50 } },
         x: { title: { display: false, text: 'Time' }, ticks: { display: false } }
