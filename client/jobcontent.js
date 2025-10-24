@@ -133,7 +133,16 @@ async function copyLogToClipboard() {
 function initialize() {
     if(INITIALIZED) return;
     // set the events
-    document.getElementById("cmbAppName").addEventListener("change", () => displayStrategyWarning());
+    document.getElementById("cmbAppName").addEventListener("change", () => {
+      document.getElementById("btnParameters").disabled = false;
+      if(apps.isWorkflow(document.getElementById("cmbAppName").value)) {
+        document.getElementById("txtWorkflowName").value = document.getElementById("cmbAppName").value;
+      } else {
+        document.getElementById("txtWorkflowName").value = "";
+      }
+      generateButtonBars();
+      apps.generate_parameters_page();
+    });
     document.getElementById("cmbStrategy").addEventListener("change", () => {
         // extract the associated weight from the selected strategy (what is between "Weight: "and "]")
         const weightMatch = document.getElementById("cmbStrategy").selectedOptions[0].textContent.match(/Weight:\s*(\d+)\]/);
