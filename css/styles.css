@@ -261,9 +261,50 @@ input::placeholder, textarea::placeholder {
     height: 100% !important;
 }
 
+#tabLogs #divToggles {
+    width: 25px;
+    height: 80%;
+    margin-right: 8px;
+    float: left;
+}
+
+#tabLogs #divToggles span {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin: 10px auto;
+    cursor: pointer;
+    border-width: 1px;
+    border-style: solid;
+}
+#tabLogs #divToggles .selected {
+    opacity: 0.25;
+}
+
+#tabLogs #divToggles #toggleServerLog {
+    background-color: var(--opposite-color);
+    border-color: var(--opposite-color-dark);
+}
+#tabLogs #divToggles #toggleStdOut {
+    background-color: var(--secondary-color-light);
+    border-color: var(--secondary-color);
+}
+#tabLogs #divToggles #toggleStdErr {
+    background-color: var(--accent-color-light);
+    border-color: var(--accent-color);
+}
+
+#tabLogs #copyToClipboard {
+    cursor: pointer;
+    width: 25px;
+    height: 25px;
+}
+
 #tabLogs #txtMergedLog {
     overflow: auto;
     height: 80%;
+    width: calc(100% - 35px);
 }
 
 #tabLogs #txtMergedLog span {

@@ -50,6 +50,7 @@ const PLOT_CONTEXT = document.getElementById('pltJobUsage').getContext('2d');
 var PLOT_LABELS = [];
 var PLOT_CPU = [];
 var PLOT_RAM = [];
+const MAX_PLOT_POINTS = 250;
 const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
 const accentColorDark = getComputedStyle(document.documentElement).getPropertyValue('--accent-color-bg').trim();
 const oppositeColor = getComputedStyle(document.documentElement).getPropertyValue('--opposite-color').trim();
@@ -90,18 +91,48 @@ function displayStrategyWarning() {
     document.getElementById("txtStrategyWarning").parentElement.style.display = (weight > maxWeight / 2) ? "block" : "none";
 }
 
+function applyLogFilters(logContent = null) {
+    // get the status of the toggles
+    const hideServerLog = document.getElementById("toggleServerLog").classList.contains("selected");
+    const hideStdOut = document.getElementById("toggleStdOut").classList.contains("selected");
+    const hideStdErr = document.getElementById("toggleStdErr").classList.contains("selected");
+    // get the full log content if not provided
+    if(logContent == null) logContent = LOG_ELEMENT.innerHTML;
+    // add or remove a "w3-hide" class to the corresponding spans
+    const doc = new DOMParser().parseFromString(logContent, 'text/html');
+    const spans = doc.querySelectorAll('span');
+    spans.forEach(span => {
+        if((span.classList.contains("stdalt") && hideServerLog) || (span.classList.contains("stdout") && hideStdOut) || (span.classList.contains("stderr") && hideStdErr)) {
+            span.classList.add("w3-hide");
+        } else {
+            span.classList.remove("w3-hide");
+        }
+    });
+    LOG_ELEMENT.innerHTML = doc.body.innerHTML;
+}
+
+function toggleLogs(e) {
+    // toggle the "selected" class on the clicked element
+    utils.toggleClass(e.target, "selected");
+    // apply the filters
+    applyLogFilters();
+}
+
+async function copyLogToClipboard() {
+    // save the original icon
+    const originalSrc = document.getElementById("copyToClipboard").src;
+    // change the icon to indicate the copy was successful
+    document.getElementById("copyToClipboard").src = "img/copy-ok.png";
+    // copy the log content to the clipboard
+    navigator.clipboard.writeText(LOG_ELEMENT.innerText);
+    // wait a few seconds and remove the class
+    await utils.sleep(2000);
+    document.getElementById("copyToClipboard").src = originalSrc;
+}
+
 function initialize() {
     if(INITIALIZED) return;
-    // document.getElementById("cmbAppName").addEventListener("change", () => {
-    //   document.getElementById("btnParameters").disabled = false;
-    //   if(apps.isWorkflow(document.getElementById("cmbAppName").value)) {
-    //     document.getElementById("txtWorkflowName").value = document.getElementById("cmbAppName").value;
-    //   } else {
-    //     document.getElementById("txtWorkflowName").value = "";
-    //   }
-    //   generateButtonBars();
-    //   apps.generate_parameters_page();
-    // });
+    // set the events
     document.getElementById("cmbAppName").addEventListener("change", () => displayStrategyWarning());
     document.getElementById("cmbStrategy").addEventListener("change", () => {
         // extract the associated weight from the selected strategy (what is between "Weight: "and "]")
@@ -112,11 +143,22 @@ function initialize() {
         // display a warning if the weight is over the max allowed weight divided by 2
         document.getElementById("txtStrategyWarning").parentElement.style.display = (weight > maxWeight / 2) ? "block" : "none";
     });
+    document.getElementById("toggleServerLog").addEventListener("click", (e) => toggleLogs(e, "stdalt"));
+    document.getElementById("toggleStdOut").addEventListener("click", (e) => toggleLogs(e, "stdout"));
+    document.getElementById("toggleStdErr").addEventListener("click", (e) => toggleLogs(e, "stderr"));
+    // document.getElementById("copyToClipboard").addEventListener("click", () => navigator.clipboard.writeText(LOG_ELEMENT.innerText));
+    document.getElementById("copyToClipboard").addEventListener("click", () => copyLogToClipboard());
+    // define the tooltips
     utils.tooltip(document.getElementById("txtJobOwner").previousElementSibling, "This field shows the name of the user who created the job, it cannot be modified.");
     utils.tooltip(document.getElementById("txtJobStatus").previousElementSibling, "A job goes through the following statuses: PENDING, PREPARING, RUNNING, DONE or FAILED or CANCELLED. It will also be archived later."); // PENDING, PREPARING, RUNNING, DONE, FAILED, CANCELLED, ARCHIVED_DONE, ARCHIVED_FAILED, ARCHIVED_CANCELLED
     utils.tooltip(document.getElementById("cmbAppName").previousElementSibling, "Select the software to run, with its corresponding version.");
     utils.tooltip(document.getElementById("cmbStrategy").previousElementSibling, "The strategy to create the virtual machine. WARNING: the total weight of all jobs can't exceed the limit!");
     utils.tooltip(document.getElementById("txtJobDescription").previousElementSibling, "Add a description to your job, it can help you or others to distinguish a job without reviewing the set of parameters.");
+    utils.tooltip(document.getElementById("toggleServerLog"), "Toggle server logs.");
+    utils.tooltip(document.getElementById("toggleStdOut"), "Toggle standard logs.");
+    utils.tooltip(document.getElementById("toggleStdErr"), "Toggle error logs.");
+    utils.tooltip(document.getElementById("copyToClipboard"), "Copy the log to the clipboard.");
+    // TODO add copy to clipboad button
 }
 
 function updateField(fieldId, value = null, display = null, display_of_parent = null, classes_to_add = [], classes_to_remove = [], disabled = null, selectedIndex = null, innerHTML = null) {
@@ -155,6 +197,9 @@ function cleanJob() {
     FORM.innerHTML = "";
     // clear the Log tab
     LOG_ELEMENT.innerHTML = "";
+    document.getElementById("toggleServerLog").className = "";
+    document.getElementById("toggleStdOut").className = "";
+    document.getElementById("toggleStdErr").className = "";
     PLOT_ELEMENT.data.datasets[0].data = [];
     PLOT_ELEMENT.data.datasets[1].data = [];
     // clear the Output tab
@@ -290,13 +335,20 @@ function updateJobPage(job, generateParametersTab = true) {
                 // look at the current scroll position before updating the log
                 const isAtTop = LOG_ELEMENT.scrollTop === 0;
                 const isAtBottom = LOG_ELEMENT.scrollHeight - LOG_ELEMENT.scrollTop === LOG_ELEMENT.clientHeight;
-                // update the log content
-                LOG_ELEMENT.innerHTML = logContent;
+                // apply the log filters to the new content (this will also update the log content)
+                applyLogFilters(logContent);
                 // scroll to the bottom of the log if the job is running and the previous position was at the bottom (or was at the top)
                 if((job.status == "RUNNING" || job.status == "PREPARING") && (isAtTop || isAtBottom)) LOG_ELEMENT.scrollTop = LOG_ELEMENT.scrollHeight;
             }
             // update the CPU/RAM usage plot
             [PLOT_LABELS, PLOT_CPU, PLOT_RAM] = utils.extractInfoFromJobLog(job.log);
+            // if job is not running, show all points, otherwise show only the last 250 points
+            if((job.status == "RUNNING" || job.status == "PREPARING") && PLOT_LABELS.length > MAX_PLOT_POINTS) {
+                PLOT_LABELS = PLOT_LABELS.slice(-MAX_PLOT_POINTS);
+                PLOT_CPU = PLOT_CPU.slice(-MAX_PLOT_POINTS);
+                PLOT_RAM = PLOT_RAM.slice(-MAX_PLOT_POINTS);
+            }
+            // update the plot data
             PLOT_ELEMENT.data.labels = PLOT_LABELS;
             PLOT_ELEMENT.data.datasets[0].data = PLOT_CPU;
             PLOT_ELEMENT.data.datasets[1].data = PLOT_RAM;
@@ -409,6 +461,9 @@ function cloneJob() {
     document.getElementById("divDates").style.display = "none";
     generateButtonBars("PENDING", false);
     LOG_ELEMENT.innerHTML = "";
+    document.getElementById("toggleServerLog").className = "";
+    document.getElementById("toggleStdOut").className = "";
+    document.getElementById("toggleStdErr").className = "";
     PLOT_ELEMENT.data.datasets[0].data = [];
     PLOT_ELEMENT.data.datasets[1].data = [];
     document.getElementById("outputSummary").textContent = "Nothing yet...";
