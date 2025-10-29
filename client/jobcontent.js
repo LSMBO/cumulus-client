@@ -50,15 +50,17 @@ const PLOT_CONTEXT = document.getElementById('pltJobUsage').getContext('2d');
 var PLOT_LABELS = [];
 var PLOT_CPU = [];
 var PLOT_RAM = [];
-const MAX_PLOT_POINTS = 250;
+const MAX_PLOT_POINTS = 240; // there are 4 points per minutes, so this represents 1 hour of data
 const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
 const accentColorDark = getComputedStyle(document.documentElement).getPropertyValue('--accent-color-bg').trim();
 const oppositeColor = getComputedStyle(document.documentElement).getPropertyValue('--opposite-color').trim();
 const oppositeColorDark = getComputedStyle(document.documentElement).getPropertyValue('--opposite-color-bg').trim();
 /* 
 TODO
-Use a fix width for the X axis, and when the data exceed this width, either remove the oldest data or use a sliding window to display only the last N data points.
-We could add some buttons between the log and the chart: copy to clipboard, all points or last 250 points, hide/show chart
+- Add more buttons for the log and the chart:
+    - auto-scroll log (icon of an eye?)
+    - save chart as image
+    - show all points in the chart or just last hour
 */
 const PLOT_ELEMENT = new Chart(PLOT_CONTEXT, {
   type: 'line',
@@ -76,7 +78,7 @@ const PLOT_ELEMENT = new Chart(PLOT_CONTEXT, {
         x: { title: { display: false, text: 'Time' }, ticks: { display: false } }
     },
     plugins: {
-      legend: { position: 'top', align: 'center' },
+      legend: { position: 'top', align: 'center', display: false },
     }
   }
 });
@@ -356,6 +358,9 @@ function updateJobPage(job, generateParametersTab = true) {
                 PLOT_LABELS = PLOT_LABELS.slice(-MAX_PLOT_POINTS);
                 PLOT_CPU = PLOT_CPU.slice(-MAX_PLOT_POINTS);
                 PLOT_RAM = PLOT_RAM.slice(-MAX_PLOT_POINTS);
+            } else {
+                console.log(`Showing all ${PLOT_LABELS.length} points for job status ${job.status}`);
+                document.getElementById("chartParent").style.minWidth = PLOT_CPU.length * 3 + "px"; // set the width of the chart parent to 10 pixels per point
             }
             // update the plot data
             PLOT_ELEMENT.data.labels = PLOT_LABELS;

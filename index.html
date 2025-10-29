@@ -89,7 +89,9 @@
               <img id="copyToClipboard" src="img/copy.png" />
             </div>
             <div id="txtMergedLog" class="w3-input w3-border"></div>
-            <div id="chartContainer"><canvas id="pltJobUsage"></canvas></div>
+            <!-- <div id="chartContainer"><canvas id="pltJobUsage"></canvas></div> -->
+            <div id="chartLegend"><i></i><label>CPU Usage (%)</label><i></i><label>RAM Usage (%)</label></div>
+            <div id="chartContainer"><div id="chartParent"><canvas id="pltJobUsage"></canvas></div></div>
           </div>
         </div>
         <!-- Tab 4: list of output files, users should be able to download the files they want -->
