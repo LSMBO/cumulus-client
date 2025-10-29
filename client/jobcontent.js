@@ -359,7 +359,6 @@ function updateJobPage(job, generateParametersTab = true) {
                 PLOT_CPU = PLOT_CPU.slice(-MAX_PLOT_POINTS);
                 PLOT_RAM = PLOT_RAM.slice(-MAX_PLOT_POINTS);
             } else {
-                console.log(`Showing all ${PLOT_LABELS.length} points for job status ${job.status}`);
                 document.getElementById("chartParent").style.minWidth = PLOT_CPU.length * 3 + "px"; // set the width of the chart parent to 10 pixels per point
             }
             // update the plot data
