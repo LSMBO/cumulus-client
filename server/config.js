@@ -17,6 +17,7 @@ const CUMULUS_HOMEPAGE = package.mainProjectHomepage;
 var DEBUG_MODE = false; // when true, allows some code to be executed or some extra logs to be displayed
 const UNC_PATHS = getUncPaths(); // map of drive letters to UNC paths
 var MAX_AGE_IN_DAYS = 90; // default maximum age for data files
+var MAX_FLAVOR = 7; // default cumulated maximum flavor for OpenStack instances
 
 function loadConfigFile(file) {
   const regex = /^\s*([^=\s]+)\s*=\s*(.*)\s*$/;
@@ -59,7 +60,7 @@ function saveConfig(_, config) {
     // if(key != "license" && key != "cumulus.version") store = false;
     if(key == "license" || key == "cumulus.version") store = false;
     // do not store the server config
-    if(key == "output.folder" || key == "temp.folder" || key == "data.max.age.in.days" || key == "controller.version" || key == "client.min.version") store = false;
+    if(key == "output.folder" || key == "temp.folder" || key == "data.max.age.in.days" || key == "openstack.max.flavor" || key == "controller.version" || key == "client.min.version") store = false;
     if(store) content += `${key} = ${value}\n`;
   }
   try {
@@ -79,6 +80,8 @@ function getConfig() {
   loadConfig();
   // add data.max.age.in.days to the config if not present
   if(!CONFIG.has("data.max.age.in.days")) CONFIG.set("data.max.age.in.days", MAX_AGE_IN_DAYS);
+  // add openstack.max.flavor to the config if not present
+  if(!CONFIG.has("openstack.max.flavor")) CONFIG.set("openstack.max.flavor", MAX_FLAVOR);
   return CONFIG;
 }
 
@@ -91,6 +94,8 @@ function set(key, value) {
   loadConfig();
   // store data.max.age.in.days in a variable
   if(key == "data.max.age.in.days") MAX_AGE_IN_DAYS = parseInt(value);
+  // store openstack.max.flavor in a variable
+  if(key == "openstack.max.flavor") MAX_FLAVOR = parseInt(value);
   // store the value in the config map
   CONFIG.set(key, value);
 }
